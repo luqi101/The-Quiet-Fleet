@@ -286,7 +286,3 @@ def assess_device(at: datetime, rules: RulesConfig, context: DeviceContext) -> D
         next_action=winner.next_action if winner and winner.owner != WhoActs.NONE else None,
         priority=winner.priority if winner and winner.owner != WhoActs.NONE else None,
     )
-
-
-def evaluate_status(at: datetime, rules: RulesConfig, context: DeviceContext) -> DeviceStatus:
-    return assess_device(at, rules, context).status

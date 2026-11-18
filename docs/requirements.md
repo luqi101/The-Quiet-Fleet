@@ -48,7 +48,7 @@ Support, prioritizing fewer false alarms, and one grouped customer alert for a m
 | R19 | Track camera fault, remote-first intervention, and true recording recovery | `diagnosis.py`, persona actions | B10, D05–D12, H05. Verify old recording, booting, sleep, and duplicate reboots leave the episode unresolved. Escalate under tested policy after distinct failed awake attempts and clear on later recording. |
 | R20 | Apply ingested pause/end and resume transitions as of query | `projection.py`, `diagnosis.py` | D13, D14, B22. Compare paused, ended, and resumed states, including a later-delivered transition, with account ownership and separate device freshness. |
 | R22 | Keep battery, cold, downtime, and coverage explanations evidence-based and bounded | `diagnosis.py`, `config/rules.json` | D20–D31. Exercise low-battery hysteresis/recovery, a cold healthy miss versus a proven depleted battery, independently confirmed seasonal policy, and backfill without future knowledge. |
-| R23 | Correlate due-reporting losses by carrier and depot with meaningful controls and recovery | `incidents.py` | E01–E11, H04. Use renamed cohorts, healthy other-carrier peers, ordinary shift changes, individual failures, retry bursts, and partial and complete recovery. |
+| R23 | Correlate due-reporting losses by carrier and depot with meaningful controls and recovery | `reporting_peers.py`, `incidents.py` | E01–E11, H04. Use renamed cohorts, healthy other-carrier peers, ordinary shift changes, individual failures, retry bursts, and partial and complete recovery. |
 | R29 | Config holds chosen thresholds and provisional business cutoffs with units, comparators, and provenance | `config/rules.json`, calibration register | F07, H14. Validate config on startup and inspect every chosen rule and boundary against its documented origin and synthetic case. |
 | R30 | Reproduce calibration from history and document limitations | `scripts/audit_data.py`, `scripts/calibrate.py`, `docs/calibration.md` | D32, H14. Check source hashes and cohort sizes, reproduce candidate sweeps on chronological development and validation slices, and report alert volume independently of selected case labels. |
 | R31 | Integrate optional BX decoding through ingest, status and selected persona | `bx.py`, `normalize.py`, `diagnosis.py` | G01–G14. Verify three original portal anchors and a new valid frame, malformed isolation, flags/no fix, receipt cutoff, duplicate safety and actual battery actions/recovery. Record in Form 3 if omitted. |
@@ -134,3 +134,13 @@ Only the selected persona's rows become grading gates. Shared API and diagnosis 
 | R22, R29 | Fixtures verify the 10% opening and 20% recovery battery cutoffs, depot-local cold and approved downtime boundaries, and bounded weak-signal and backfill evidence. Shipped rules carry no approved downtime. | Operational confirmation and BX-specific rules. |
 
 [Individual diagnosis HTTP tests](../tests/test_individual_diagnosis.py) · [Cause precedence and policy](decisions.md#p05-individual-diagnosis)
+
+## P06 verification record
+
+| Row | Observed evidence | Remaining work |
+| --- | --- | --- |
+| R12, R23, R29 | Renamed and rescheduled HTTP fixtures exercise both depot scopes, separate driving and awake-camera modes, calibrated count/share/spread and live contrast, dormant exclusions, synchronized cross-carrier loss, and same-firmware ambiguity. | Official practice and release checks. |
+| R18, R19, R24, R25 | A physical power or storage failure remains independently actionable in a carrier loss. No serial belongs to both an incident and an individual item. Support follows up on an uncertain shared cause. | Job/shift urgency and additional support workflow tests in P07. |
+| R23, R24, R26 | Fixtures verify historical opening evidence, late receipts and retries, elapsed silence, exact partial recovery, stable IDs, closure, and distinct recurrence. Status uses the same cause and eligible original evidence as triage. Full-history checkpoint replay verified both labeled outages, eight ordinary checkpoints with no shared group, and 693 eligible evidence references. | Official practice and end-state verification on the release environment. |
+
+[Carrier incident HTTP tests](../tests/test_carrier_incidents.py) · [Runtime policy](decisions.md#p06-carrier-incidents)

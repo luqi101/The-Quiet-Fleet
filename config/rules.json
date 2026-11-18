@@ -424,6 +424,18 @@
       "unit": "ratio",
       "value": 0.5
     },
+    "outage_probe_interval": {
+      "comparator": "opening probes on UTC multiples of value",
+      "provenance": "P01 carrier sensitivity grid",
+      "rationale": "Use the calibrated sampling grid to reconstruct openings with a stable identity. Member recovery uses the exact receipt cutoff.",
+      "sample_size": 40169,
+      "sensitivity_candidates": [
+        60
+      ],
+      "test": "E01\u2013E11, H04",
+      "unit": "seconds",
+      "value": 60
+    },
     "seasonal_downtime_suppression_enabled": {
       "comparator": "requires approved scope and effective dates",
       "provenance": "Ops confirmation pending",

@@ -69,7 +69,7 @@ def _latest_own_claims(facts: DeviceFacts) -> tuple[EventFact, ...]:
 
 
 def _assignment(
-    device: Device, at: datetime, claims: tuple[EventFact, ...], assets_by_vin: dict[str, set[str]]
+    device: Device, at: datetime, claims: tuple[EventFact, ...], assets_by_vin: Mapping[str, set[str]]
 ) -> _Assignment:
     roster = _roster_asset(device, at)
     vins = {_vin(event) for event in claims}
@@ -82,13 +82,9 @@ def _assignment(
 
 
 def _trackers_on_asset(
-    snapshot: ReadSnapshot, references: References, asset: Asset,
-    assets_by_vin: dict[str, set[str]], at: datetime,
+    snapshot: ReadSnapshot, references: References, asset: Asset, roster_serials: tuple[str, ...],
+    assets_by_vin: Mapping[str, set[str]], at: datetime,
 ) -> tuple[list[_Tracker], tuple[EventFact, ...]]:
-    roster_serials = tuple(
-        device.serial for device in references.devices.values()
-        if device.family == "T" and device.asset_id == asset.asset_id
-    )
     claims = defaultdict(list)
     for event in snapshot.related_vin_claims(asset.vin, roster_serials):
         claims[event.serial].append(event)
@@ -137,39 +133,69 @@ def _recent_trackers(candidates: list[_Tracker], at_us: int, recent_us: int) -> 
     return [tracker for tracker in candidates if at_us - tracker.latest.observed_us <= recent_us]
 
 
-def load_device_context(
-    store: EventStore, references: References, device: Device, at_us: int, rules: RulesConfig
-) -> DeviceContext:
-    """Copy only related receipts from one committed history."""
-    at = from_epoch_us(at_us)
-    assets_by_vin: dict[str, set[str]] = defaultdict(set)
-    if device.family in {"T", "C"}:
+class DeviceContextReader:
+    """Reuse related VIN and tracker reads for one as-of view."""
+
+    def __init__(self, snapshot: ReadSnapshot, references: References, rules: RulesConfig) -> None:
+        self.snapshot = snapshot
+        self.references = references
+        self.at = from_epoch_us(snapshot.at_us)
+        self.recent_us = rules.given_rules.tracker_parked_overdue.value * 1_000_000
+        self.assets_by_vin: dict[str, set[str]] = defaultdict(set)
+        tracker_roster = defaultdict(list)
         for asset in references.assets.values():
             if asset.vin:
-                assets_by_vin[asset.vin].add(asset.asset_id)
+                self.assets_by_vin[asset.vin].add(asset.asset_id)
+        for device in references.devices.values():
+            if device.family == "T" and device.asset_id is not None:
+                tracker_roster[device.asset_id].append(device.serial)
+        self.tracker_roster = {asset_id: tuple(serials) for asset_id, serials in tracker_roster.items()}
 
-    tracker_events: tuple[EventFact, ...] = ()
-    tracker_evidence: tuple[EventFact, ...] = ()
-    tracker_ambiguous = documented_removed = False
-    recent_us = rules.given_rules.tracker_parked_overdue.value * 1_000_000
+        self._cohort_facts: dict[str, DeviceFacts] = {}
+        self._trackers: dict[str, tuple[list[_Tracker], tuple[EventFact, ...], dict[str, tuple[EventFact, ...]]]] = {}
 
-    with store.read_snapshot(at_us) as snapshot:
-        facts = project_device(at_us, snapshot.facts_for(device.serial))
+    def _project(self, serial: str, *, cohort_tracker: bool = False) -> DeviceFacts:
+        if not cohort_tracker:
+            return project_device(self.snapshot.at_us, self.snapshot.facts_for(serial))
+        if serial not in self._cohort_facts:
+            self._cohort_facts[serial] = project_device(self.snapshot.at_us, self.snapshot.tracker_cohort_facts(serial))
+        return self._cohort_facts[serial]
+
+    def _asset_trackers(self, asset: Asset) -> tuple[
+        list[_Tracker], tuple[EventFact, ...], dict[str, tuple[EventFact, ...]],
+    ]:
+        if asset.asset_id not in self._trackers:
+            candidates, conflicts = _trackers_on_asset(
+                self.snapshot, self.references, asset, self.tracker_roster.get(asset.asset_id, ()),
+                self.assets_by_vin, self.at,
+            )
+            removals = _documented_removals(self.snapshot, candidates, asset.asset_id, self.at)
+            self._trackers[asset.asset_id] = (
+                [tracker for tracker in candidates if tracker.device.serial not in removals], conflicts, removals,
+            )
+        return self._trackers[asset.asset_id]
+
+    def read(self, device: Device, *, cohort: bool = False) -> DeviceContext:
+        # The slim view is used exclusively for incident eligibility. A device
+        # diagnosis retains full history, including contact and coverage evidence.
+        facts = None if cohort and device.family == "C" else self._project(device.serial, cohort_tracker=cohort)
         claims = _latest_own_claims(facts) if device.family == "T" else ()
-        assignment = _assignment(device, at, claims, assets_by_vin)
-        asset = references.assets.get(assignment.asset_id) if assignment.asset_id is not None else None
+        assignment = _assignment(device, self.at, claims, self.assets_by_vin)
+        asset = self.references.assets.get(assignment.asset_id)
         assignment_evidence = assignment.evidence
         assignment_ambiguous = assignment.asset_id is None and bool(assignment_evidence)
+        tracker_facts = None
+        tracker_evidence: tuple[EventFact, ...] = ()
+        tracker_ambiguous = documented_removed = False
         context_needed = (
             device.family == "T" and (bool(assignment_evidence) or device.status == "removed")
-            or device.family == "C" and facts.camera_evidence is not None
+            or device.family == "C" and (cohort or facts.camera_evidence is not None)
         )
-
+        if cohort and device.family == "T" and facts.ignition_on is not True:
+            context_needed = False
         if asset is not None and context_needed:
-            candidates, conflicts = _trackers_on_asset(snapshot, references, asset, assets_by_vin, at)
-            removals = _documented_removals(snapshot, candidates, asset.asset_id, at)
-            candidates = [tracker for tracker in candidates if tracker.device.serial not in removals]
-            recent = _recent_trackers(candidates, at_us, recent_us)
+            candidates, conflicts, removals = self._asset_trackers(asset)
+            recent = _recent_trackers(candidates, self.snapshot.at_us, self.recent_us)
             if device.serial in removals:
                 assignment_evidence = removals[device.serial]
                 asset = None
@@ -188,19 +214,32 @@ def load_device_context(
                     tracker_evidence = conflicts + tuple(event for tracker in contenders for event in tracker.evidence)
                 elif contenders:
                     selected = contenders[0]
-                    tracker_events = snapshot.facts_for(selected.device.serial)
+                    tracker_facts = self._project(selected.device.serial, cohort_tracker=cohort)
                     tracker_evidence = selected.assignment.evidence
 
-    return DeviceContext(
-        device=device,
-        facts=facts,
-        asset_id=asset.asset_id if asset is not None else None,
-        assignment_evidence=assignment_evidence,
-        tracker_facts=project_device(at_us, tracker_events) if tracker_events else None,
-        tracker_evidence=tracker_evidence,
-        tracker_ambiguous=tracker_ambiguous,
-        asset=asset,
-        weather=references.weather,
-        assignment_ambiguous=assignment_ambiguous,
-        documented_removed=documented_removed,
-    )
+        if facts is None:
+            mode = tracker_facts.ignition_since if tracker_facts and tracker_facts.ignition_on else None
+            events = self.snapshot.camera_cohort_facts(device.serial, mode.observed_us) if mode is not None else ()
+            facts = project_device(self.snapshot.at_us, events)
+
+        return DeviceContext(
+            device=device,
+            facts=facts,
+            asset_id=asset.asset_id if asset is not None else None,
+            assignment_evidence=assignment_evidence,
+            tracker_facts=tracker_facts,
+            tracker_evidence=tracker_evidence,
+            tracker_ambiguous=tracker_ambiguous,
+            asset=asset,
+            weather=self.references.weather,
+            assignment_ambiguous=assignment_ambiguous,
+            documented_removed=documented_removed,
+        )
+
+
+def load_device_context(
+    store: EventStore, references: References, device: Device, at_us: int, rules: RulesConfig,
+) -> DeviceContext:
+    """Copy one device's related receipts from one committed history."""
+    with store.read_snapshot(at_us) as snapshot:
+        return DeviceContextReader(snapshot, references, rules).read(device)

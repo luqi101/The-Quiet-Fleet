@@ -16,14 +16,13 @@ from fastapi.responses import JSONResponse
 from pydantic import ValidationError
 from starlette.concurrency import run_in_threadpool
 
-from .asset_context import load_device_context
 from .config import RulesConfig, load_config
-from .diagnosis import evaluate_status
 from .models import DeviceStatus, HealthResponse, IngestEnvelope, IngestResponse, TriageResponse
 from .normalize import InvalidEvent, NormalizedEvent, normalize_event
 from .reference import References, load_references
 from .store import EventStore, open_store
-from .time_utils import parse_iso_instant, to_epoch_us
+from .time_utils import parse_iso_instant
+from .triage import SupportView
 
 RULES_PATH = Path(__file__).resolve().parents[1] / "config" / "rules.json"
 logger = logging.getLogger(__name__)
@@ -34,6 +33,7 @@ class Runtime:
     rules: RulesConfig
     references: References
     store: EventStore
+    support: SupportView
 
 
 def get_runtime(request: Request) -> Runtime:
@@ -91,7 +91,7 @@ def create_app(data_dir: Path | None = None, config_path: Path | None = None) ->
         reference_dir = data_dir if data_dir is not None else Path(os.environ.get("QF_DATA_DIR", "./data"))
         references = load_references(reference_dir)
         with open_store() as store:
-            application.state.runtime = Runtime(rules, references, store)
+            application.state.runtime = Runtime(rules, references, store, SupportView(rules, references, store))
             try:
                 yield
             finally:
@@ -144,13 +144,11 @@ def create_app(data_dir: Path | None = None, config_path: Path | None = None) ->
         device = runtime.references.devices.get(serial)
         if device is None:
             raise HTTPException(status_code=404, detail="Unknown device serial.")
-        cutoff = to_epoch_us(at)
-        context = load_device_context(runtime.store, runtime.references, device, cutoff, runtime.rules)
-        return evaluate_status(at, runtime.rules, context)
+        return runtime.support.status(at, device)
 
-    @application.get("/triage", dependencies=[Depends(get_runtime)])
-    def triage(at: AtInstant) -> TriageResponse:
-        return TriageResponse(at=at, items=[])
+    @application.get("/triage")
+    def triage(at: AtInstant, runtime: CurrentRuntime) -> TriageResponse:
+        return runtime.support.triage(at)
 
     return application
 

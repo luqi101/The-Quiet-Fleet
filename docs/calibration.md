@@ -31,7 +31,7 @@ Parked cadence and the 4 h 30 min late boundary come from the brief. The camera 
 - **Development outages.** The chosen grid point detects 1/1 labelled cases for 48 labelled minute snapshots in 1 fragment(s). Background probes include 0/30152 alarming snapshots across 0 grouped episodes. The report includes grid sensitivity and fragmentation.
 - **Validation outages.** The chosen grid point detects 1/1 labelled cases for 4 labelled minute snapshots in 1 fragment(s). Background probes include 0/10017 alarming snapshots across 0 grouped episodes. The report includes grid sensitivity and fragmentation.
 
-At a 50% comparison share, the healthy-peer count sweep changes held-out detection duration (2 peers → 23 minutes, 3 peers → 4 minutes, 5 peers → 0 minutes). The development-selected values remain fixed. Episode continuation and recovery need separate implementation tests when comparison peers leave the cohort.
+At a 50% comparison share, the healthy-peer count sweep changes held-out detection duration (2 peers → 23 minutes, 3 peers → 4 minutes, 5 peers → 0 minutes). The development-selected values remain fixed. Runtime continuation uses evidence from the opening and follows member recovery separately. [Runtime policy](decisions.md#p06-carrier-incidents)
 
 ## Chosen thresholds
 
@@ -55,6 +55,7 @@ At a 50% comparison share, the healthy-peer count sweep changes held-out detecti
 | `urgent_operational_horizon` | 7200 | seconds | P00 working assumption, awaiting Larchmont policy |
 | `incident_close_below_remaining_devices` | 2 | serials | Contract incident cardinality and P00 episode policy |
 | `seasonal_downtime_suppression_enabled` | false | boolean | Ops confirmation pending |
+| `outage_probe_interval` | 60 | seconds | P01 carrier sensitivity grid |
 | `outage_minimum_affected_devices` | 5 | serials | Development outage anchor and background snapshot grid |
 | `outage_minimum_affected_share` | 0.5 | ratio | Development outage anchor and background snapshot grid |
 | `outage_maximum_onset_spread_seconds` | 600 | seconds | Development outage anchor and background snapshot grid |

@@ -163,6 +163,13 @@ def build_rules(report):
                                                       "A group requires several devices. Reevaluate remaining serials individually.", "E08–E10", (2, 3)),
         "seasonal_downtime_suppression_enabled": entry(False, "boolean", "requires approved scope and effective dates", "Ops confirmation pending", "Observed seasonal silence supports an investigation without approval for suppression.", "D27–D29", (False, True)),
     }
+    probe_seconds = outage["methodology"]["snapshot_seconds"]
+    provisional["outage_probe_interval"] = entry(
+        probe_seconds, "seconds", "opening probes on UTC multiples of value", "P01 carrier sensitivity grid",
+        "Use the calibrated sampling grid to reconstruct openings with a stable identity. Member recovery uses the exact receipt cutoff.",
+        "E01–E11, H04", (probe_seconds,),
+        sum(outage["selected"][split]["background_samples"] for split in ("development", "validation")),
+    )
     outage_units = {
         "minimum_affected_devices": ("serials", "count >= value"),
         "minimum_affected_share": ("ratio", "share >= value"),
@@ -272,7 +279,7 @@ def render_docs(report, rules):
     printed.extend([
         "",
         f"At a 50% comparison share, the healthy-peer count sweep changes held-out detection duration ({contrast_text}). "
-        "The development-selected values remain fixed. Episode continuation and recovery need separate implementation tests when comparison peers leave the cohort.",
+        "The development-selected values remain fixed. Runtime continuation uses evidence from the opening and follows member recovery separately. [Runtime policy](decisions.md#p06-carrier-incidents)",
         "",
         "## Chosen thresholds",
         "",

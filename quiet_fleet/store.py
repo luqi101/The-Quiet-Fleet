@@ -47,9 +47,21 @@ CREATE TABLE receipts (
 
 CREATE INDEX message_receipt_by_serial ON messages (serial, first_received_us);
 CREATE INDEX message_observation_by_kind ON messages (kind, serial, observed_us);
-CREATE INDEX message_vin_claim ON messages (json_extract(payload_json, '$.vin'), serial)
-    WHERE kind IN ('heartbeat', 'ignition_on');
+CREATE INDEX message_vin_claim ON messages (
+    json_extract(payload_json, '$.vin'), serial, observed_us DESC, first_received_us
+) WHERE kind IN ('heartbeat', 'ignition_on') AND time_quality = 'credible' AND device_origin = 1;
+CREATE INDEX message_vin_history ON messages (serial, observed_us DESC, first_received_us)
+    WHERE kind IN ('heartbeat', 'ignition_on') AND time_quality = 'credible' AND device_origin = 1;
 CREATE INDEX event_ids_by_message ON event_ids (fingerprint);
+CREATE INDEX message_latest_measurement ON messages (serial, observed_us DESC, first_received_us DESC, event_id DESC)
+    WHERE time_quality = 'credible' AND device_origin = 1;
+CREATE INDEX message_camera_storage_error ON messages (serial, observed_us DESC)
+    WHERE kind = 'camera_status' AND time_quality = 'credible'
+      AND json_extract(payload_json, '$.status') = 'storage_error';
+CREATE INDEX message_ignition_off ON messages (serial, observed_us DESC)
+    WHERE time_quality = 'credible' AND (
+        kind = 'ignition_off' OR (kind = 'position' AND json_extract(payload_json, '$.ignition') = 0)
+    );
 """
 
 _INSERT_MESSAGE = """
@@ -132,14 +144,25 @@ def _fact(row: tuple) -> EventFact:
 class ReadSnapshot:
     """Read selected facts at one cutoff while the store's write lock is held."""
 
-    def __init__(self, connection: sqlite3.Connection, at_us: int) -> None:
+    def __init__(self, connection: sqlite3.Connection, at_us: int, revision: int) -> None:
         self._connection: sqlite3.Connection | None = connection
-        self._at_us = at_us
+        self.at_us = at_us
+        self.revision = revision
+        self._root = self
 
-    def _query(self, sql: str, **parameters: str | None) -> sqlite3.Cursor:
-        if self._connection is None:
+    def as_of(self, at_us: int) -> ReadSnapshot:
+        """Apply an earlier receipt cutoff inside the same committed database view."""
+        if self._root._connection is None or at_us > self.at_us:
+            raise ValueError("Expected an earlier cutoff in an open snapshot")
+        historical = ReadSnapshot(self._root._connection, at_us, self.revision)
+        historical._root = self._root
+        return historical
+
+    def _query(self, sql: str, **parameters: str | int | None) -> sqlite3.Cursor:
+        connection = self._root._connection
+        if connection is None:
             raise RuntimeError("The read snapshot has closed")
-        return self._connection.execute(sql, {"at_us": self._at_us, **parameters})
+        return connection.execute(sql, {"at_us": self.at_us, **parameters})
 
     def facts_for(self, serial: str | None) -> tuple[EventFact, ...]:
         rows = self._query(
@@ -149,6 +172,78 @@ class ReadSnapshot:
             ORDER BY observed_us NULLS LAST, first_received_us, event_id
             """,
             serial=serial,
+        )
+        return tuple(_fact(row) for row in rows)
+
+    def tracker_cohort_facts(self, serial: str) -> tuple[EventFact, ...]:
+        """Keep the last drive's positions and the sparse mode, account and VIN history."""
+        (parked_us,) = self._query(
+            """
+            SELECT max(observed_us) FROM messages
+            WHERE serial = :serial AND time_quality = 'credible'
+              AND first_received_us <= :at_us AND observed_us <= :at_us
+              AND (kind = 'ignition_off' OR (kind = 'position' AND json_extract(payload_json, '$.ignition') = 0))
+            """,
+            serial=serial,
+        ).fetchone()
+        # The only pre-drive device events needed here are the last VIN
+        # claims and the sparse power timeline. Plans have independent clocks.
+        # Use the kind index for sparse account/power so sorting the union does
+        # not scan the serial's entire position history via its receipt index.
+        rows = self._query(
+            f"""
+            WITH prior_vin AS (
+                SELECT max(observed_us) AS observed_us FROM messages
+                WHERE serial = :serial AND kind IN ('heartbeat', 'ignition_on') AND {_CREDIBLE_AT}
+                  AND observed_us < :parked_us
+            )
+            SELECT {_FACT_FIELDS} FROM messages
+            WHERE serial = :serial AND kind IN ('position', 'heartbeat', 'ignition_on', 'ignition_off', 'low_voltage')
+              AND {_CREDIBLE_AT} AND observed_us >= :parked_us
+            UNION ALL
+            SELECT {_FACT_FIELDS} FROM messages
+            WHERE serial = :serial AND kind IN ('heartbeat', 'ignition_on') AND {_CREDIBLE_AT}
+              AND observed_us = (SELECT observed_us FROM prior_vin)
+            UNION ALL
+            SELECT {_FACT_FIELDS} FROM messages INDEXED BY message_observation_by_kind
+            WHERE serial = :serial AND kind IN ('plan_change', 'power_disconnect', 'power_restore')
+              AND first_received_us <= :at_us AND observed_us <= :at_us AND time_quality = 'credible'
+            ORDER BY observed_us, first_received_us, event_id
+            """,
+            serial=serial,
+            parked_us=parked_us if parked_us is not None else 0,
+        )
+        return tuple(_fact(row) for row in rows)
+
+    def camera_cohort_facts(self, serial: str, awake_since_us: int) -> tuple[EventFact, ...]:
+        """Keep the current drive's camera statuses and previous recording/error boundaries."""
+        rows = self._query(
+            f"""
+            SELECT {_FACT_FIELDS} FROM messages
+            WHERE serial = :serial AND kind = 'camera_status' AND {_CREDIBLE_AT}
+              AND observed_us >= :awake_since_us
+            UNION ALL
+            SELECT {_FACT_FIELDS} FROM messages
+            WHERE serial = :serial AND kind = 'plan_change' AND time_quality = 'credible'
+              AND first_received_us <= :at_us AND observed_us <= :at_us
+            UNION ALL
+            SELECT {_FACT_FIELDS} FROM (
+                SELECT {_FACT_FIELDS} FROM messages INDEXED BY message_camera_storage_error
+                WHERE serial = :serial AND kind = 'camera_status' AND {_CREDIBLE_AT}
+                  AND observed_us < :awake_since_us AND json_extract(payload_json, '$.status') = 'storage_error'
+                ORDER BY observed_us DESC, first_received_us DESC, event_id DESC LIMIT 1
+            )
+            UNION ALL
+            SELECT {_FACT_FIELDS} FROM (
+                SELECT {_FACT_FIELDS} FROM messages INDEXED BY message_observation_by_kind
+                WHERE serial = :serial AND kind = 'camera_status' AND {_CREDIBLE_AT}
+                  AND observed_us < :awake_since_us AND json_extract(payload_json, '$.status') = 'recording'
+                ORDER BY observed_us DESC, first_received_us DESC, event_id DESC LIMIT 1
+            )
+            ORDER BY observed_us, first_received_us, event_id
+            """,
+            serial=serial,
+            awake_since_us=awake_since_us,
         )
         return tuple(_fact(row) for row in rows)
 
@@ -163,14 +258,18 @@ class ReadSnapshot:
                 WHERE kind IN ('heartbeat', 'ignition_on')
                       AND json_extract(payload_json, '$.vin') = :vin
                       AND {_CREDIBLE_AT} AND serial IS NOT NULL
-            ), ranked AS (
-                SELECT {_FACT_FIELDS},
-                       DENSE_RANK() OVER (PARTITION BY serial ORDER BY observed_us DESC) AS age_rank
-                FROM messages
-                WHERE {_VIN_CLAIM} AND {_CREDIBLE_AT} AND serial IS NOT NULL
-                      AND serial IN (SELECT serial FROM related)
+            ), latest(claim_serial, claim_us) AS MATERIALIZED (
+                SELECT related.serial, (
+                    SELECT observed_us FROM messages INDEXED BY message_vin_history
+                    WHERE messages.serial = related.serial AND {_VIN_CLAIM} AND {_CREDIBLE_AT}
+                    ORDER BY observed_us DESC LIMIT 1
+                )
+                FROM related
             )
-            SELECT {_FACT_FIELDS} FROM ranked WHERE age_rank = 1
+            SELECT {_FACT_FIELDS} FROM latest
+            JOIN messages INDEXED BY message_vin_history
+              ON serial = claim_serial AND observed_us = claim_us
+            WHERE {_VIN_CLAIM} AND {_CREDIBLE_AT}
             ORDER BY serial, first_received_us, event_id
             """,
             vin=vin,
@@ -210,6 +309,7 @@ class EventStore:
         self._connection = connection
         self._lock = Lock()
         self._conflicts = 0
+        self._revision = 0
 
     def write_batch(self, events: Sequence[NormalizedEvent]) -> BatchWriteResult:
         """Commit accepted normalized events together, counting retries as accepted."""
@@ -224,6 +324,8 @@ class EventStore:
                     else:
                         inserted += new_messages
             self._conflicts += conflicts
+            if len(events) > conflicts:
+                self._revision += 1
         return BatchWriteResult(accepted=len(events) - conflicts, inserted=inserted, conflicts=conflicts)
 
     def _write_event(self, event: NormalizedEvent) -> int | None:
@@ -284,7 +386,7 @@ class EventStore:
     def read_snapshot(self, at_us: int) -> Iterator[ReadSnapshot]:
         """Keep related serial reads on the same committed view of the event store."""
         with self._lock:
-            snapshot = ReadSnapshot(self._connection, at_us)
+            snapshot = ReadSnapshot(self._connection, at_us, self._revision)
             try:
                 yield snapshot
             finally:

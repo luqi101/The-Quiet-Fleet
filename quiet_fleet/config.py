@@ -88,6 +88,7 @@ class OperationalAssumptions(ConfigModel):
     cold_silence_limit: Rule[PositiveInt]
     urgent_operational_horizon: Rule[PositiveInt]
     incident_close_below_remaining_devices: Rule[GroupSize]
+    outage_probe_interval: Rule[PositiveInt]
     outage_maximum_onset_spread_seconds: Rule[NonnegativeInt]
     outage_minimum_affected_devices: Rule[GroupSize]
     outage_minimum_affected_share: Rule[Ratio]

@@ -119,7 +119,7 @@ def _plan_changes(observations: tuple[EventFact, ...]) -> Iterator[tuple[EventFa
             yield event, change["plan"], change["status"]
 
 
-def _plan_availability(observations: tuple[EventFact, ...]) -> tuple[bool, EventFact | None]:
+def plan_availability(observations: tuple[EventFact, ...]) -> tuple[bool, EventFact | None]:
     blocked = set()
     resume = None
     for event, plan, status in _plan_changes(observations):
@@ -148,7 +148,7 @@ def _inferred_opening(
     ):
         return None
 
-    plan_usable, resume = _plan_availability(facts.observations)
+    plan_usable, resume = plan_availability(facts.observations)
     if not plan_usable:
         return None
 
@@ -291,7 +291,7 @@ def camera_fault(
     elif pending is not None:
         reason += " A remote reboot is awaiting a recording check."
         next_action = "Allow the current reboot response window to complete and verify recording."
-    elif not _plan_availability(facts.observations)[0]:
+    elif not plan_availability(facts.observations)[0]:
         next_action = "Review the inactive connectivity plan and verify recording after service resumes."
     elif parked:
         reason += " The vehicle is parked."
