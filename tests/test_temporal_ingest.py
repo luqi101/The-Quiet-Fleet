@@ -170,8 +170,11 @@ class TemporalIngestTest(unittest.TestCase):
         self.assertEqual([event.event_id for event in projected.reboot_commands], ["reboot"])
         self.assertIsNone(projected.plan_status)
         self.assertEqual(facts(self.store, "12:08:00").plan_status, "ended")
-        self.assertIsNone(self.status("12:09:00")["last_heard_at"])
-        self.assertEqual(self.status("12:09:00")["evidence"], [])
+        self.assertEqual(self.status("12:07:59")["evidence"], [])
+        inactive = self.status("12:09:00")
+        self.assertIsNone(inactive["last_heard_at"])
+        self.assertEqual(inactive["likely_cause"], "plan_paused")
+        self.assertEqual(inactive["evidence"], ["stream-plan"])
         self.assertEqual(self.store.counts().messages, 2)
 
     def test_clock_ahead_receipt_stays_uncertain_after_a_later_retry(self):

@@ -1,7 +1,8 @@
 """Validate the versioned local policy register before serving requests."""
 
+from datetime import date
 from pathlib import Path
-from typing import Annotated, Generic, Self, TypeVar
+from typing import Annotated, Generic, Literal, Self, TypeVar
 
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints, ValidationError, model_validator
 
@@ -15,6 +16,7 @@ Percentage = Annotated[float, Field(ge=0, le=100)]
 FiniteNumber = Annotated[float, Field(allow_inf_nan=False)]
 LocalTime = Annotated[str, StringConstraints(pattern=r"^(?:[01][0-9]|2[0-3]):[0-5][0-9]$")]
 Radix = Annotated[int, Field(ge=2, le=36)]
+SignalLevel = Annotated[int, Field(ge=0, le=5)]
 T = TypeVar("T")
 
 
@@ -112,6 +114,47 @@ class DefensiveLimits(ConfigModel):
         return self
 
 
+class ApprovedDowntime(ConfigModel):
+    asset_ids: tuple[Text, ...] = ()
+    asset_uses: tuple[Text, ...] = ()
+    depot: Literal["MSS", "REG"] | None = None
+    start_local: date
+    end_local: date
+    provenance: Text
+
+    @model_validator(mode="after")
+    def validate_scope_and_interval(self) -> Self:
+        if not (self.asset_ids or self.asset_uses):
+            raise ValueError("approved downtime requires a specific asset ID or use")
+        if self.start_local >= self.end_local:
+            raise ValueError("approved downtime ends after its first local date")
+        return self
+
+
+class SitePolicy(ConfigModel):
+    downtime: tuple[ApprovedDowntime, ...] = ()
+    weak_signal_max: Rule[SignalLevel] = Field(default_factory=lambda: Rule[SignalLevel](
+        value=1,
+        unit="modem signal level on the supplied 0–5 scale",
+        comparator="signal <= value",
+        provenance="Vendor heartbeat scale and P05 conservative engineering policy",
+        rationale="Treat the lowest categories as corroboration only, alongside eligible device-specific buffering evidence.",
+        sample_size=None,
+        sensitivity_candidates=[0, 1],
+        test="P05 coverage history and backfill fixtures",
+    ))
+    coverage_monitor_limit: Rule[PositiveInt] = Field(default_factory=lambda: Rule[PositiveInt](
+        value=5_400,
+        unit="seconds",
+        comparator="elapsed <= value",
+        provenance="P01 observed maximum T delivery lag of 5,396 seconds, rounded to 90 minutes",
+        rationale="A provisional ceiling for coverage attribution on a still-overdue position.",
+        sample_size=None,
+        sensitivity_candidates=[3_600, 5_400],
+        test="P05 coverage history and backfill fixtures",
+    ))
+
+
 class RulesConfig(ConfigModel):
     schema_version: Annotated[int, Field(ge=1, le=1)]
     given_rules: GivenRules
@@ -119,6 +162,7 @@ class RulesConfig(ConfigModel):
     wire_format_constants: WireFormatConstants
     operational_assumptions: OperationalAssumptions
     defensive_limits: DefensiveLimits
+    site_policy: SitePolicy = Field(default_factory=SitePolicy)
 
     @model_validator(mode="after")
     def validate_cadence_thresholds(self) -> Self:
@@ -130,6 +174,8 @@ class RulesConfig(ConfigModel):
             raise ValueError("the driving tracker deadline must exceed the driving position interval")
         if calibrated.a_daily_overdue.value < given.a_checkin_interval.value:
             raise ValueError("the A reporting deadline must cover one full check-in interval")
+        if self.operational_assumptions.seasonal_downtime_suppression_enabled.value and not self.site_policy.downtime:
+            raise ValueError("seasonal downtime requires an approved scope, effective dates, and provenance")
         return self
 
 

@@ -45,6 +45,14 @@ The materials folder had no Git metadata. The candidate selected a new child che
 - `.venv/bin/python -B -m unittest discover -s tests -v` passed all 40 tests. A separate selective replay accepted 1,326 source envelopes and confirmed paired camera sleep, the historical removed tracker, pre-install exclusion, and stock VIN activation at eligible receipt. This was a selective status check. Full practice and release verification remain pending. [Requirement matrix](../docs/requirements.md)
 - Individual fault diagnoses, battery and cold refinements, carrier incidents, and triage actions remain future phases.
 
+## P05 · Individual fault causes and recovery
+
+- Power, cameras and A batteries retain their active episodes through irrelevant messages and delayed older readings. Camera checks start with remote support and require two complete awake response windows before a technician recommendation. Confirmed plan and inventory constraints carry evidence without refreshing device contact.
+- The evaluator selects one cause and preserves competing actionable constraints. Weak-signal and prior buffering evidence support bounded coverage classification. Stale backfill can confirm delivery without proving current measurement. Config validates any approved depot-local downtime window and its provenance. No local ops reply was present, so the shipped policy has no approved downtime. [Cause precedence and policy](../docs/decisions.md#p05-individual-diagnosis)
+- `.venv/bin/python -B -m unittest discover -s tests` passed all 49 tests. A 1,060-envelope selective P2/P3 source replay verified the status states, power and camera evidence, and internal owners. The separate renamed fixture verified the power pattern independently. This selective check does not run the complete practice exam. [Requirement matrix](../docs/requirements.md)
+- The full-corpus HTTP replay accepted all 640,419 envelopes in 129 requests. With the VIN claim index enabled, replay took 215.35 s on macOS with Python 3.12.2. The slowest request was 2.595 s and the server peaked at 66.148 MiB RSS. All requests finished under 10 s.
+- Device status gives individual recommendations. Shared outage causes, public triage items, and BX decoding remain future phases.
+
 ## Next phase
 
-**P05 · Implement individual fault causes, identity, and recovery episodes.** Build on the shared evaluator and eligible asset context. [P05 prompt](02_CODEX_PROMPTS.md#p05-implement-individual-fault-causes-identity-and-recovery-episodes)
+**P06 · Detect and group carrier incidents without hardcoding.** Use eligible multi-device cohorts and preserve direct individual fault evidence. [P06 prompt](02_CODEX_PROMPTS.md#p06-detect-and-group-carrier-incidents-without-hardcoding)

@@ -33,11 +33,11 @@ The directory needs `assets.csv`, `devices.csv`, `schedule.csv`, `weather.csv`, 
 
 ## Current behavior
 
-The support application distinguishes normal reporting, expected quiet, and uncertainty for T trackers, C cameras, and A tags. `GET /devices/{serial}/status?at=…` returns original evidence IDs and the latest eligible unique device receipt as `last_heard_at`. Reporting deadlines use observation time. Devices without contact have a null `last_heard_at`. `GET /triage?at=…` still returns empty items. Both routes require an ISO timestamp with an explicit offset and output UTC with `Z`.
+The support application distinguishes normal reporting, expected quiet, individual faults, and uncertainty for T trackers, C cameras, and A tags. `GET /devices/{serial}/status?at=…` explains the selected cause, applicable secondary constraints, and the suggested action. It returns original evidence IDs and the latest eligible unique device receipt as `last_heard_at`. Reporting deadlines use observation time. Devices without contact have a null `last_heard_at`. Both status and triage require an ISO timestamp with an explicit offset and output UTC with `Z`. Shared incidents and triage items are later phases.
 
 `POST /ingest` accepts an `events` array of up to 5,000 entries. `accepted` counts valid entries processed, including retries and well-formed unused event types. Malformed items and conflicting ID reuses are excluded. An empty array returns zero. Invalid query parameters and invalid batch envelopes return JSON 400. An unknown serial or unsupported persona route returns 404.
 
-[API contract](vendor/quiet-fleet/docs/CONTRACT.md) · [Ingestion and time model](docs/ingestion.md) · [Normal-status decisions](docs/decisions.md#p04-normal-status) · [Current phase](planning/STATUS.md)
+[API contract](vendor/quiet-fleet/docs/CONTRACT.md) · [Ingestion and time model](docs/ingestion.md) · [Individual diagnosis decisions](docs/decisions.md#p05-individual-diagnosis) · [Current phase](planning/STATUS.md)
 
 ## Development checks
 

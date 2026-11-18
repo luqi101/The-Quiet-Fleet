@@ -26,7 +26,7 @@ The service opens one SQLite connection in a new temporary directory for each wo
 
 An invalid batch object, malformed JSON, or more than 5,000 elements returns HTTP 400. Within a valid array, each known item is validated independently. The integer `accepted` includes valid known items, exact and semantic retries, and unused kinds with a valid event ID, kind and receipt. It excludes malformed items and conflicting ID reuses. Unexpected failures surface, and a failed store transaction rolls back.
 
-Device status uses these facts to evaluate normal reporting and expected quiet. Triage remains empty until later rules are implemented. [Normal-status decisions](decisions.md#p04-normal-status) · [Project status](../planning/STATUS.md)
+Device status uses these facts to evaluate normal reporting, expected quiet, and individual faults. Triage remains empty until later rules are implemented. [Individual diagnosis decisions](decisions.md#p05-individual-diagnosis) · [Project status](../planning/STATUS.md)
 
 ## Preliminary full-corpus HTTP benchmark
 

@@ -1,6 +1,6 @@
 # Quiet Fleet requirement traceability
 
-This matrix preserves R01–R37 from the planning kit and adds explicit source requirements. The phase records below describe verified offline analysis, HTTP behavior, ingestion, and normal-status evaluation. Fault diagnoses and release checks remain pending.
+This matrix preserves R01–R37 from the planning kit and adds explicit source requirements. The phase records below describe verification through individual diagnosis. Shared incidents, triage, and release checks remain pending.
 
 The candidate brief in `inputs/candidate-brief.pdf` and the API contract govern requirements. The exam runner and practice scenario define the supplied executable checks. The planning kit supplies the lettered acceptance IDs and additional adversarial cases. [API contract](../vendor/quiet-fleet/docs/CONTRACT.md), [practice expectations](../vendor/quiet-fleet/exam/PRACTICE.md), [acceptance matrix](../planning/03_ACCEPTANCE_TEST_MATRIX.md)
 
@@ -123,3 +123,14 @@ Only the selected persona's rows become grading gates. Shared API and diagnosis 
 | R12, R21, R26 | Tests verify historical removed-tracker context, exclusion before installation, stock VIN evidence becoming available by receipt, and absence of future evidence. A selective source replay confirmed the same association cases. | Classify unresolved or mismatched assignments as individual faults. |
 
 [Normal-status HTTP tests](../tests/test_normal_reporting.py) · [Normal-status decisions](decisions.md#p04-normal-status)
+
+## P05 verification record
+
+| Row | Observed evidence | Remaining work |
+| --- | --- | --- |
+| R18, R19, R26 | The renamed power fixture verified backup corroboration, stale-restore rejection and later recovery. The camera tests verified retry-safe per-episode escalation, wake and plan gates, parked urgency, and reopening after recovery. A selective source replay reproduced P2 camera and P3 power statuses with the expected evidence and internal owners. | Publish shared and individual action items in triage. |
+| R20, R39, R40 | A future or older plan update cannot clear a currently active diagnosis at the wrong time. Per-plan transition tests preserve resumption and platform-only contact remains null. | Actionable plan items in triage. |
+| R21, R25 | VIN tests verify receipt-gated stock installation, conflicting live trackers, support routing, and suppression after a documented handover. | Shared outage cohort selection and triage ownership. |
+| R22, R29 | Fixtures verify the 10% opening and 20% recovery battery cutoffs, depot-local cold and approved downtime boundaries, and bounded weak-signal and backfill evidence. Shipped rules carry no approved downtime. | Operational confirmation and BX-specific rules. |
+
+[Individual diagnosis HTTP tests](../tests/test_individual_diagnosis.py) · [Cause precedence and policy](decisions.md#p05-individual-diagnosis)

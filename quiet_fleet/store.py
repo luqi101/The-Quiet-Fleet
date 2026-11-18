@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import sqlite3
 from collections.abc import Iterator, Sequence
 from contextlib import closing, contextmanager
@@ -46,6 +47,8 @@ CREATE TABLE receipts (
 
 CREATE INDEX message_receipt_by_serial ON messages (serial, first_received_us);
 CREATE INDEX message_observation_by_kind ON messages (kind, serial, observed_us);
+CREATE INDEX message_vin_claim ON messages (json_extract(payload_json, '$.vin'), serial)
+    WHERE kind IN ('heartbeat', 'ignition_on');
 CREATE INDEX event_ids_by_message ON event_ids (fingerprint);
 """
 
@@ -149,19 +152,29 @@ class ReadSnapshot:
         )
         return tuple(_fact(row) for row in rows)
 
-    def latest_vin_claims(self) -> tuple[EventFact, ...]:
-        """Copy only the most recent credible VIN evidence per serial, including concurrent claims."""
+    def related_vin_claims(self, vin: str | None, roster_serials: tuple[str, ...]) -> tuple[EventFact, ...]:
+        """Find eligible VIN claims for a target asset's observed and recorded trackers."""
         rows = self._query(
             f"""
-            WITH ranked AS (
+            WITH related(serial) AS (
+                SELECT value FROM json_each(:roster_serials)
+                UNION
+                SELECT serial FROM messages
+                WHERE kind IN ('heartbeat', 'ignition_on')
+                      AND json_extract(payload_json, '$.vin') = :vin
+                      AND {_CREDIBLE_AT} AND serial IS NOT NULL
+            ), ranked AS (
                 SELECT {_FACT_FIELDS},
                        DENSE_RANK() OVER (PARTITION BY serial ORDER BY observed_us DESC) AS age_rank
                 FROM messages
                 WHERE {_VIN_CLAIM} AND {_CREDIBLE_AT} AND serial IS NOT NULL
+                      AND serial IN (SELECT serial FROM related)
             )
             SELECT {_FACT_FIELDS} FROM ranked WHERE age_rank = 1
             ORDER BY serial, first_received_us, event_id
-            """
+            """,
+            vin=vin,
+            roster_serials=json.dumps(roster_serials),
         )
         return tuple(_fact(row) for row in rows)
 

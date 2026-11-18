@@ -46,7 +46,7 @@ def position(event_id: str, serial: str, observed: int, *, received: int | None 
     }, received=received)
 
 
-class NormalReportingTest(unittest.TestCase):
+class ReportingFixture(unittest.TestCase):
     def setUp(self) -> None:
         root = Path(self.enterContext(tempfile.TemporaryDirectory()))
         self.data = root / "data"
@@ -78,6 +78,8 @@ class NormalReportingTest(unittest.TestCase):
         self.assertEqual((body["state"], body["likely_cause"]), (state, cause), body)
         return body
 
+
+class NormalReportingTest(ReportingFixture):
     def test_zero_speed_driving_deadline_and_buffered_contact(self) -> None:
         client = self.client()
         self.ingest(client, position("at-zero-speed", TRACKER, 0, received=2))
@@ -174,7 +176,7 @@ class NormalReportingTest(unittest.TestCase):
                 self.status(client, serial, 920, "unknown")
                 self.status(client, serial, 950, "reporting", "none")
 
-    def test_explicit_faults_stay_unknown_through_backup_or_boot(self) -> None:
+    def test_explicit_faults_survive_backup_or_boot(self) -> None:
         client = self.client()
         self.ingest(client,
             event("parked-off", TRACKER, "ignition_off", 0, {}),
@@ -184,9 +186,9 @@ class NormalReportingTest(unittest.TestCase):
             event("boot-only", CAMERA, "camera_status", 30, {"status": "booting"}),
             event("old-delayed-recording", CAMERA, "camera_status", 24, {"status": "recording"}, received=35),
         )
-        tracker = self.status(client, TRACKER, 35, "unknown")
+        tracker = self.status(client, TRACKER, 35, "needs_action", "power_loss")
         self.assertIn("disconnect", tracker["evidence"])
-        camera = self.status(client, CAMERA, 35, "unknown")
+        camera = self.status(client, CAMERA, 35, "needs_action", "camera_fault")
         self.assertIn("storage-error", camera["evidence"])
 
     def test_daily_a_numeric_clock_jitter_and_prolonged_gap(self) -> None:
@@ -251,7 +253,7 @@ class NormalReportingTest(unittest.TestCase):
         earlier = self.status(client, STOCK_TRACKER, 9, "unknown")
         self.assertIsNone(earlier["asset_id"])
         self.assertEqual(earlier["evidence"], [])
-        current = self.status(client, STOCK_TRACKER, 10, "unknown")
+        current = self.status(client, STOCK_TRACKER, 10, "needs_action", "device_swapped")
         self.assertEqual(current["asset_id"], ASSET)
         self.assertIn("stock-vin", current["evidence"])
 
