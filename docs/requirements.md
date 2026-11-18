@@ -1,6 +1,6 @@
 # Quiet Fleet requirement traceability
 
-This matrix preserves R01–R37 from the planning kit and adds explicit source requirements. The phase records below describe verified offline analysis, HTTP behavior, and ingestion. Diagnosis and release checks remain pending.
+This matrix preserves R01–R37 from the planning kit and adds explicit source requirements. The phase records below describe verified offline analysis, HTTP behavior, ingestion, and normal-status evaluation. Fault diagnoses and release checks remain pending.
 
 The candidate brief in `inputs/candidate-brief.pdf` and the API contract govern requirements. The exam runner and practice scenario define the supplied executable checks. The planning kit supplies the lettered acceptance IDs and additional adversarial cases. [API contract](../vendor/quiet-fleet/docs/CONTRACT.md), [practice expectations](../vendor/quiet-fleet/exam/PRACTICE.md), [acceptance matrix](../planning/03_ACCEPTANCE_TEST_MATRIX.md)
 
@@ -112,3 +112,14 @@ Only the selected persona's rows become grading gates. Shared API and diagnosis 
 | R31 | Opaque BX records are accepted and retained with receipt provenance. | Decode and join those observations to devices in P08. |
 
 [Ingestion and time model](ingestion.md) · [Temporal tests](../tests/test_temporal_ingest.py)
+
+## P04 verification record
+
+| Row | Observed evidence | Remaining work |
+| --- | --- | --- |
+| R14, R15, R39 | HTTP fixtures verify zero-speed ignition-on tracking, exact driving and parked cutoffs, and late receipts that change contact without refreshing an old position. Future schedule does not establish ignition. | Actionable causes for overdue trackers. |
+| R16, R19 | Camera fixtures cover the 15-minute sleep boundary, the 60-second wake grace, current recording, unresolved storage evidence, and missing or competing same-asset trackers. Selective source replay confirmed a sleeping camera. | Camera fault actions and escalation. |
+| R17, R27 | A-series tests cover an empty history, numeric epoch seconds, jitter through 26 hours, and prolonged silence. Supported reporting uses cause `none`. | Battery and cold explanations. |
+| R12, R21, R26 | Tests verify historical removed-tracker context, exclusion before installation, stock VIN evidence becoming available by receipt, and absence of future evidence. A selective source replay confirmed the same association cases. | Classify unresolved or mismatched assignments as individual faults. |
+
+[Normal-status HTTP tests](../tests/test_normal_reporting.py) · [Normal-status decisions](decisions.md#p04-normal-status)

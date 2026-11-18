@@ -115,7 +115,10 @@ class TemporalIngestTest(unittest.TestCase):
         self.assertEqual(self.status("10:10:00.999999")["evidence"], [])
         self.assertEqual(self.status("10:10:01")["evidence"], ["newer-off"])
         self.assertEqual(self.status("10:19:59")["evidence"], ["newer-off"])
-        self.assertEqual(self.status("10:20:00")["evidence"], ["older-on"])
+        status = self.status("10:20:00")
+        self.assertEqual(status["last_heard_at"], clock("10:20:00"))
+        self.assertIn("older-on", status["evidence"])
+        self.assertIn("newer-off", status["evidence"])
         projected = facts(self.store, "10:20:01")
         self.assertEqual([event.event_id for event in projected.observations], ["older-on", "newer-off"])
         self.assertIs(projected.ignition_on, False)
@@ -123,6 +126,16 @@ class TemporalIngestTest(unittest.TestCase):
         self.assertEqual(projected.freshest_measurement.event_id, "newer-off")
         with self.assertRaises(FrozenInstanceError):
             projected.ignition_on = True
+
+    def test_explicit_ignition_wins_over_position_at_the_same_observation_time(self):
+        self.post(
+            frame("explicit-off", "ignition_off", "10:10:00", "10:10:01"),
+            frame("same-time-position", "position", "10:10:00", "10:10:02",
+                  payload={"lat": 43, "lng": -79, "speed_kmh": 0, "ignition": True}),
+        )
+        projected = facts(self.store, "10:10:02")
+        self.assertIs(projected.ignition_on, False)
+        self.assertEqual(projected.ignition_since.event_id, "explicit-off")
 
     def test_only_newer_visible_recording_and_power_restore_close_fault_facts(self):
         camera = "C-TEST"

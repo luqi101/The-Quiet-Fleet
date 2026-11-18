@@ -16,21 +16,14 @@ from fastapi.responses import JSONResponse
 from pydantic import ValidationError
 from starlette.concurrency import run_in_threadpool
 
+from .asset_context import load_device_context
 from .config import RulesConfig, load_config
-from .models import (
-    DeviceState,
-    DeviceStatus,
-    HealthResponse,
-    IngestEnvelope,
-    IngestResponse,
-    LikelyCause,
-    TriageResponse,
-)
+from .diagnosis import evaluate_status
+from .models import DeviceStatus, HealthResponse, IngestEnvelope, IngestResponse, TriageResponse
 from .normalize import InvalidEvent, NormalizedEvent, normalize_event
-from .projection import project_device
 from .reference import References, load_references
 from .store import EventStore, open_store
-from .time_utils import from_epoch_us, parse_iso_instant, to_epoch_us
+from .time_utils import parse_iso_instant, to_epoch_us
 
 RULES_PATH = Path(__file__).resolve().parents[1] / "config" / "rules.json"
 logger = logging.getLogger(__name__)
@@ -152,25 +145,8 @@ def create_app(data_dir: Path | None = None, config_path: Path | None = None) ->
         if device is None:
             raise HTTPException(status_code=404, detail="Unknown device serial.")
         cutoff = to_epoch_us(at)
-        facts = project_device(cutoff, runtime.store.snapshot(cutoff, serial))
-        contact = facts.last_contact
-        if contact is None:
-            reason = "No device observations are available at the requested instant."
-        elif contact.time_quality == "clock_ahead":
-            reason = "A device receipt is available, and its observation clock is ahead of the platform receipt."
-        else:
-            reason = "A device receipt is available. Device diagnosis is pending."
-        return DeviceStatus(
-            serial=device.serial,
-            asset_id=device.asset_id,
-            at=at,
-            state=DeviceState.UNKNOWN,
-            likely_cause=LikelyCause.UNKNOWN,
-            confidence=0.0,
-            last_heard_at=from_epoch_us(contact.first_received_us) if contact else None,
-            reasons=[reason],
-            evidence=[contact.event_id] if contact else [],
-        )
+        context = load_device_context(runtime.store, runtime.references, device, cutoff, runtime.rules)
+        return evaluate_status(at, runtime.rules, context)
 
     @application.get("/triage", dependencies=[Depends(get_runtime)])
     def triage(at: AtInstant) -> TriageResponse:

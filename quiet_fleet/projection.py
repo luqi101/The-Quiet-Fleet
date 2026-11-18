@@ -13,6 +13,7 @@ class DeviceFacts:
     observations: tuple[EventFact, ...]
     ignition_on: bool | None
     ignition_evidence: EventFact | None
+    ignition_since: EventFact | None
     camera_status: str | None
     camera_evidence: EventFact | None
     camera_storage_error: EventFact | None
@@ -54,7 +55,7 @@ def project_device(at_us: int, events: tuple[EventFact, ...]) -> DeviceFacts:
     ))
     freshest_measurement = next((event for event in reversed(observations) if event.device_origin), None)
 
-    ignition_on = ignition_evidence = None
+    ignition_on = ignition_evidence = ignition_since = None
     camera_status = camera_evidence = camera_storage_error = None
     power_disconnect = None
     reboot_commands = []
@@ -65,9 +66,17 @@ def project_device(at_us: int, events: tuple[EventFact, ...]) -> DeviceFacts:
         kind = event.kind
         if kind in {"ignition_on", "ignition_off"}:
             ignition_on, ignition_evidence = kind == "ignition_on", event
+            ignition_since = event
         elif kind == "position":
             ignition = json.loads(event.payload_json).get("ignition")
-            if isinstance(ignition, bool):
+            explicit_at_same_instant = (
+                ignition_evidence is not None
+                and ignition_evidence.kind in {"ignition_on", "ignition_off"}
+                and ignition_evidence.observed_us == event.observed_us
+            )
+            if isinstance(ignition, bool) and not explicit_at_same_instant:
+                if ignition_on is not ignition:
+                    ignition_since = event
                 ignition_on, ignition_evidence = ignition, event
         elif kind == "camera_status":
             status = json.loads(event.payload_json).get("status")
@@ -100,6 +109,7 @@ def project_device(at_us: int, events: tuple[EventFact, ...]) -> DeviceFacts:
         observations=observations,
         ignition_on=ignition_on,
         ignition_evidence=ignition_evidence,
+        ignition_since=ignition_since,
         camera_status=camera_status,
         camera_evidence=camera_evidence,
         camera_storage_error=camera_storage_error,

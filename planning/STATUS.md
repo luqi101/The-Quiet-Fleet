@@ -38,6 +38,13 @@ The materials folder had no Git metadata. The candidate selected a new child che
 - The preliminary full-corpus HTTP replay accepted all 640,419 envelopes in 129 requests, including 128 full ones. On macOS with Python 3.12.2, replay took 206.07 s, maximum request time was 2.585 s, and server peak RSS was 64.574 MiB. All requests finished under 10 s.
 - Device status reports contact and eligible original evidence, while its state remains `unknown`. Triage is empty. BX frames are preserved as opaque receipts. Family rules, BX decoding, final exam results and Ubuntu offline verification remain pending.
 
+## P04 · Normal reporting and expected quiet
+
+- The shared evaluator distinguishes T tracking and parked behavior, C sleep and wake, and A daily check-ins. Deadlines use observation time. Status reports the latest unique device receipt as `last_heard_at` and cites only eligible original receipts. The A evaluator uses the calibrated family allowance and one additional daily interval to distinguish prolonged silence.
+- Status resolves effective asset and tracker context from one as-of read. It honors receipt-gated VIN evidence, coarse installation dates, and historical removed trackers. Competing tracker claims leave camera ignition uncertain. Unresolved power and storage facts prevent a benign normal classification. [Normal-status decisions](../docs/decisions.md#p04-normal-status)
+- `.venv/bin/python -B -m unittest discover -s tests -v` passed all 40 tests. A separate selective replay accepted 1,326 source envelopes and confirmed paired camera sleep, the historical removed tracker, pre-install exclusion, and stock VIN activation at eligible receipt. This was a selective status check. Full practice and release verification remain pending. [Requirement matrix](../docs/requirements.md)
+- Individual fault diagnoses, battery and cold refinements, carrier incidents, and triage actions remain future phases.
+
 ## Next phase
 
-**P04 · Implement correct normal behavior for T, C, and A families.** Use as-of facts, effective asset context, and the validated threshold register to distinguish reporting, expected quiet, and uncertainty. [P04 prompt](02_CODEX_PROMPTS.md#p04-implement-correct-normal-behavior-for-t-c-and-a-families)
+**P05 · Implement individual fault causes, identity, and recovery episodes.** Build on the shared evaluator and eligible asset context. [P05 prompt](02_CODEX_PROMPTS.md#p05-implement-individual-fault-causes-identity-and-recovery-episodes)

@@ -69,6 +69,20 @@ WHERE fingerprint = ?
     AND (?, ?, ?) < (first_received_us, event_id, representative_hash)
 """
 
+_FACT_FIELDS = """
+event_id, serial, kind, raw_type, first_received_us, observed_us,
+device_origin, time_quality, payload_json, raw_device_time_json
+"""
+_CREDIBLE_AT = """
+first_received_us <= :at_us AND observed_us <= :at_us
+AND time_quality = 'credible' AND device_origin = 1
+"""
+_VIN_CLAIM = """
+kind IN ('heartbeat', 'ignition_on')
+AND json_type(payload_json, '$.vin') = 'text'
+AND json_extract(payload_json, '$.vin') <> ''
+"""
+
 
 @dataclass(frozen=True, slots=True)
 class EventFact:
@@ -105,6 +119,75 @@ class StoreCounts:
     original_ids: int
     receipts: int
     conflicts: int
+
+
+def _fact(row: tuple) -> EventFact:
+    event_id, serial, kind, raw_type, received, observed, origin, quality, payload, raw_time = row
+    return EventFact(event_id, serial, kind, raw_type, received, observed, bool(origin), quality, payload, raw_time)
+
+
+class ReadSnapshot:
+    """Read selected facts at one cutoff while the store's write lock is held."""
+
+    def __init__(self, connection: sqlite3.Connection, at_us: int) -> None:
+        self._connection: sqlite3.Connection | None = connection
+        self._at_us = at_us
+
+    def _query(self, sql: str, **parameters: str | None) -> sqlite3.Cursor:
+        if self._connection is None:
+            raise RuntimeError("The read snapshot has closed")
+        return self._connection.execute(sql, {"at_us": self._at_us, **parameters})
+
+    def facts_for(self, serial: str | None) -> tuple[EventFact, ...]:
+        rows = self._query(
+            f"""
+            SELECT {_FACT_FIELDS} FROM messages
+            WHERE serial IS :serial AND first_received_us <= :at_us
+            ORDER BY observed_us NULLS LAST, first_received_us, event_id
+            """,
+            serial=serial,
+        )
+        return tuple(_fact(row) for row in rows)
+
+    def latest_vin_claims(self) -> tuple[EventFact, ...]:
+        """Copy only the most recent credible VIN evidence per serial, including concurrent claims."""
+        rows = self._query(
+            f"""
+            WITH ranked AS (
+                SELECT {_FACT_FIELDS},
+                       DENSE_RANK() OVER (PARTITION BY serial ORDER BY observed_us DESC) AS age_rank
+                FROM messages
+                WHERE {_VIN_CLAIM} AND {_CREDIBLE_AT} AND serial IS NOT NULL
+            )
+            SELECT {_FACT_FIELDS} FROM ranked WHERE age_rank = 1
+            ORDER BY serial, first_received_us, event_id
+            """
+        )
+        return tuple(_fact(row) for row in rows)
+
+    def latest_measurement(self, serial: str) -> EventFact | None:
+        row = self._query(
+            f"""
+            SELECT {_FACT_FIELDS} FROM messages
+            WHERE serial = :serial AND {_CREDIBLE_AT}
+            ORDER BY observed_us DESC, first_received_us DESC, event_id DESC LIMIT 1
+            """,
+            serial=serial,
+        ).fetchone()
+        return _fact(row) if row is not None else None
+
+    def first_vin_claim(self, serial: str, vin: str) -> EventFact | None:
+        row = self._query(
+            f"""
+            SELECT {_FACT_FIELDS} FROM messages
+            WHERE serial = :serial AND {_VIN_CLAIM} AND {_CREDIBLE_AT}
+                  AND json_extract(payload_json, '$.vin') = :vin
+            ORDER BY observed_us, first_received_us, event_id LIMIT 1
+            """,
+            serial=serial,
+            vin=vin,
+        ).fetchone()
+        return _fact(row) if row is not None else None
 
 
 class EventStore:
@@ -181,27 +264,18 @@ class EventStore:
 
     def snapshot(self, at_us: int, serial: str | None) -> tuple[EventFact, ...]:
         """Return eligible facts for one serial, or for opaque observations when serial is None."""
+        with self.read_snapshot(at_us) as snapshot:
+            return snapshot.facts_for(serial)
+
+    @contextmanager
+    def read_snapshot(self, at_us: int) -> Iterator[ReadSnapshot]:
+        """Keep related serial reads on the same committed view of the event store."""
         with self._lock:
-            rows = self._connection.execute(
-                """
-                SELECT event_id, serial, kind, raw_type, first_received_us, observed_us,
-                       device_origin, time_quality, payload_json, raw_device_time_json
-                FROM messages
-                WHERE serial IS ? AND first_received_us <= ?
-                ORDER BY observed_us NULLS LAST, first_received_us, event_id
-                """,
-                (serial, at_us),
-            ).fetchall()
-        return tuple(
-            EventFact(
-                event_id, fact_serial, kind, raw_type, received, observed,
-                bool(device_origin), time_quality, payload, raw_device_time,
-            )
-            for (
-                event_id, fact_serial, kind, raw_type, received, observed,
-                device_origin, time_quality, payload, raw_device_time,
-            ) in rows
-        )
+            snapshot = ReadSnapshot(self._connection, at_us)
+            try:
+                yield snapshot
+            finally:
+                snapshot._connection = None
 
     def receipts_for(self, event_id: str, at_us: int) -> tuple[Receipt, ...]:
         """Return original receipts visible for the logical message represented by an ID."""
