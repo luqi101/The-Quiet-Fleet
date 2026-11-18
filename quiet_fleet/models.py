@@ -1,6 +1,6 @@
 """Request and response shapes for the Quiet Fleet support service."""
 
-from datetime import UTC, datetime
+from datetime import UTC
 from enum import StrEnum
 from typing import Annotated, Any, Literal, Self
 
@@ -15,11 +15,10 @@ from pydantic import (
 )
 
 
-def _utc_text(value: datetime) -> str:
-    return value.astimezone(UTC).isoformat().removesuffix("+00:00") + "Z"
+from .time_utils import utc_text
 
 
-Timestamp = Annotated[AwareDatetime, PlainSerializer(_utc_text, return_type=str, when_used="json")]
+Timestamp = Annotated[AwareDatetime, PlainSerializer(utc_text, return_type=str, when_used="json")]
 NonBlank = Annotated[str, StringConstraints(min_length=1, pattern=r"\S")]
 Reasons = Annotated[list[NonBlank], Field(min_length=1)]
 
@@ -113,14 +112,16 @@ class TriageItem(ResponseModel):
     next_action: NonBlank
     priority: Priority
     reasons: Reasons
-    evidence: list[NonBlank]
+    evidence: Annotated[list[NonBlank], Field(min_length=1)]
 
     @model_validator(mode="after")
     def validate_serial_count(self) -> Self:
         if self.kind == ItemKind.DEVICE and len(self.serials) != 1:
             raise ValueError("a device item must contain one serial")
-        if self.kind == ItemKind.INCIDENT and len(set(self.serials)) < 2:
+        if self.kind == ItemKind.INCIDENT and len(self.serials) < 2:
             raise ValueError("an incident must contain multiple distinct serials")
+        if len(set(self.serials)) != len(self.serials) or len(set(self.asset_ids)) != len(self.asset_ids):
+            raise ValueError("serials and assets must be unique within an item")
         return self
 
 

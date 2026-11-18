@@ -7,7 +7,7 @@ import test_normal_reporting as fixture
 from quiet_fleet.api import create_app
 from quiet_fleet.asset_context import load_device_context
 from quiet_fleet.diagnosis import assess_device
-from quiet_fleet.models import Priority, WhoActs
+from quiet_fleet.models import WhoActs
 from quiet_fleet.time_utils import parse_iso_instant, to_epoch_us
 
 
@@ -69,7 +69,9 @@ class IndividualDiagnosisTest(fixture.ReportingFixture):
         self.assertNotIn("first-command-retry", escalated.status.evidence)
         parked = self.assessment(client, camera, 1510 - 1)
         self.assertEqual(parked.status.likely_cause.value, "camera_fault")
-        self.assertEqual(parked.priority, Priority.LOW)
+        queue = client.get("/triage", params={"at": fixture.instant(1509)}).json()
+        item, = [item for item in queue["items"] if item["serials"] == [camera]]
+        self.assertEqual(item["priority"], "high")  # The parked vehicle has imminent scheduled work.
         self.status(client, camera, 1510, "reporting", "none")
         self.ingest(client, event("new-storage-error", camera, "camera_status", 1600, {"status": "storage_error"}))
         new_episode = self.assessment(client, camera, 1600)
@@ -212,9 +214,9 @@ class IndividualDiagnosisTest(fixture.ReportingFixture):
             fixture.position("buffered-location", tracker, 200, received=800),
             fixture.position("first-current-fix", tracker, 950),
         )
-        earlier = self.status(client, tracker, 799, "unknown")
+        earlier = self.status(client, tracker, 799, "needs_action", "unknown")
         self.assertNotIn("buffered-location", earlier["evidence"])
-        restored_transport = self.status(client, tracker, 800, "unknown")
+        restored_transport = self.status(client, tracker, 800, "needs_action", "unknown")
         self.assertIn("buffered-location", restored_transport["evidence"])
         self.assertRegex(" ".join(restored_transport["reasons"]).lower(), r"buffer|backfill|delayed")
         self.assertEqual(restored_transport["last_heard_at"], fixture.instant(800))
@@ -231,7 +233,7 @@ class IndividualDiagnosisTest(fixture.ReportingFixture):
         response = client.get(f"/devices/{tracker}/status", params={"at": fixture.instant(661)}).json()
         self.assertEqual(response["likely_cause"], "coverage_gap", response)
         self.assertTrue({"older-buffered-position", "weak-modem"}.issubset(response["evidence"]))
-        self.status(client, tracker, 5800, "unknown")
+        self.status(client, tracker, 5800, "needs_action", "unknown")
 
 
 if __name__ == "__main__":

@@ -1,18 +1,16 @@
 """Evaluate bounded cold, approved downtime, and tracker coverage explanations."""
 
 import json
-from zoneinfo import ZoneInfo
 
 from .asset_context import DeviceContext
 from .config import RulesConfig
 from .fault import FaultDecision
-from .models import DeviceState, LikelyCause, Priority, WhoActs
+from .models import DeviceState, LikelyCause, WhoActs
 from .store import EventFact
-from .time_utils import from_epoch_us
+from .time_utils import DEPOT_ZONES, from_epoch_us, utc_text
 
 
 _US_PER_SECOND = 1_000_000
-_DEPOT_ZONES = {"MSS": ZoneInfo("America/Toronto"), "REG": ZoneInfo("America/Regina")}
 _CONTEXT_CONFIDENCE = 0.65
 
 
@@ -37,7 +35,7 @@ def cold_fault(at_us: int, context: DeviceContext, rules: RulesConfig) -> FaultD
     cold_limit_us = policy.cold_silence_limit.value * _US_PER_SECOND
     if at_us <= overdue_us or at_us - observed_us > cold_limit_us:
         return None
-    overdue_day = from_epoch_us(overdue_us).astimezone(_DEPOT_ZONES[asset.depot]).date()
+    overdue_day = from_epoch_us(overdue_us).astimezone(DEPOT_ZONES[asset.depot]).date()
     weather = context.weather.get((asset.depot, overdue_day))
     if weather is None or weather.low_c > policy.cold_temperature.value:
         return None
@@ -54,7 +52,6 @@ def cold_fault(at_us: int, context: DeviceContext, rules: RulesConfig) -> FaultD
         next_action="Monitor for the next daily check-in within the cold-weather allowance.",
         confidence=_CONTEXT_CONFIDENCE,
         state=DeviceState.QUIET_EXPECTED,
-        priority=Priority.LOW,
     )
 
 
@@ -65,7 +62,7 @@ def downtime_fault(at_us: int, context: DeviceContext, rules: RulesConfig) -> Fa
         return None
 
     try:
-        day = from_epoch_us(at_us).astimezone(_DEPOT_ZONES[asset.depot]).date()
+        day = from_epoch_us(at_us).astimezone(DEPOT_ZONES[asset.depot]).date()
     except OverflowError:
         return None
     for window in rules.site_policy.downtime:
@@ -86,8 +83,7 @@ def downtime_fault(at_us: int, context: DeviceContext, rules: RulesConfig) -> Fa
             owner=WhoActs.NONE,
             next_action="Verify normal reporting when the approved downtime ends.",
             state=DeviceState.QUIET_EXPECTED,
-            priority=Priority.LOW,
-        )
+            )
     return None
 
 
@@ -139,11 +135,14 @@ def coverage_fault(at_us: int, context: DeviceContext, rules: RulesConfig) -> Fa
         default=None,
     )
     next_action = "Check connectivity and verify that a current position arrives."
+    timely = next((event for event in positions if event.first_received_us <= _observed(event) + due_us), latest)
+    opening = _observed(timely) + due_us
+    observed = utc_text(from_epoch_us(latest_us))
 
     if backfill is not None:
         reason = (
-            "The platform received a buffered driving position recently. "
-            "The newest position still predates the live reporting allowance."
+            f"The platform received a buffered driving position at {utc_text(from_epoch_us(backfill.first_received_us))}. "
+            f"The newest position was observed at {observed}. A live position is still overdue."
         )
         if signal is None:
             return FaultDecision(
@@ -154,7 +153,6 @@ def coverage_fault(at_us: int, context: DeviceContext, rules: RulesConfig) -> Fa
                 next_action=next_action,
                 confidence=0.0,
                 state=DeviceState.UNKNOWN,
-                priority=Priority.LOW,
             )
         return FaultDecision(
             cause=LikelyCause.COVERAGE_GAP,
@@ -163,7 +161,7 @@ def coverage_fault(at_us: int, context: DeviceContext, rules: RulesConfig) -> Fa
             owner=WhoActs.SUPPORT,
             next_action=next_action,
             confidence=_CONTEXT_CONFIDENCE,
-            priority=Priority.LOW,
+            opened_us=opening,
         )
 
     if signal is None:
@@ -178,12 +176,12 @@ def coverage_fault(at_us: int, context: DeviceContext, rules: RulesConfig) -> Fa
     return FaultDecision(
         cause=LikelyCause.COVERAGE_GAP,
         reason=(
-            "The last driving position is overdue. "
+            f"The last driving position was observed at {observed} and an update is overdue. "
             "Recent weak signal and earlier buffered positions on this drive support a temporary coverage gap."
         ),
         evidence=(latest, signal, prior),
         owner=WhoActs.SUPPORT,
         next_action=next_action,
         confidence=_CONTEXT_CONFIDENCE,
-        priority=Priority.LOW,
+        opened_us=opening,
     )

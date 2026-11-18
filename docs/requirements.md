@@ -52,7 +52,7 @@ Support, prioritizing fewer false alarms, and one grouped customer alert for a m
 | R29 | Config holds chosen thresholds and provisional business cutoffs with units, comparators, and provenance | `config/rules.json`, calibration register | F07, H14. Validate config on startup and inspect every chosen rule and boundary against its documented origin and synthetic case. |
 | R30 | Reproduce calibration from history and document limitations | `scripts/audit_data.py`, `scripts/calibrate.py`, `docs/calibration.md` | D32, H14. Check source hashes and cohort sizes, reproduce candidate sweeps on chronological development and validation slices, and report alert volume independently of selected case labels. |
 | R31 | Integrate optional BX decoding through ingest, status and selected persona | `bx.py`, `normalize.py`, `diagnosis.py` | G01–G14. Verify three original portal anchors and a new valid frame, malformed isolation, flags/no fix, receipt cutoff, duplicate safety and actual battery actions/recovery. Record in Form 3 if omitted. |
-| R41 | Apply real depot-local dates, daily 06:00 shifts, and the November DST change | `time_utils.py`, `projection.py`, persona evaluator | F01–F06. Verify Mississauga's repeated hour, year-round Regina offset, a UTC/local date split, exact 06:00 and weekend jobs. |
+| R41 | Apply real depot-local dates, daily 06:00 shifts, and the November DST change | `time_utils.py`, `operations.py`, persona evaluator | F01–F06. Verify Mississauga's repeated hour, year-round Regina offset, a UTC/local date split, exact 06:00 and weekend jobs. |
 
 ## Persona-specific decision surfaces
 
@@ -61,7 +61,7 @@ Only the selected persona's rows become grading gates. Shared API and diagnosis 
 | ID | Requirement | Future module or artifact | Meaningful verification |
 | --- | --- | --- | --- |
 | R24 | Support `GET /triage?at=` returns only actionable or follow-up items, with each serial in at most one item | `triage.py` | E12–E14, E19–E22, H04. Validate single-device versus incident shape, stable output, shared status consistency and no duplicate serial ownership or side effects. |
-| R25 | Support supplies who acts, next action, reasons, evidence and priority based on actual operating needs | `triage.py` | E15–E22, H04–H06. Check owner/action and active versus ended jobs, then verify sleeping camera exclusion, remote-first camera, carrier group, and physical power dispatch. |
+| R25 | Support supplies who acts, next action, reasons, evidence and priority based on actual operating needs | `triage.py`, `operations.py` | E15–E22, H04–H06. Check owner/action and active versus ended jobs, then verify sleeping camera exclusion, remote-first camera, carrier group, and physical power dispatch. |
 | R42 | If fleet manager is selected, `GET /job-cover?depot=&at=&hours=` covers impaired jobs starting in the half-open window | Fleet job-cover evaluator | Validate MSS/REG and integer hours 1–72. Assert `no_location`, `no_video`, or `both` and `swap`, `keep`, or `gap` with required fields, same type/depot and visible/recordable free replacements for the full slot, and no overlapping bookings. Exercise P1 keep or omit, P2 video loss and P3 valid swap. |
 | R43 | If field-tech scheduler is selected, `GET /visits?at=&days=` books only technician work and explains deferred work | Field-tech visit evaluator | Verify integer days 1–3 and the depot-local window, strictly after `at`, weekdays 07:00–15:00, at most six per depot/day and no new visits for remote-first, carrier, or sleeping cases. Assert required visit/kit/evidence fields, deferred asset/reason/why fields, and P3 power visit. |
 | R44 | Describe the chosen persona, decision timing, cost of mistakes and deliberate false-alarm/miss trade-off | README, selected persona evaluator, `docs/decisions.md` | H14. Compare the profile and policy to verified Form 1 if available and use synthetic false-alarm and missed-fault cases to show the choice and its safeguards in behavior. |
@@ -144,3 +144,13 @@ Only the selected persona's rows become grading gates. Shared API and diagnosis 
 | R23, R24, R26 | Fixtures verify historical opening evidence, late receipts and retries, elapsed silence, exact partial recovery, stable IDs, closure, and distinct recurrence. Status uses the same cause and eligible original evidence as triage. Full-history checkpoint replay verified both labeled outages, eight ordinary checkpoints with no shared group, and 693 eligible evidence references. | Official practice and end-state verification on the release environment. |
 
 [Carrier incident HTTP tests](../tests/test_carrier_incidents.py) · [Runtime policy](decisions.md#p06-carrier-incidents)
+
+## P07 verification record
+
+| Row | Observed evidence | Remaining work |
+| --- | --- | --- |
+| R18–R25 | Support HTTP fixtures verify each actionable cause and owner, actionable uncertainty, camera escalation on completed checks, an independent fault during a carrier outage, and benign exclusions. | Add BX diagnoses through the same support policy in P08. |
+| R25, R29, R41 | Tests exercise exact job starts and ends, the inclusive two-hour deadline, remote response slack, both Toronto fall-back instants, Regina's unchanged offset and a Sunday shift. | Larchmont confirmation of the urgency policy. |
+| R24, R26, R39 | Tests verify shared status and queue reasons, stable episode IDs and order, a unique serial partition, and original receipt-eligible evidence. The vendored support assertions also run against saved full-history responses. | Fresh-process official exam and release measurements. |
+
+[Support HTTP tests](../tests/test_support_triage.py) · [Support queue decisions](decisions.md#p07-support-queue)

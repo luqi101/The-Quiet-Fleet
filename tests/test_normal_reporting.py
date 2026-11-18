@@ -93,7 +93,7 @@ class NormalReportingTest(ReportingFixture):
         self.status(client, TRACKER, 361, "unknown")
 
         self.ingest(client, position("buffer-draining", TRACKER, 10, received=1000))
-        backfilled = self.status(client, TRACKER, 1000, "unknown")
+        backfilled = self.status(client, TRACKER, 1000, "needs_action", "unknown")
         self.assertEqual(backfilled["last_heard_at"], instant(1000))
         self.assertIn("buffer-draining", backfilled["evidence"])
         self.assertEqual(self.status(client, TRACKER, 360, "reporting", "none"), reporting)

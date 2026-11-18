@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 
-from .models import DeviceState, LikelyCause, Priority, WhoActs
+from .models import DeviceState, LikelyCause, WhoActs
 from .store import EventFact
 
 
@@ -15,4 +15,10 @@ class FaultDecision:
     next_action: str
     confidence: float = 1.0
     state: DeviceState = DeviceState.NEEDS_ACTION
-    priority: Priority = Priority.MEDIUM
+    opened_us: int | None = None
+    recheck_us: int | None = None
+
+
+def owned_action(owner: WhoActs, step: str) -> str:
+    role = "a technician" if owner == WhoActs.TECHNICIAN else owner.value
+    return f"Ask {role} to {step[0].lower() + step[1:]}"

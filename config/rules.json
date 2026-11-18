@@ -449,17 +449,30 @@
       "unit": "boolean",
       "value": false
     },
+    "uncertain_fast_reporting_windows": {
+      "comparator": "elapsed > value times the family allowance",
+      "provenance": "P07 provisional false-alarm policy",
+      "rationale": "Require prolonged fast-report silence and near-term scheduled use before opening an uncertain support follow-up.",
+      "sample_size": null,
+      "sensitivity_candidates": [
+        2,
+        3
+      ],
+      "test": "E14\u2013E18, E20",
+      "unit": "calibrated reporting windows",
+      "value": 2
+    },
     "urgent_operational_horizon": {
       "comparator": "deadline - at <= value",
       "provenance": "P00 working assumption, awaiting Larchmont policy",
-      "rationale": "Default to two hours for verified faults on an asset with upcoming work.",
+      "rationale": "Budget preparation time before scheduled use. Allow a pending remote check to finish when its response deadline precedes the work deadline.",
       "sample_size": null,
       "sensitivity_candidates": [
         3600,
         7200,
         14400
       ],
-      "test": "E16\u2013E18",
+      "test": "E16\u2013E18, F01\u2013F07",
       "unit": "seconds",
       "value": 7200
     }

@@ -8,15 +8,15 @@ from operator import attrgetter
 
 from .asset_context import DeviceContextReader
 from .config import RulesConfig
-from .models import ItemKind, LikelyCause, Priority, TriageItem, WhoActs
+from .models import LikelyCause, WhoActs
 from .reference import Device, References
 from .reporting_peers import ReportingMode, ReportingPeer, reporting_peer
 from .store import ReadSnapshot
+from .time_utils import from_epoch_us, utc_text
 
 
 _US_PER_SECOND = 1_000_000
-_CARRIER_ACTION = "Escalate one incident to the carrier, recommend one consolidated customer impact update, and monitor reporting recovery."
-_SHARED_ACTION = "Check the common platform or network path and verify reporting recovery before routing to a provider."
+_SHARED_ACTION = "Ask support to check the common platform or network path and verify reporting recovery before routing to a provider."
 
 
 def _deadline(peer: ReportingPeer) -> int:
@@ -107,8 +107,15 @@ class _Episode:
 
 @dataclass(frozen=True, slots=True)
 class Incident:
-    item: TriageItem
+    item_id: str
+    serials: tuple[str, ...]
+    asset_ids: tuple[str, ...]
+    cause: LikelyCause
+    owner: WhoActs
+    next_action: str
     confidence: float
+    reasons: tuple[str, ...]
+    evidence: tuple[str, ...]
 
 
 def _last_report_us(peer: ReportingPeer) -> int:
@@ -295,14 +302,18 @@ def _to_incident(episode: _Episode) -> Incident:
     members = sorted(episode.remaining.values(), key=attrgetter("serial"))
     scope = seed.carriers[0] if seed.carrier_specific else " and ".join(seed.carriers)
     if seed.carrier_specific:
-        cause, owner, action, priority = LikelyCause.CARRIER_OUTAGE, WhoActs.CARRIER, _CARRIER_ACTION, Priority.HIGH
+        cause, owner = LikelyCause.CARRIER_OUTAGE, WhoActs.CARRIER
+        action = (
+            f"Escalate one incident to {scope} for a network check. "
+            "Recommend one consolidated customer impact update and monitor reporting recovery."
+        )
         explanation = (
             f"{scope} had {len(seed.members)} of {seed.eligible_count} eligible {seed.mode} devices become overdue "
             f"together in {seed.depot}. {len(seed.controls)} comparable devices on other carriers continued reporting."
         )
         confidence = 0.9
     else:
-        cause, owner, action, priority = LikelyCause.UNKNOWN, WhoActs.SUPPORT, _SHARED_ACTION, Priority.MEDIUM
+        cause, owner, action = LikelyCause.UNKNOWN, WhoActs.SUPPORT, _SHARED_ACTION
         explanation = (
             f"{len(seed.members)} eligible {seed.mode} devices on {scope} became overdue together in {seed.depot}. "
             "The interruption spans carriers, so provider ownership is uncertain."
@@ -318,20 +329,23 @@ def _to_incident(episode: _Episode) -> Incident:
     ).encode("ascii")).hexdigest()
     allowance = (seed.first_deadline - _last_report_us(seed.members[0])) / _US_PER_SECOND
     spread = (_deadline(seed.members[-1]) - seed.first_deadline) / _US_PER_SECOND
-    timing = f"Their {allowance:g}-second reporting deadlines fell within a {spread:g}-second span."
-    evidence = list(dict.fromkeys(peer.report.event_id for peer in (*members, *seed.members, *seed.controls)))
-    return Incident(TriageItem(
+    timing = (
+        f"The group qualified at {utc_text(from_epoch_us(seed.at_us))}. "
+        f"Its {allowance:g}-second reporting deadlines fell within a {spread:g}-second span."
+    )
+    evidence = tuple(dict.fromkeys(peer.report.event_id for peer in (*members, *seed.members, *seed.controls)))
+    assets = tuple(sorted({peer.asset.asset_id for peer in members}))
+    return Incident(
         item_id=f"incident-{identifier[:24]}",
-        kind=ItemKind.INCIDENT,
-        serials=[peer.serial for peer in members],
-        asset_ids=sorted({peer.asset.asset_id for peer in members}),
-        likely_cause=cause,
-        who_acts=owner,
+        serials=tuple(peer.serial for peer in members),
+        asset_ids=assets,
+        cause=cause,
+        owner=owner,
         next_action=action,
-        priority=priority,
-        reasons=[explanation, timing, f"{len(members)} compatible devices remain overdue for an expected report."],
+        reasons=(explanation, timing, f"{len(members)} overdue devices on {len(assets)} assets still need follow-up."),
         evidence=evidence,
-    ), confidence)
+        confidence=confidence,
+    )
 
 
 def detect_incidents(snapshot: ReadSnapshot, references: References, rules: RulesConfig) -> tuple[Incident, ...]:

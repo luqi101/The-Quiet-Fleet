@@ -10,11 +10,11 @@ from .config import RulesConfig
 from .environment_faults import cold_fault, coverage_fault, downtime_fault
 from .episodes import camera_fault, power_fault
 from .fault import FaultDecision
-from .individual_faults import inactive_plan, low_a_battery
-from .models import DeviceState, DeviceStatus, LikelyCause, Priority, WhoActs
+from .individual_faults import inactive_plan, low_a_battery, plan_timeline
+from .models import DeviceState, DeviceStatus, LikelyCause, WhoActs
 from .projection import DeviceFacts
 from .store import EventFact
-from .time_utils import from_epoch_us, to_epoch_us
+from .time_utils import from_epoch_us, to_epoch_us, utc_text
 
 
 _US_PER_SECOND = 1_000_000
@@ -31,9 +31,11 @@ class _Decision:
 @dataclass(frozen=True, slots=True)
 class DeviceAssessment:
     status: DeviceStatus
-    owner: WhoActs
-    next_action: str | None
-    priority: Priority | None
+    fault: FaultDecision | None
+
+    @property
+    def owner(self) -> WhoActs:
+        return self.fault.owner if self.fault is not None else WhoActs.NONE
 
 
 def _unknown(reason: str, *evidence: EventFact | None) -> _Decision:
@@ -60,6 +62,22 @@ def _fresh(event: EventFact, at_us: int, seconds: int) -> bool:
     return 0 <= at_us - _observed(event) <= seconds * _US_PER_SECOND
 
 
+def _arrived_in_window(event: EventFact, allowance: int) -> bool:
+    return event.first_received_us <= _observed(event) + allowance * _US_PER_SECOND
+
+
+def _driving_position(facts: DeviceFacts, allowance: int | None = None) -> EventFact | None:
+    mode = facts.ignition_since
+    assert mode is not None
+    for event in reversed(facts.observations):
+        if _observed(event) < _observed(mode):
+            break
+        if event.kind == "position" and json.loads(event.payload_json)["ignition"] is True:
+            if allowance is None or _arrived_in_window(event, allowance):
+                return event
+    return None
+
+
 def _tracker(at_us: int, facts: DeviceFacts, rules: RulesConfig) -> _Decision:
     if facts.power_disconnect is not None:
         return _unknown(
@@ -74,20 +92,17 @@ def _tracker(at_us: int, facts: DeviceFacts, rules: RulesConfig) -> _Decision:
     ignition = (mode, facts.ignition_evidence)
     if facts.ignition_on:
         deadline = rules.calibrated_parameters.tracker_driving_overdue.value
-        for event in reversed(facts.observations):
-            if _observed(event) < _observed(mode):
-                break
-            if event.kind != "position" or json.loads(event.payload_json).get("ignition") is not True:
-                continue
-            if _fresh(event, at_us, deadline):
+        position = _driving_position(facts)
+        if position is not None:
+            if _fresh(position, at_us, deadline):
                 return _reporting(
                     f"Ignition is on and a driving position was observed within {_duration(deadline)}.",
-                    event,
+                    position,
                     *ignition,
                 )
             return _unknown(
                 f"Ignition is on and the last driving position is older than {_duration(deadline)}.",
-                event,
+                position,
                 *ignition,
             )
         return _unknown("Ignition is on and a position for the current drive is still unavailable.", *ignition)
@@ -240,7 +255,91 @@ def _fault_candidates(
     return (environmental,) if environmental is not None else ()
 
 
-def assess_device(at: datetime, rules: RulesConfig, context: DeviceContext) -> DeviceAssessment:
+def _prolonged_gap(at_us: int, rules: RulesConfig, context: DeviceContext) -> FaultDecision | None:
+    """Escalate observed silence to verification when scheduled work is at risk."""
+    facts = context.facts
+    if context.documented_removed or context.asset is None or facts.freshest_measurement is None:
+        return None
+
+    family = context.device.family
+    durations = rules.calibrated_parameters
+    fast_windows = rules.operational_assumptions.uncertain_fast_reporting_windows.value
+    mode = restored = None
+    if family == "T":
+        restored = next((event for event in reversed(facts.observations) if event.kind == "power_restore"), None)
+        mode = facts.ignition_since
+        if facts.ignition_on is True and mode is not None:
+            allowance = durations.tracker_driving_overdue.value
+            anchor = _driving_position(facts, allowance) or mode
+            threshold = allowance * fast_windows
+            expectation = "a live driving position"
+        else:
+            threshold = rules.given_rules.tracker_parked_overdue.value
+            anchor = next(
+                (event for event in reversed(facts.observations) if event.device_origin and _arrived_in_window(event, threshold)),
+                facts.freshest_measurement,
+            )
+            expectation = "a tracker report"
+        step = "Check vehicle and tracker connectivity and verify a current position before dispatching a technician."
+    elif family == "C":
+        tracker = context.tracker_facts if not context.tracker_ambiguous else None
+        if tracker is not None and tracker.ignition_on is False:
+            return None
+        mode = tracker.ignition_since if tracker is not None and tracker.ignition_on is True else None
+        anchor = facts.camera_evidence
+        if anchor is None or (mode is None and facts.camera_status == "sleeping"):
+            return None
+        allowance = durations.camera_recording_overdue.value
+        anchor = next(
+            (
+                event for event in reversed(facts.observations)
+                if event.kind == "camera_status" and _arrived_in_window(event, allowance)
+                and json.loads(event.payload_json)["status"] == "recording"
+            ),
+            anchor,
+        )
+        if mode is not None and _observed(mode) > _observed(anchor):
+            anchor = mode
+        threshold = allowance * fast_windows
+        expectation = "a camera recording"
+        step = "Confirm vehicle ignition and verify a recent recording with the operator before arranging field service."
+    elif family == "A":
+        allowance = durations.a_daily_overdue.value
+        anchor = next(
+            (event for event in reversed(facts.observations) if event.kind == "check_in" and _arrived_in_window(event, allowance)),
+            facts.battery_evidence,
+        )
+        threshold = allowance + rules.given_rules.a_checkin_interval.value
+        expectation = "a daily tag check-in"
+        step = "Confirm the asset assignment and obtain a live tag check-in before requesting field service."
+    else:
+        return None
+
+    if anchor is None:
+        return None
+    resumption = plan_timeline(facts.observations).last_resumption
+    anchor = max((event for event in (anchor, resumption, restored) if event is not None), key=_observed)
+    opening = _observed(anchor) + threshold * _US_PER_SECOND
+    if at_us <= opening:
+        return None
+    return FaultDecision(
+        cause=LikelyCause.UNKNOWN,
+        reason=(
+            f"The reporting window dates from {utc_text(from_epoch_us(_observed(anchor)))}. "
+            f"The wait for {expectation} exceeds {_duration(threshold)}. "
+            "Scheduled use warrants a status check and the underlying fault remains unconfirmed."
+        ),
+        evidence=tuple(event for event in (anchor, mode, facts.camera_evidence) if event is not None),
+        owner=WhoActs.SUPPORT,
+        next_action=step,
+        confidence=0.5,
+        opened_us=opening,
+    )
+
+
+def assess_device(
+    at: datetime, rules: RulesConfig, context: DeviceContext, *, operational_risk: bool = False,
+) -> DeviceAssessment:
     """Select one cause while preserving evidence for other actionable constraints."""
     at_us = to_epoch_us(at)
     contact = context.facts.last_contact
@@ -252,15 +351,18 @@ def assess_device(at: datetime, rules: RulesConfig, context: DeviceContext) -> D
         candidates = _fault_candidates(at_us, rules, context, normal)
 
     winner = candidates[0] if candidates else None
+    followup = None
+    if operational_risk and normal.state == DeviceState.UNKNOWN and (winner is None or winner.cause == LikelyCause.UNKNOWN):
+        followup = _prolonged_gap(at_us, rules, context)
+    if followup is not None:
+        candidates = (followup, *candidates)
+        winner = followup
+
     decision = winner or normal
     reasons = [candidate.reason for candidate in candidates] if candidates else [normal.reason]
-    if winner is not None and winner.owner != WhoActs.NONE:
-        role = "a technician" if winner.owner == WhoActs.TECHNICIAN else winner.owner.value
-        action = winner.next_action
-        reasons.append(f"Ask {role} to {action[0].lower() + action[1:]}")
-    elif (winner is None and not context.documented_removed and context.device.family == "A"
-          and normal.state == DeviceState.UNKNOWN and context.facts.battery_evidence is not None
-          and context.asset is not None and context.asset.use == "landscaping"):
+    if (decision.cause == LikelyCause.UNKNOWN and not context.documented_removed and context.device.family == "A"
+            and context.facts.battery_evidence is not None and context.asset is not None
+            and context.asset.use == "landscaping"):
         reasons.append("Confirm the seasonal operating schedule before treating this silence as planned downtime.")
 
     relevant = tuple(event for candidate in candidates for event in candidate.evidence) if winner else normal.evidence
@@ -280,9 +382,4 @@ def assess_device(at: datetime, rules: RulesConfig, context: DeviceContext) -> D
         reasons=reasons,
         evidence=list(evidence),
     )
-    return DeviceAssessment(
-        status=status,
-        owner=winner.owner if winner else WhoActs.NONE,
-        next_action=winner.next_action if winner and winner.owner != WhoActs.NONE else None,
-        priority=winner.priority if winner and winner.owner != WhoActs.NONE else None,
-    )
+    return DeviceAssessment(status, winner)

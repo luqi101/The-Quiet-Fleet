@@ -61,6 +61,13 @@ The materials folder had no Git metadata. The candidate selected a new child che
 - Indexed historical reads preserved the decisions and reduced the slowest of 20 local triage checkpoints from 71.4 s to 22.5 s. The final schema also accepted all 33,619 envelopes from the largest daily file in seven requests, with a 1.24 s maximum. Loopback and Ubuntu release performance remain to be measured.
 - All 61 tests passed on Python 3.12.2, including 12 new carrier fixtures. Vendor hashes and dependency checks passed. Verbose logs and raw replay responses are under the ignored `.local/p06/` directory. [Requirements](../docs/requirements.md#p06-verification-record)
 
+## P07 · Support queue and operational priority
+
+- Status and triage share one receipt-cutoff diagnosis and action policy. Carrier incidents stay consolidated, independent physical and account issues remain individually owned, and prolonged uncertainty receives support follow-up when scheduled work is at risk. Benign quiet stays out of the queue. Individual items use stable issue openings, and the queue sorts by priority and operational deadline.
+- Jobs use half-open intervals. A relevant 06:00 shift uses the job's depot-local date. A pending camera check can use its remaining response window when it fits before scheduled work. No local operations reply was found, so the two-hour horizon remains provisional. [Support queue decisions](../docs/decisions.md#p07-support-queue)
+- All 70 local tests passed under Python 3.12.2, including nine new support fixtures. The tests cover both Toronto fall-back instants, Regina's offset, Sunday shifts, receipt and exact work boundaries, owner routing, and evidence and serial uniqueness. [Requirement matrix](../docs/requirements.md#p07-verification-record)
+- The 14 vendored support checks passed through the HTTP handlers using the saved P06 full history. All 398 evidence references resolved to original receipts by their checkpoint. Two triage calls exceeded the runner's 10-second advisory target. The slowest took 13.6 s. Raw responses and logs are in the ignored `.local/p07/` directory. Fresh-process performance remains a release check.
+
 ## Next phase
 
-**P07 · Complete support triage, priority, evidence, and user-facing reasons.** Apply depot-local job and shift deadlines, refine actionable uncertainty, and finish support queue verification. The 06:00 urgency policy remains provisional. Official preflight, practice, Ubuntu offline verification, and the release gate are pending. [P07 prompt](02_CODEX_PROMPTS.md#p07-complete-support-triage-priority-evidence-and-user-facing-reasons)
+**P08 · Decode BX and prove it works through the real API.** Use the vendor portal anchors and unseen frames to verify decoding and support actions. Fresh-process preflight and practice, Ubuntu offline verification, and release checks remain pending. [P08 prompt](02_CODEX_PROMPTS.md#p08-decode-bx-and-prove-it-works-through-the-real-api)

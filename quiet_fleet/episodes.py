@@ -1,15 +1,16 @@
 """Power and camera fault episodes built from eligible observation history."""
 
 import json
-from collections.abc import Iterator
 from itertools import takewhile
 
 from .asset_context import DeviceContext
 from .config import RulesConfig
 from .fault import FaultDecision
-from .models import LikelyCause, Priority, WhoActs
+from .individual_faults import plan_changes, plan_timeline
+from .models import LikelyCause, WhoActs
 from .projection import DeviceFacts, project_device
 from .store import EventFact
+from .time_utils import from_epoch_us, utc_text
 
 
 _US_PER_SECOND = 1_000_000
@@ -51,9 +52,12 @@ def power_fault(at_us: int, context: DeviceContext, rules: RulesConfig) -> Fault
         None,
     )
     latest = facts.freshest_measurement
-    reason = "The tracker reported an external-power disconnect. Restoration is still unverified."
+    reason = (
+        f"The tracker reported an external-power disconnect at {utc_text(from_epoch_us(_observed(disconnect)))}. "
+        "External power restoration remains unverified."
+    )
     if backup is not None:
-        reason += " The tracker also reported low backup-battery voltage."
+        reason += f" It reported low backup-battery voltage at {utc_text(from_epoch_us(_observed(backup)))}."
     if latest is not None and facts.ignition_on is not None:
         deadline = (
             rules.calibrated_parameters.tracker_driving_overdue.value
@@ -70,6 +74,7 @@ def power_fault(at_us: int, context: DeviceContext, rules: RulesConfig) -> Fault
         evidence=_evidence(opening, disconnect, backup, latest, facts.ignition_evidence),
         owner=WhoActs.TECHNICIAN,
         next_action="Inspect the tracker harness and restore external power.",
+        opened_us=_observed(opening),
     )
 
 
@@ -112,26 +117,6 @@ def _same_asset_since(history: tuple[EventFact, ...], start_us: int, expected_vi
     return not previous_vins or previous_vins == {expected_vin}
 
 
-def _plan_changes(observations: tuple[EventFact, ...]) -> Iterator[tuple[EventFact, str, str]]:
-    for event in observations:
-        if event.kind == "plan_change":
-            change = json.loads(event.payload_json)
-            yield event, change["plan"], change["status"]
-
-
-def plan_availability(observations: tuple[EventFact, ...]) -> tuple[bool, EventFact | None]:
-    blocked = set()
-    resume = None
-    for event, plan, status in _plan_changes(observations):
-        if status in _BLOCKED_PLANS:
-            blocked.add(plan)
-        elif plan in blocked:
-            blocked.remove(plan)
-            if not blocked:
-                resume = event
-    return not blocked, resume
-
-
 def _inferred_opening(
     at_us: int, context: DeviceContext, rules: RulesConfig
 ) -> tuple[int, tuple[EventFact, ...]] | None:
@@ -148,9 +133,10 @@ def _inferred_opening(
     ):
         return None
 
-    plan_usable, resume = plan_availability(facts.observations)
-    if not plan_usable:
+    plan = plan_timeline(facts.observations)
+    if plan.opening is not None:
         return None
+    resume = plan.last_resumption
 
     ignition = tracker.ignition_evidence
     drive_window = rules.calibrated_parameters.tracker_driving_overdue.value * _US_PER_SECOND
@@ -188,7 +174,7 @@ def _inferred_opening(
 
 def _plan_usable_through(observations: tuple[EventFact, ...], start_us: int, end_us: int) -> bool:
     blocked = set()
-    for event, plan, status in _plan_changes(observations):
+    for event, plan, status in plan_changes(observations):
         observed = _observed(event)
         if observed >= end_us:
             break
@@ -267,31 +253,36 @@ def camera_fault(
     explicit = _storage_episode_opening(facts)
     if explicit is not None:
         opening_us, opening_facts = _observed(explicit), (explicit,)
-        reason = "The camera reported a storage error. Recording recovery remains unverified."
+        reason = (
+            f"The camera reported a storage error at {utc_text(from_epoch_us(opening_us))}. "
+            "Recording recovery remains unverified."
+        )
     else:
         inferred = _inferred_opening(at_us, context, rules) if allow_inferred else None
         if inferred is None:
             return None
         opening_us, opening_facts = inferred
-        reason = "Tracker ignition is on and camera recording is overdue for the current drive."
+        reason = f"Tracker ignition is on and the camera's recording deadline passed at {utc_text(from_epoch_us(opening_us))}."
 
     policy = rules.operational_assumptions
     failed, pending = _reboot_checks(
         at_us, context, opening_us, opening_facts, policy.camera_reboot_response_grace.value
     )
-    failed_evidence = (event for pair in failed for event in pair)
+    required = policy.camera_failed_reboots_before_visit.value
+    failed_evidence = (event for pair in failed[-required:] for event in pair)
     ignition = tracker.ignition_evidence if tracker is not None and not context.tracker_ambiguous else None
     parked = ignition is not None and tracker.ignition_on is False
-    priority = Priority.LOW if parked else Priority.MEDIUM
+    recheck_us = None
     owner = WhoActs.SUPPORT
-    if len(failed) >= policy.camera_failed_reboots_before_visit.value:
+    if len(failed) >= required:
         owner = WhoActs.TECHNICIAN
         reason += f" Recording stayed unavailable through {len(failed)} complete awake reboot checks."
         next_action = "Inspect the camera storage and verify recording after repair."
     elif pending is not None:
-        reason += " A remote reboot is awaiting a recording check."
-        next_action = "Allow the current reboot response window to complete and verify recording."
-    elif not plan_availability(facts.observations)[0]:
+        recheck_us = _observed(pending) + policy.camera_reboot_response_grace.value * _US_PER_SECOND
+        reason += f" The current remote reboot response window ends at {utc_text(from_epoch_us(recheck_us))}."
+        next_action = "Monitor the current remote reboot and verify recording by the end of its response window."
+    elif plan_timeline(facts.observations).opening is not None:
         next_action = "Review the inactive connectivity plan and verify recording after service resumes."
     elif parked:
         reason += " The vehicle is parked."
@@ -309,5 +300,6 @@ def camera_fault(
         owner=owner,
         next_action=next_action,
         confidence=1.0 if explicit is not None else 0.8,
-        priority=priority,
+        opened_us=opening_us,
+        recheck_us=recheck_us,
     )

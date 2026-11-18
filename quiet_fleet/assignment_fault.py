@@ -3,6 +3,7 @@
 from .asset_context import DeviceContext
 from .fault import FaultDecision
 from .models import LikelyCause, WhoActs
+from .time_utils import from_epoch_us, utc_text
 
 
 def assignment_fault(context: DeviceContext) -> FaultDecision | None:
@@ -22,6 +23,8 @@ def assignment_fault(context: DeviceContext) -> FaultDecision | None:
     else:
         return None
 
+    claim = max(event.observed_us for event in context.assignment_evidence if event.observed_us is not None)
+    reason += f" The latest supporting observation is from {utc_text(from_epoch_us(claim))}."
     return FaultDecision(
         cause=LikelyCause.DEVICE_SWAPPED,
         reason=reason,

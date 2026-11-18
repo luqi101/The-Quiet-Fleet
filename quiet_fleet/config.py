@@ -87,6 +87,7 @@ class OperationalAssumptions(ConfigModel):
     cold_healthy_battery_minimum: Rule[Percentage]
     cold_silence_limit: Rule[PositiveInt]
     urgent_operational_horizon: Rule[PositiveInt]
+    uncertain_fast_reporting_windows: Rule[GroupSize]
     incident_close_below_remaining_devices: Rule[GroupSize]
     outage_probe_interval: Rule[PositiveInt]
     outage_maximum_onset_spread_seconds: Rule[NonnegativeInt]

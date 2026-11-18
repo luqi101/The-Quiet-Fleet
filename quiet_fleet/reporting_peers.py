@@ -8,7 +8,7 @@ from .asset_context import DeviceContext
 from .assignment_fault import assignment_fault
 from .config import RulesConfig
 from .environment_faults import downtime_fault
-from .episodes import plan_availability
+from .individual_faults import plan_timeline
 from .reference import Asset, Device
 from .store import EventFact
 
@@ -49,9 +49,10 @@ def reporting_peer(context: DeviceContext, at_us: int, rules: RulesConfig) -> Re
         or downtime_fault(at_us, context, rules) is not None
     ):
         return None
-    usable, resumed = plan_availability(facts.observations)
-    if not usable:
+    plan = plan_timeline(facts.observations)
+    if plan.opening is not None:
         return None
+    resumed = plan.last_resumption
 
     driving = device.family == "T"
     tracker = facts if driving else context.tracker_facts

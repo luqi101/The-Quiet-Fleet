@@ -53,6 +53,7 @@ At a 50% comparison share, the healthy-peer count sweep changes held-out detecti
 | `cold_healthy_battery_minimum` | 25 | percent | Restricted healthy daily cohort |
 | `cold_silence_limit` | 187200 | seconds | Cold recovery and first-overdue sweep |
 | `urgent_operational_horizon` | 7200 | seconds | P00 working assumption, awaiting Larchmont policy |
+| `uncertain_fast_reporting_windows` | 2 | calibrated reporting windows | P07 provisional false-alarm policy |
 | `incident_close_below_remaining_devices` | 2 | serials | Contract incident cardinality and P00 episode policy |
 | `seasonal_downtime_suppression_enabled` | false | boolean | Ops confirmation pending |
 | `outage_probe_interval` | 60 | seconds | P01 carrier sensitivity grid |

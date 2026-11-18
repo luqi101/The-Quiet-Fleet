@@ -3,6 +3,8 @@
 import re
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal
+from types import MappingProxyType
+from zoneinfo import ZoneInfo
 
 
 _ISO_INSTANT = re.compile(
@@ -11,6 +13,16 @@ _ISO_INSTANT = re.compile(
 )
 _EPOCH = datetime(1970, 1, 1, tzinfo=UTC)
 _MICROSECONDS = 1_000_000
+
+
+DEPOT_ZONES = MappingProxyType({
+    "MSS": ZoneInfo("America/Toronto"),
+    "REG": ZoneInfo("America/Regina"),
+})
+
+
+def utc_text(value: datetime) -> str:
+    return value.astimezone(UTC).isoformat().removesuffix("+00:00") + "Z"
 
 
 def parse_iso_instant(value: object) -> datetime:
