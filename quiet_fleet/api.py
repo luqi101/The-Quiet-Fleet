@@ -1,20 +1,20 @@
 """HTTP and process-lifecycle boundary for the support service."""
 
 import json
+import logging
 import os
-import re
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import datetime
 from pathlib import Path
-from sqlite3 import Connection
 from typing import Annotated, NoReturn
 
 from fastapi import Depends, FastAPI, HTTPException, Query, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from pydantic import ValidationError
+from starlette.concurrency import run_in_threadpool
 
 from .config import RulesConfig, load_config
 from .models import (
@@ -26,21 +26,21 @@ from .models import (
     LikelyCause,
     TriageResponse,
 )
+from .normalize import InvalidEvent, NormalizedEvent, normalize_event
+from .projection import project_device
 from .reference import References, load_references
-from .store import open_store
+from .store import EventStore, open_store
+from .time_utils import from_epoch_us, parse_iso_instant, to_epoch_us
 
 RULES_PATH = Path(__file__).resolve().parents[1] / "config" / "rules.json"
-AT_FORMAT = re.compile(
-    r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}"
-    r"(?:\.[0-9]{1,6})?(?:Z|[+-](?:[01][0-9]|2[0-3]):[0-5][0-9])"
-)
+logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
 class Runtime:
     rules: RulesConfig
     references: References
-    store: Connection
+    store: EventStore
 
 
 def get_runtime(request: Request) -> Runtime:
@@ -51,17 +51,40 @@ def get_runtime(request: Request) -> Runtime:
 
 
 def parse_at(at: Annotated[str, Query(description="An ISO 8601 instant with an explicit UTC offset.")]) -> datetime:
-    message = "Use an aware timestamp for 'at', such as 2026-10-12T14:05:12Z."
-    if not AT_FORMAT.fullmatch(at):
-        raise HTTPException(status_code=400, detail=message)
     try:
-        return datetime.fromisoformat(at).astimezone(UTC)
+        return parse_iso_instant(at)
     except (ValueError, OverflowError) as exc:
-        raise HTTPException(status_code=400, detail=message) from exc
+        raise HTTPException(
+            status_code=400, detail="Use an aware timestamp for 'at', such as 2026-10-12T14:05:12Z."
+        ) from exc
 
 
 def reject_non_json_constant(token: str) -> NoReturn:
     raise ValueError(f"{token} is outside the JSON grammar")
+
+
+def accept_batch(events: list[object], runtime: Runtime) -> IngestResponse:
+    tolerance = runtime.rules.defensive_limits.clock_ahead_tolerance.value
+    normalized: list[NormalizedEvent] = []
+    malformed = ignored = 0
+    for event in events:
+        try:
+            observation = normalize_event(event, clock_ahead_tolerance_seconds=tolerance)
+        except InvalidEvent:
+            malformed += 1
+            continue
+        if observation is None:
+            ignored += 1
+        else:
+            normalized.append(observation)
+
+    result = runtime.store.write_batch(normalized)
+    accepted = result.accepted + ignored
+    logger.debug(
+        "Ingest batch: accepted=%d inserted=%d retries=%d ignored=%d malformed=%d conflicts=%d",
+        accepted, result.inserted, result.accepted - result.inserted, ignored, malformed, result.conflicts,
+    )
+    return IngestResponse(accepted=accepted)
 
 
 CurrentRuntime = Annotated[Runtime, Depends(get_runtime)]
@@ -121,14 +144,22 @@ def create_app(data_dir: Path | None = None, config_path: Path | None = None) ->
         if len(envelope.events) > maximum:
             raise HTTPException(status_code=400, detail=f"An events list can contain at most {maximum} entries.")
 
-        # P03 processes individual events. The foundation acknowledges zero persisted observations.
-        return IngestResponse(accepted=0)
+        return await run_in_threadpool(accept_batch, envelope.events, runtime)
 
     @application.get("/devices/{serial}/status", responses={404: {"description": "Unknown device serial"}})
     def device_status(serial: str, at: AtInstant, runtime: CurrentRuntime) -> DeviceStatus:
         device = runtime.references.devices.get(serial)
         if device is None:
             raise HTTPException(status_code=404, detail="Unknown device serial.")
+        cutoff = to_epoch_us(at)
+        facts = project_device(cutoff, runtime.store.snapshot(cutoff, serial))
+        contact = facts.last_contact
+        if contact is None:
+            reason = "No device observations are available at the requested instant."
+        elif contact.time_quality == "clock_ahead":
+            reason = "A device receipt is available, and its observation clock is ahead of the platform receipt."
+        else:
+            reason = "A device receipt is available. Device diagnosis is pending."
         return DeviceStatus(
             serial=device.serial,
             asset_id=device.asset_id,
@@ -136,9 +167,9 @@ def create_app(data_dir: Path | None = None, config_path: Path | None = None) ->
             state=DeviceState.UNKNOWN,
             likely_cause=LikelyCause.UNKNOWN,
             confidence=0.0,
-            last_heard_at=None,
-            reasons=["No device observations are available at the requested instant."],
-            evidence=[],
+            last_heard_at=from_epoch_us(contact.first_received_us) if contact else None,
+            reasons=[reason],
+            evidence=[contact.event_id] if contact else [],
         )
 
     @application.get("/triage", dependencies=[Depends(get_runtime)])

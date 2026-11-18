@@ -29,15 +29,15 @@ Set `QF_DATA_DIR` to read the references from another directory. The default is 
 QF_DATA_DIR=/absolute/path/to/reference-data python -m quiet_fleet
 ```
 
-The directory needs `assets.csv`, `devices.csv`, `schedule.csv`, `weather.csv`, `plan_changes.csv`, and `support_cases.csv`. Readiness follows successful validation. Telemetry arrives through HTTP in the later ingestion phase. `/openapi.json` serves the schema locally.
+The directory needs `assets.csv`, `devices.csv`, `schedule.csv`, `weather.csv`, `plan_changes.csv`, and `support_cases.csv`. Readiness follows successful validation. Telemetry arrives through `POST /ingest`. `/openapi.json` serves the schema locally.
 
 ## Current behavior
 
-The application is the P02 foundation for the support persona. `GET /devices/{serial}/status?at=…` returns `unknown` for known devices with empty evidence and a null `last_heard_at`. `GET /triage?at=…` returns an empty list. Both require an ISO timestamp with an explicit offset and output UTC with `Z`.
+The application is the P03 ingestion and temporal foundation for the support persona. `GET /devices/{serial}/status?at=…` reports the latest eligible unique device receipt and its original evidence ID. `last_heard_at` is null and evidence is empty when no device contact is available. Device state is still `unknown` and `GET /triage?at=…` returns empty items while diagnosis is pending. Both require an ISO timestamp with an explicit offset and output UTC with `Z`.
 
-`POST /ingest` validates the JSON object, its `events` array, and the 5,000-element batch limit. Every valid envelope returns `{"accepted":0}` in P02 because zero event entries are processed. An empty array is valid. P03 adds per-event validation, storage, and receipt counts. Invalid query parameters and invalid envelopes return JSON 400. An unknown serial or unsupported persona route returns 404.
+`POST /ingest` accepts an `events` array of up to 5,000 entries. `accepted` counts valid entries processed, including retries and well-formed unused event types. Malformed items and conflicting ID reuses are excluded. An empty array returns zero. Invalid query parameters and invalid batch envelopes return JSON 400. An unknown serial or unsupported persona route returns 404.
 
-[API contract](vendor/quiet-fleet/docs/CONTRACT.md) · [Current phase](planning/STATUS.md)
+[API contract](vendor/quiet-fleet/docs/CONTRACT.md) · [Ingestion and time model](docs/ingestion.md) · [Current phase](planning/STATUS.md)
 
 ## Development checks
 

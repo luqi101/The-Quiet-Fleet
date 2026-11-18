@@ -176,13 +176,13 @@ class HTTPFoundationTest(unittest.TestCase):
             "event_id": "e90000002", "type": "position", "serial": TRACKER, "device_time": AT,
             "received_at": AT, "payload": {"lat": 43.6, "lng": -79.6, "speed_kmh": 5, "ignition": True},
         }
+        future_kind = {"type": "unfamiliar", "received_at": AT, "event_id": "e90000003"}
         with self.client() as client:
-            for events in ([], [event, False, {}, {"type": "unfamiliar"}, None], [None] * 5000):
+            for events, accepted in (([], 0), ([event, False, {}, future_kind, None], 2), ([None] * 5000, 0)):
                 with self.subTest(size=len(events)):
                     response = client.post("/ingest", json={"events": events})
                     self.assertEqual(response.status_code, 200, response.text)
-                    # P02 validates the envelope. Per-event acceptance begins in P03.
-                    self.assertEqual(response.json(), {"accepted": 0})
+                    self.assertEqual(response.json(), {"accepted": accepted})
                     self.assertIs(type(response.json()["accepted"]), int)
 
     def test_missing_or_invalid_configuration_prevents_startup(self) -> None:
@@ -239,17 +239,20 @@ class HTTPFoundationTest(unittest.TestCase):
             self.assertEqual(unstarted_client.get("/health").status_code, 503)
             with TestClient(app) as client:
                 original_store = app.state.runtime.store
-                original_store.execute("CREATE TABLE lifespan_probe (marker TEXT)")
-                original_store.commit()
+                event = {
+                    "event_id": "lifespan-probe", "type": "ignition_off", "serial": TRACKER,
+                    "device_time": AT, "received_at": AT, "payload": {},
+                }
+                self.assertEqual(client.post("/ingest", json={"events": [event]}).json(), {"accepted": 1})
+                self.assertEqual(original_store.counts().messages, 1)
                 self.assertEqual(client.get("/health").status_code, 200)
             self.assertFalse(hasattr(app.state, "runtime"))
             with self.assertRaises(sqlite3.ProgrammingError):
-                original_store.execute("SELECT 1")
+                original_store.counts()
             with TestClient(app) as client:
                 fresh_store = app.state.runtime.store
                 self.assertIsNot(fresh_store, original_store)
-                probe = fresh_store.execute("SELECT name FROM sqlite_master WHERE name = 'lifespan_probe'").fetchone()
-                self.assertIsNone(probe)
+                self.assertEqual(fresh_store.counts().messages, 0)
                 response = client.get(f"/devices/{TRACKER}/status", params={"at": AT})
                 self.assertEqual(response.status_code, 200, response.text)
                 self.assertIsNone(response.json()["last_heard_at"])

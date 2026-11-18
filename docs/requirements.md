@@ -1,6 +1,6 @@
 # Quiet Fleet requirement traceability
 
-This matrix preserves R01–R37 from the planning kit and adds explicit source requirements. The phase records below describe verified offline analysis and HTTP foundation behavior. Event processing, diagnosis and release checks remain pending.
+This matrix preserves R01–R37 from the planning kit and adds explicit source requirements. The phase records below describe verified offline analysis, HTTP behavior, and ingestion. Diagnosis and release checks remain pending.
 
 The candidate brief in `inputs/candidate-brief.pdf` and the API contract govern requirements. The exam runner and practice scenario define the supplied executable checks. The planning kit supplies the lettered acceptance IDs and additional adversarial cases. [API contract](../vendor/quiet-fleet/docs/CONTRACT.md), [practice expectations](../vendor/quiet-fleet/exam/PRACTICE.md), [acceptance matrix](../planning/03_ACCEPTANCE_TEST_MATRIX.md)
 
@@ -101,3 +101,14 @@ Only the selected persona's rows become grading gates. Shared API and diagnosis 
 | R29 | Startup validated the shipped rule register and rejected missing or invalid config. | Verify diagnosed behavior at each registered threshold. |
 
 [Start and test commands](../README.md) · [HTTP tests](../tests/test_http_foundation.py)
+
+## P03 verification record
+
+| Row | Observed evidence | Remaining work |
+| --- | --- | --- |
+| R04, R07–R09, R28 | HTTP tests confirmed empty state after restart, bounded mixed batches, and accepted counts. An unexpected store failure rolls the batch back. A read attempted during a partial write observes the committed batch as a unit. Preliminary HTTP replay accepted all 640,419 envelopes. Maximum request time was 2.585 s and server peak RSS was 64.574 MiB. | Release replay timing with final diagnoses and exam checkpoints. |
+| R10–R13 | Runtime tests exercise same-batch replay, new aliases, ID conflicts, both time cutoffs, future clocks, invalid numeric timestamps, and out-of-order observations. Device status uses the eligible first receipt and the projection uses credible observation order. | Apply the same temporal snapshot to asset and incident decisions. |
+| R18–R20, R26, R39–R40 | Projected facts retain newer faults through older observations. Deduplicated platform commands add one reboot fact and no contact. CSV plan rows and historical cases do not create events. Status evidence IDs come from eligible receipts. | Implement business rules and validate action-specific evidence. |
+| R31 | Opaque BX records are accepted and retained with receipt provenance. | Decode and join those observations to devices in P08. |
+
+[Ingestion and time model](ingestion.md) · [Temporal tests](../tests/test_temporal_ingest.py)
