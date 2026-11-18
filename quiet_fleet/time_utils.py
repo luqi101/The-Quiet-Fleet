@@ -55,7 +55,7 @@ _PACKET_END_US = to_epoch_us(datetime(2100, 1, 1, tzinfo=UTC))
 def parse_packet_time_us(value: object, *, allow_epoch_seconds: bool = False) -> int:
     """Accept packet instants in [2000, 2100) UTC at microsecond precision.
 
-    Legacy numeric seconds are opt-in. A numeric value must represent an
+    Numeric Unix seconds are opt-in. A numeric value must represent an
     exact number of microseconds. The parser never guesses milliseconds.
     """
     if allow_epoch_seconds and type(value) in (int, float):

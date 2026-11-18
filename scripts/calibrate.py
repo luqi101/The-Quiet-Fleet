@@ -135,6 +135,11 @@ def build_rules(report):
             "Minimum tested deadline with zero eligible cohort crossings and at least one hour beyond p99.",
             "C11–C14, G11", (h * HOUR for h in DAILY_CANDIDATES), cohort["n"],
         )
+    calibrated["bx_checkin_interval"] = entry(
+        24 * HOUR, "seconds", "nominal cadence", "Development BX healthy daily intervals",
+        "The development median was 86,340 seconds. Use a nominal day to separate a single missed check-in from prolonged silence.",
+        "G05, G08, G11", sample_size=daily["families"]["BX"]["split"]["development"]["healthy_gap_seconds"]["n"],
+    )
     low = daily["case_and_opportunity_evaluation"]["development"]
     low_case_sweep = low["battery_low_case_threshold_sweep"]
     low_cutoff = next((t for t in LOW_CANDIDATES if low["battery_low_case_n"]

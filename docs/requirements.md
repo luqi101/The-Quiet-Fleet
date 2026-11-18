@@ -51,7 +51,7 @@ Support, prioritizing fewer false alarms, and one grouped customer alert for a m
 | R23 | Correlate due-reporting losses by carrier and depot with meaningful controls and recovery | `reporting_peers.py`, `incidents.py` | E01–E11, H04. Use renamed cohorts, healthy other-carrier peers, ordinary shift changes, individual failures, retry bursts, and partial and complete recovery. |
 | R29 | Config holds chosen thresholds and provisional business cutoffs with units, comparators, and provenance | `config/rules.json`, calibration register | F07, H14. Validate config on startup and inspect every chosen rule and boundary against its documented origin and synthetic case. |
 | R30 | Reproduce calibration from history and document limitations | `scripts/audit_data.py`, `scripts/calibrate.py`, `docs/calibration.md` | D32, H14. Check source hashes and cohort sizes, reproduce candidate sweeps on chronological development and validation slices, and report alert volume independently of selected case labels. |
-| R31 | Integrate optional BX decoding through ingest, status and selected persona | `bx.py`, `normalize.py`, `diagnosis.py` | G01–G14. Verify three original portal anchors and a new valid frame, malformed isolation, flags/no fix, receipt cutoff, duplicate safety and actual battery actions/recovery. Record in Form 3 if omitted. |
+| R31 | Integrate optional BX decoding through ingest, status and selected persona | `bx.py`, `normalize.py`, `projection.py`, `diagnosis.py` | G01–G14. Verify three original portal anchors and a new valid frame, malformed isolation, flags/no fix, receipt cutoff, duplicate safety and actual battery actions/recovery. Record BX integration and inference limits in Form 3. |
 | R41 | Apply real depot-local dates, daily 06:00 shifts, and the November DST change | `time_utils.py`, `operations.py`, persona evaluator | F01–F06. Verify Mississauga's repeated hour, year-round Regina offset, a UTC/local date split, exact 06:00 and weekend jobs. |
 
 ## Persona-specific decision surfaces
@@ -154,3 +154,12 @@ Only the selected persona's rows become grading gates. Shared API and diagnosis 
 | R24, R26, R39 | Tests verify shared status and queue reasons, stable episode IDs and order, a unique serial partition, and original receipt-eligible evidence. The vendored support assertions also run against saved full-history responses. | Fresh-process official exam and release measurements. |
 
 [Support HTTP tests](../tests/test_support_triage.py) · [Support queue decisions](decisions.md#p07-support-queue)
+
+## P08 verification record
+
+| Row | Observed evidence | Remaining work |
+| --- | --- | --- |
+| R26, R31, R39 | Three vendor anchors match UTC and Regina-local time, displayed battery, independent flags, and coordinates. HTTP fixtures cover mixed malformed and valid input, exact inventory matching, original receipt evidence, semantic retry, clock cutoffs, and unknown bits. A full mixed replay accepted all 313 BX envelopes and verified 308 distinct readings and their first original receipts. | Fresh-process official exam and release verification. |
+| R22, R24, R25, R29, R31 | An unseen BX frame at about 14% with a low flag creates a technician item. Tests verify exact 26-hour timeliness, support follow-up for prolonged operational silence, strictly later 20% recovery with the flag clear, valid-fix provenance across a no-fix report, and stock/pre-installation contact. | Verify new frames through the release entrypoint and record optional BX completion in Form 3. |
+
+[BX verification and regeneration](bx-decoding.md) · [BX HTTP tests](../tests/test_bx.py)

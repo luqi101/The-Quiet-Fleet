@@ -34,6 +34,7 @@ class Runtime:
     references: References
     store: EventStore
     support: SupportView
+    bx_serials: frozenset[str]
 
 
 def get_runtime(request: Request) -> Runtime:
@@ -62,7 +63,10 @@ def accept_batch(events: list[object], runtime: Runtime) -> IngestResponse:
     malformed = ignored = 0
     for event in events:
         try:
-            observation = normalize_event(event, clock_ahead_tolerance_seconds=tolerance)
+            observation = normalize_event(
+                event, clock_ahead_tolerance_seconds=tolerance,
+                wire_rules=runtime.rules.wire_format_constants, bx_serials=runtime.bx_serials,
+            )
         except InvalidEvent:
             malformed += 1
             continue
@@ -90,8 +94,9 @@ def create_app(data_dir: Path | None = None, config_path: Path | None = None) ->
         rules = load_config(config_path if config_path is not None else RULES_PATH)
         reference_dir = data_dir if data_dir is not None else Path(os.environ.get("QF_DATA_DIR", "./data"))
         references = load_references(reference_dir)
+        bx_serials = frozenset(device.serial for device in references.devices.values() if device.family == "BX")
         with open_store() as store:
-            application.state.runtime = Runtime(rules, references, store, SupportView(rules, references, store))
+            application.state.runtime = Runtime(rules, references, store, SupportView(rules, references, store), bx_serials)
             try:
                 yield
             finally:

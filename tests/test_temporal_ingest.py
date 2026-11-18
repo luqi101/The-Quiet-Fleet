@@ -10,11 +10,15 @@ from unittest.mock import patch
 from fastapi.testclient import TestClient
 
 from quiet_fleet.api import create_app
+from quiet_fleet.config import load_config
 from quiet_fleet.normalize import InvalidEvent, normalize_event
 from quiet_fleet.projection import project_device
 from quiet_fleet.store import open_store
 from quiet_fleet.time_utils import parse_iso_instant, to_epoch_us
-from test_http_foundation import TRACKER, write_references
+from test_http_foundation import RULES, TRACKER, write_references
+
+
+_WIRE = load_config(RULES).wire_format_constants
 
 
 def clock(hms):
@@ -37,7 +41,9 @@ def frame(event_id, kind, observed, received=None, *, serial=TRACKER, payload=No
 
 
 def normalize(event, tolerance=0):
-    normalized = normalize_event(event, clock_ahead_tolerance_seconds=tolerance)
+    normalized = normalize_event(
+        event, clock_ahead_tolerance_seconds=tolerance, wire_rules=_WIRE, bx_serials=frozenset(),
+    )
     assert normalized is not None
     return normalized
 
@@ -229,20 +235,6 @@ class StoreAndNormalizationTest(unittest.TestCase):
                 normalize(event | {"device_time": value})
         with self.assertRaises(InvalidEvent):
             normalize(frame("other-clock", "ignition_off", "10:00:00") | {"device_time": seconds})
-
-    def test_opaque_bx_retains_original_ids_and_raw_frame_without_serial_or_clock(self):
-        bx = {"event_id": "bx-id", "received_at": clock("09:00:00"), "type": "bx_raw", "raw": '{"t":"1A"}'}
-        bx_alias = bx | {"event_id": "bx-retry", "received_at": clock("09:05:00")}
-        with open_store() as store:
-            self.assertEqual(store.write_batch([normalize(bx), normalize(bx_alias)]).accepted, 2)
-            self.assertEqual(store.counts().messages, 1)
-            self.assertEqual(store.snapshot(instant("08:59:59"), None), ())
-            opaque, = store.snapshot(instant("09:00:00"), None)
-            self.assertIsNone(opaque.observed_us)
-            self.assertEqual(opaque.time_quality, "undecoded")
-            self.assertEqual(json.loads(opaque.payload_json), {"raw": bx["raw"]})
-            self.assertEqual([receipt.event_id for receipt in store.receipts_for("bx-id", instant("09:08:00"))],
-                             ["bx-id", "bx-retry"])
 
     def test_new_id_with_equal_receipt_uses_stable_id_and_keeps_alias_raw_device_time(self):
         original = frame("z-alias", "ignition_off", "10:00:00", "10:00:03")

@@ -16,6 +16,16 @@
       "unit": "seconds",
       "value": 93600
     },
+    "bx_checkin_interval": {
+      "comparator": "nominal cadence",
+      "provenance": "Development BX healthy daily intervals",
+      "rationale": "The development median was 86,340 seconds. Use a nominal day to separate a single missed check-in from prolonged silence.",
+      "sample_size": 148,
+      "sensitivity_candidates": [],
+      "test": "G05, G08, G11",
+      "unit": "seconds",
+      "value": 86400
+    },
     "bx_daily_overdue": {
       "comparator": "elapsed > value",
       "provenance": "Development BX healthy daily intervals",

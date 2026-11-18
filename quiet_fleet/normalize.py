@@ -2,17 +2,19 @@
 
 import hashlib
 import json
+from collections.abc import Set
 from dataclasses import dataclass
 from enum import StrEnum
 from math import isfinite
 
+from .bx import BX_REPORT, InvalidBX, decode_bx
+from .config import WireFormatConstants
 from .time_utils import parse_packet_time_us
 
 
 class TimeQuality(StrEnum):
     CREDIBLE = "credible"
     CLOCK_AHEAD = "clock_ahead"
-    UNDECODED = "undecoded"
 
 
 class InvalidEvent(ValueError):
@@ -22,12 +24,12 @@ class InvalidEvent(ValueError):
 @dataclass(frozen=True, slots=True)
 class NormalizedEvent:
     event_id: str
-    serial: str | None
+    serial: str
     raw_type: str
     kind: str
-    observed_us: int | None
+    observed_us: int
     received_us: int
-    raw_device_time_json: str | None
+    raw_device_time_json: str
     payload_json: str
     fingerprint: bytes
     envelope_hash: bytes
@@ -107,39 +109,48 @@ def _validate_payload(payload: object, kind: str) -> dict:
     return payload
 
 
-def normalize_event(raw: object, *, clock_ahead_tolerance_seconds: int) -> NormalizedEvent | None:
+def normalize_event(
+    raw: object, *, clock_ahead_tolerance_seconds: int, wire_rules: WireFormatConstants, bx_serials: Set[str],
+) -> NormalizedEvent | None:
     """Return a validated observation, or ignore an unused type after checking its envelope."""
     if not isinstance(raw, dict):
         raise InvalidEvent("event must be an object")
     event_id = _text(raw.get("event_id"), "event_id")
-    kind = _text(raw.get("type"), "type")
+    raw_type = _text(raw.get("type"), "type")
     received_us = _time_us(raw.get("received_at"), "received_at")
-    if kind not in _KNOWN_TYPES:
+    if raw_type not in _KNOWN_TYPES:
         return None
 
-    if kind == "bx_raw":
-        serial = observed_us = raw_device_time_json = None
-        payload = {"raw": _text(raw.get("raw"), "raw")}
-        time_quality = TimeQuality.UNDECODED
+    if raw_type == "bx_raw":
+        try:
+            frame = decode_bx(raw.get("raw"), wire_rules)
+        except InvalidBX as exc:
+            raise InvalidEvent(str(exc)) from exc
+        if frame.serial not in bx_serials:
+            raise InvalidEvent("BX u must match a BX inventory serial")
+        serial, observed_us, payload = frame.serial, frame.observed_us, frame.payload
+        raw_device_time_json = _canonical_json(frame.clock_hex)
+        kind = BX_REPORT
     else:
+        kind = raw_type
         serial = _text(raw.get("serial"), "serial")
         device_time = raw.get("device_time")
         observed_us = _time_us(device_time, "device_time", allow_epoch_seconds=kind == "check_in")
         raw_device_time_json = _canonical_json(device_time)
         payload = _validate_payload(raw.get("payload"), kind)
-        time_quality = (
-            TimeQuality.CLOCK_AHEAD
-            if observed_us - received_us > clock_ahead_tolerance_seconds * 1_000_000
-            else TimeQuality.CREDIBLE
-        )
 
-    # The canonical source payload preserves names, JSON numeric forms and extra
-    # fields. An opaque BX frame keeps its exact text until the decoder phase.
+    time_quality = (
+        TimeQuality.CLOCK_AHEAD
+        if observed_us - received_us > clock_ahead_tolerance_seconds * 1_000_000
+        else TimeQuality.CREDIBLE
+    )
+    # BX identity uses decoded values and preserves unknown payload fields and bits.
+    # The receipt still carries the original wire clock and envelope hash.
     identity = _canonical_json((serial, kind, observed_us, payload))
     return NormalizedEvent(
         event_id=event_id,
         serial=serial,
-        raw_type=kind,
+        raw_type=raw_type,
         kind=kind,
         observed_us=observed_us,
         received_us=received_us,
@@ -147,6 +158,6 @@ def normalize_event(raw: object, *, clock_ahead_tolerance_seconds: int) -> Norma
         payload_json=_canonical_json(payload),
         fingerprint=hashlib.sha256(identity.encode("ascii")).digest(),
         envelope_hash=hashlib.sha256(_canonical_json(raw).encode("ascii")).digest(),
-        device_origin=kind in _DEVICE_TYPES,
+        device_origin=kind in _DEVICE_TYPES or kind == BX_REPORT,
         time_quality=time_quality,
     )

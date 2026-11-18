@@ -4,14 +4,14 @@ import json
 from collections import defaultdict
 from collections.abc import Mapping
 from dataclasses import dataclass, field
-from datetime import date, datetime
+from datetime import UTC, date, datetime, time
 from types import MappingProxyType
 
 from .config import RulesConfig
 from .projection import DeviceFacts, project_device
 from .reference import Asset, Device, References, Weather
 from .store import EventFact, EventStore, ReadSnapshot
-from .time_utils import from_epoch_us
+from .time_utils import from_epoch_us, to_epoch_us
 
 
 @dataclass(frozen=True, slots=True)
@@ -47,11 +47,19 @@ class _Tracker:
         return tuple(dict.fromkeys((*self.assignment.evidence, self.latest)))
 
 
-def _roster_asset(device: Device, at: datetime) -> str | None:
+def _installation(device: Device) -> datetime | None:
     installed = device.installed_at
-    if isinstance(installed, datetime):
-        return device.asset_id if installed <= at else None
-    return device.asset_id if installed is None or installed <= at.date() else None
+    if installed is None or isinstance(installed, datetime):
+        return installed
+    return datetime.combine(installed, time.min, tzinfo=UTC)
+
+
+def _roster_asset(device: Device, at: datetime) -> str | None:
+    # A BX message identifies hardware but carries no asset or installation claim.
+    if device.family == "BX" and device.status == "stock":
+        return None
+    installed = _installation(device)
+    return device.asset_id if installed is None or installed <= at else None
 
 
 def _vin(event: EventFact) -> str:
@@ -156,7 +164,12 @@ class DeviceContextReader:
 
     def _project(self, serial: str, *, cohort_tracker: bool = False) -> DeviceFacts:
         if not cohort_tracker:
-            return project_device(self.snapshot.at_us, self.snapshot.facts_for(serial))
+            device = self.references.devices[serial]
+            installed = _installation(device) if device.family == "BX" else None
+            return project_device(
+                self.snapshot.at_us, self.snapshot.facts_for(serial),
+                bx_installed_us=to_epoch_us(installed) if installed is not None else None,
+            )
         if serial not in self._cohort_facts:
             self._cohort_facts[serial] = project_device(self.snapshot.at_us, self.snapshot.tracker_cohort_facts(serial))
         return self._cohort_facts[serial]

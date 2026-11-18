@@ -42,6 +42,7 @@ At a 50% comparison share, the healthy-peer count sweep changes held-out detecti
 | `normal_receipt_lag` | 8 | seconds | Development first-receipt lag sweep |
 | `a_daily_overdue` | 93600 | seconds | Development A healthy daily intervals |
 | `bx_daily_overdue` | 93600 | seconds | Development BX healthy daily intervals |
+| `bx_checkin_interval` | 86400 | seconds | Development BX healthy daily intervals |
 | `camera_wake_grace` | 60 | seconds | Development first-recording timings |
 | `camera_reboot_response_grace` | 600 | seconds | Awake reboot response sweep and camera cadence |
 | `camera_failed_reboots_before_visit` | 2 | distinct failed awake attempts | Support history and remote-first policy |

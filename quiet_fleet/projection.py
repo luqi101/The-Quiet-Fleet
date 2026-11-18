@@ -3,6 +3,7 @@
 import json
 from dataclasses import dataclass
 
+from .bx import BX_REPORT
 from .store import EventFact
 
 
@@ -23,6 +24,8 @@ class DeviceFacts:
     plan_evidence: EventFact | None
     battery_pct: float | None
     battery_evidence: EventFact | None
+    bx_report: EventFact | None
+    bx_valid_fix: EventFact | None
 
 
 def _receipt_key(event: EventFact) -> tuple[int, str]:
@@ -38,7 +41,9 @@ def _observation_key(event: EventFact) -> tuple[int, int, str]:
     return _observed_time(event), event.first_received_us, event.event_id
 
 
-def project_device(at_us: int, events: tuple[EventFact, ...]) -> DeviceFacts:
+def project_device(
+    at_us: int, events: tuple[EventFact, ...], *, bx_installed_us: int | None = None,
+) -> DeviceFacts:
     """Use eligible receipts for contact and eligible observations for device facts.
 
     Each event represents one logical message. The store resolves original receipt
@@ -50,6 +55,7 @@ def project_device(at_us: int, events: tuple[EventFact, ...]) -> DeviceFacts:
         (
             event for event in available
             if event.time_quality == "credible" and event.observed_us is not None and event.observed_us <= at_us
+            and (event.kind != BX_REPORT or bx_installed_us is None or event.observed_us >= bx_installed_us)
         ),
         key=_observation_key,
     ))
@@ -61,6 +67,7 @@ def project_device(at_us: int, events: tuple[EventFact, ...]) -> DeviceFacts:
     reboot_commands = []
     plan_status = plan_evidence = None
     battery_pct = battery_evidence = None
+    bx_report = bx_valid_fix = None
 
     for event in observations:
         kind = event.kind
@@ -102,6 +109,10 @@ def project_device(at_us: int, events: tuple[EventFact, ...]) -> DeviceFacts:
             value = json.loads(event.payload_json).get("battery_pct")
             if type(value) in (float, int) and 0 <= value <= 100:
                 battery_pct, battery_evidence = float(value), event
+        elif kind == BX_REPORT:
+            bx_report = event
+            if json.loads(event.payload_json)["gps_fix"]:
+                bx_valid_fix = event
 
     return DeviceFacts(
         last_contact=last_contact,
@@ -119,4 +130,6 @@ def project_device(at_us: int, events: tuple[EventFact, ...]) -> DeviceFacts:
         plan_evidence=plan_evidence,
         battery_pct=battery_pct,
         battery_evidence=battery_evidence,
+        bx_report=bx_report,
+        bx_valid_fix=bx_valid_fix,
     )

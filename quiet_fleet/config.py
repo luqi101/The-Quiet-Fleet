@@ -15,7 +15,6 @@ Ratio = Annotated[float, Field(ge=0, le=1)]
 Percentage = Annotated[float, Field(ge=0, le=100)]
 FiniteNumber = Annotated[float, Field(allow_inf_nan=False)]
 LocalTime = Annotated[str, StringConstraints(pattern=r"^(?:[01][0-9]|2[0-3]):[0-5][0-9]$")]
-Radix = Annotated[int, Field(ge=2, le=36)]
 SignalLevel = Annotated[int, Field(ge=0, le=5)]
 T = TypeVar("T")
 
@@ -55,12 +54,13 @@ class CalibratedParameters(ConfigModel):
     camera_recording_overdue: Rule[PositiveInt]
     normal_receipt_lag: Rule[NonnegativeInt]
     a_daily_overdue: Rule[PositiveInt]
+    bx_checkin_interval: Rule[PositiveInt]
     bx_daily_overdue: Rule[PositiveInt]
 
 
 class WireFormatConstants(ConfigModel):
     a_legacy_timestamp_scale: Rule[PositiveInt]
-    bx_epoch_radix: Rule[Radix]
+    bx_epoch_radix: Rule[Literal[16]]
     bx_battery_full_scale: Rule[PositiveInt]
     bx_coordinate_scale: Rule[PositiveInt]
     bx_moving_mask: Rule[PositiveInt]
@@ -100,6 +100,8 @@ class OperationalAssumptions(ConfigModel):
     @model_validator(mode="after")
     def validate_battery_thresholds(self) -> Self:
         low = self.a_low_battery.value
+        if self.bx_percentage_only_low_enabled.value:
+            raise ValueError("BX percentage-only alerts require a validated opening threshold")
         if self.a_battery_recovery.value <= low or self.cold_healthy_battery_minimum.value <= low:
             raise ValueError("A recovery and healthy battery thresholds must exceed the A low battery threshold")
         return self
@@ -176,6 +178,8 @@ class RulesConfig(ConfigModel):
             raise ValueError("the driving tracker deadline must exceed the driving position interval")
         if calibrated.a_daily_overdue.value < given.a_checkin_interval.value:
             raise ValueError("the A reporting deadline must cover one full check-in interval")
+        if calibrated.bx_daily_overdue.value < calibrated.bx_checkin_interval.value:
+            raise ValueError("the BX reporting deadline must cover one full check-in interval")
         if self.operational_assumptions.seasonal_downtime_suppression_enabled.value and not self.site_policy.downtime:
             raise ValueError("seasonal downtime requires an approved scope, effective dates, and provenance")
         return self

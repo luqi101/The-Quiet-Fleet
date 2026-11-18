@@ -4,6 +4,7 @@ import json
 from collections.abc import Iterator
 from dataclasses import dataclass
 
+from .bx import BX_REPORT
 from .config import RulesConfig
 from .fault import FaultDecision
 from .models import LikelyCause, WhoActs
@@ -59,16 +60,26 @@ def inactive_plan(facts: DeviceFacts) -> FaultDecision | None:
     )
 
 
-def low_a_battery(facts: DeviceFacts, rules: RulesConfig) -> FaultDecision | None:
-    low = rules.operational_assumptions.a_low_battery.value
-    recovery = rules.operational_assumptions.a_battery_recovery.value
-    opening: EventFact | None = None
-    last_low: EventFact | None = None
-    for event in facts.observations:
-        if event.kind != "check_in":
-            continue
-        percent = json.loads(event.payload_json)["battery_pct"]
-        if percent <= low:
+def battery_fault(facts: DeviceFacts, family: str, rules: RulesConfig) -> FaultDecision | None:
+    if family not in {"A", "BX"}:
+        return None
+    bx = family == "BX"
+    kind = BX_REPORT if bx else "check_in"
+    policy = rules.operational_assumptions
+    recovery = policy.bx_battery_recovery.value if bx else policy.a_battery_recovery.value
+    latest = facts.bx_report if bx else facts.battery_evidence
+    if latest is None:
+        return None
+
+    readings = ((event, json.loads(event.payload_json)) for event in facts.observations if event.kind == kind)
+    # At an equal BX clock, a clear cannot split an episode renewed by a low flag.
+    if bx:
+        readings = sorted(readings, key=lambda item: (item[0].observed_us, not item[1]["low_battery"]))
+    opening = last_low = None
+    for event, reading in readings:
+        percent = reading["battery_pct"]
+        low = reading["low_battery"] if bx else percent <= policy.a_low_battery.value
+        if low:
             opening = opening or event
             last_low = event
         elif last_low is not None and percent >= recovery and event.observed_us > last_low.observed_us:
@@ -76,18 +87,28 @@ def low_a_battery(facts: DeviceFacts, rules: RulesConfig) -> FaultDecision | Non
     if opening is None or last_low is None:
         return None
 
-    last_low_percent = json.loads(last_low.payload_json)["battery_pct"]
-    evidence = (opening, last_low)
-    if facts.battery_evidence is not None:
-        evidence += (facts.battery_evidence,)
+    low_pct = json.loads(last_low.payload_json)["battery_pct"]
+    latest_reading = json.loads(latest.payload_json)
+    observed = utc_text(from_epoch_us(last_low.observed_us))
+    if bx:
+        reason = (
+            f"The BX low-battery flag was set at {observed} with an estimated charge of {low_pct:g}%. "
+            f"Recovery needs a later report with a clear flag and at least {recovery:g}% estimated charge."
+        )
+        if not latest_reading["gps_fix"]:
+            reason += " The latest BX report also lacks a valid GPS fix."
+        step = "Inspect the BX tracker and replace its battery or the unit as needed."
+    else:
+        reason = (
+            f"The tag reported {low_pct:g}% battery at {observed}. Its latest reading is {latest_reading['battery_pct']:g}% "
+            f"and a later reading of at least {recovery:g}% is required for recovery."
+        )
+        step = "Inspect and replace the depleted battery or tag as needed."
     return FaultDecision(
         cause=LikelyCause.BATTERY_LOW,
-        reason=(
-            f"The tag reported {last_low_percent:g}% battery at {utc_text(from_epoch_us(last_low.observed_us))}. "
-            f"Its latest reading is {facts.battery_pct:g}% and a later reading of at least {recovery:g}% is required for recovery."
-        ),
-        evidence=evidence,
+        reason=reason,
+        evidence=(opening, last_low, latest),
         owner=WhoActs.TECHNICIAN,
-        next_action="Inspect and replace the depleted battery or tag as needed.",
+        next_action=step,
         opened_us=opening.observed_us,
     )

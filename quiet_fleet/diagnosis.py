@@ -6,11 +6,12 @@ from datetime import datetime
 
 from .asset_context import DeviceContext
 from .assignment_fault import assignment_fault
+from .bx import BX_REPORT
 from .config import RulesConfig
 from .environment_faults import cold_fault, coverage_fault, downtime_fault
 from .episodes import camera_fault, power_fault
 from .fault import FaultDecision
-from .individual_faults import inactive_plan, low_a_battery, plan_timeline
+from .individual_faults import battery_fault, inactive_plan, plan_timeline
 from .models import DeviceState, DeviceStatus, LikelyCause, WhoActs
 from .projection import DeviceFacts
 from .store import EventFact
@@ -213,12 +214,52 @@ def _battery_tag(at_us: int, facts: DeviceFacts, rules: RulesConfig) -> _Decisio
     return _unknown("The tag has gone more than one daily check-in opportunity without a report.", latest)
 
 
+def _bx_status(at_us: int, context: DeviceContext, rules: RulesConfig) -> _Decision:
+    facts = context.facts
+    contact = facts.last_contact
+    if context.asset is None:
+        if context.device.status == "stock":
+            return _unknown("The BX unit is in stock. Its in-service reporting schedule is unverified.", contact)
+        return _unknown("The BX unit has no effective asset assignment at this checkpoint.", contact)
+
+    latest = facts.bx_report
+    if latest is None:
+        if contact is not None and contact.kind == BX_REPORT:
+            if contact.time_quality == "clock_ahead":
+                return _unknown("The latest BX receipt carries a clock ahead of platform receipt time.", contact)
+            if _observed(contact) > at_us:
+                return _unknown("The latest BX receipt describes a reading after the requested instant.", contact)
+            return _unknown("The latest BX receipt describes a reading before the recorded installation.", contact)
+        return _unknown("An eligible BX check-in is still unavailable.", contact)
+
+    parameters = rules.calibrated_parameters
+    deadline = parameters.bx_daily_overdue.value
+    interval = parameters.bx_checkin_interval.value
+    observed = utc_text(from_epoch_us(_observed(latest)))
+    reason = f"The BX unit last checked in at {observed}."
+    if _fresh(latest, at_us, deadline):
+        reason += f" The report is within its {_duration(deadline)} daily allowance."
+    elif _fresh(latest, at_us, deadline + interval):
+        reason += f" Its {_duration(deadline)} daily allowance has passed."
+    else:
+        reason += " More than one daily check-in opportunity has passed."
+    if latest != facts.bx_valid_fix:
+        reason += " That report lacks a valid GPS fix."
+        if facts.bx_valid_fix is not None:
+            fixed = utc_text(from_epoch_us(_observed(facts.bx_valid_fix)))
+            reason += f" The last valid fix was observed at {fixed}."
+    evidence = (latest, facts.bx_valid_fix)
+    if _fresh(latest, at_us, deadline):
+        return _reporting(reason, *evidence)
+    return _unknown(reason, *evidence)
+
+
 def _normal_status(at_us: int, rules: RulesConfig, context: DeviceContext) -> _Decision:
     facts = context.facts
     contact = facts.last_contact
     family = context.device.family
     if family == "BX":
-        return _unknown("No decoded BX observations are available at the requested instant.")
+        return _bx_status(at_us, context, rules)
     if facts.freshest_measurement is None:
         if contact is None:
             return _unknown("No device observations are available at the requested instant.")
@@ -235,6 +276,9 @@ def _normal_status(at_us: int, rules: RulesConfig, context: DeviceContext) -> _D
 def _fault_candidates(
     at_us: int, rules: RulesConfig, context: DeviceContext, normal: _Decision
 ) -> tuple[FaultDecision, ...]:
+    family = context.device.family
+    if family == "BX" and context.asset is None:
+        return ()
     facts = context.facts
     plan = inactive_plan(facts)
     assignment = assignment_fault(context)
@@ -244,7 +288,7 @@ def _fault_candidates(
     )
     direct_camera = camera if facts.camera_storage_error is not None else None
     inferred_camera = camera if direct_camera is None else None
-    battery = low_a_battery(facts, rules) if context.device.family == "A" else None
+    battery = battery_fault(facts, family, rules)
     supported = (
         power_fault(at_us, context, rules), direct_camera, battery, plan, assignment, inferred_camera, downtime,
     )
@@ -303,14 +347,18 @@ def _prolonged_gap(at_us: int, rules: RulesConfig, context: DeviceContext) -> Fa
         threshold = allowance * fast_windows
         expectation = "a camera recording"
         step = "Confirm vehicle ignition and verify a recent recording with the operator before arranging field service."
-    elif family == "A":
-        allowance = durations.a_daily_overdue.value
+    elif family in {"A", "BX"}:
+        bx = family == "BX"
+        kind = BX_REPORT if bx else "check_in"
+        allowance = durations.bx_daily_overdue.value if bx else durations.a_daily_overdue.value
+        interval = durations.bx_checkin_interval.value if bx else rules.given_rules.a_checkin_interval.value
+        latest = facts.bx_report if bx else facts.battery_evidence
         anchor = next(
-            (event for event in reversed(facts.observations) if event.kind == "check_in" and _arrived_in_window(event, allowance)),
-            facts.battery_evidence,
+            (event for event in reversed(facts.observations) if event.kind == kind and _arrived_in_window(event, allowance)),
+            latest,
         )
-        threshold = allowance + rules.given_rules.a_checkin_interval.value
-        expectation = "a daily tag check-in"
+        threshold = allowance + interval
+        expectation = "a daily BX check-in" if bx else "a daily tag check-in"
         step = "Confirm the asset assignment and obtain a live tag check-in before requesting field service."
     else:
         return None
