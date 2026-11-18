@@ -41,6 +41,34 @@ The support application distinguishes normal reporting, expected quiet, individu
 
 [API contract](vendor/quiet-fleet/docs/CONTRACT.md) · [Ingestion and time model](docs/ingestion.md) · [Support priority policy](docs/decisions.md#p07-support-queue) · [BX decoding](docs/bx-decoding.md) · [Current phase](planning/STATUS.md)
 
+## Release verification
+
+From the checkout root, with the pinned runtime installed and port 8080 free, run the original preflight and practice plus the offline restart check.
+
+```bash
+python scripts/release_check.py --data "$PWD/data" --persona support
+```
+
+For one check, use `scripts/verify.py` with `preflight`, `practice`, or `offline` as its first argument. For example, this command runs just the offline check.
+
+```bash
+python scripts/verify.py offline --data "$PWD/data"
+```
+
+Both scripts accept these arguments.
+
+| Option | Meaning |
+| --- | --- |
+| `--data DIR` | Reference CSV directory. Preflight and practice also need the original `telemetry/*.jsonl` under it. The verifier resolves this to an absolute path for the vendored tool. |
+| `--persona support` | Selects the support-agent practice checks. This is the default. |
+| `--out DIR` | Report root, defaulting to `reports/`. Each run gets a new subdirectory under its check name. |
+| `--startup-timeout SECONDS` | Maximum service readiness wait, defaulting to 15 seconds. |
+| `--exam-timeout SECONDS` | Maximum time for each vendor invocation, defaulting to 900 seconds. |
+
+Each vendor check starts a fresh `python -m quiet_fleet` child and confirms its empty store before ingest. A run keeps the official exit code, warnings, service log, request timings, and checkpoint responses. Practice uses 5,000-event batches with partial flushes at checkpoint boundaries. An ingest request reaching the 10-second contract limit fails verification. The offline check uses a renamed six-CSV fixture, blocks external sockets and DNS in the service, verifies the local OpenAPI route, and restarts the service to confirm ingest state reset. On macOS, the verifier also uses the OS outbound sandbox when its native denial probe succeeds. [Measured release run](reports/release-verification.json)
+
+On macOS with Python 3.12.2, the official preflight passed 10/10 and practice passed 14/14, both with zero warnings. The complete 640,419-envelope replay took 251 seconds. The slowest ingest request took 2.57 seconds, and the service peaked at 82.6 MiB RSS. Ubuntu 24.04 verification remains a separate release gate. [Timings and replay counts](reports/release-verification.json)
+
 ## Development checks
 
 ```bash

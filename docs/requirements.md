@@ -1,6 +1,6 @@
 # Quiet Fleet requirement traceability
 
-This matrix preserves R01–R37 from the planning kit and adds explicit source requirements. The phase records cover the service through independent behavioral verification. The remaining release gates include fresh official practice and Ubuntu offline execution.
+This matrix preserves R01–R37 from the planning kit and adds explicit source requirements. The phase records cover independent behavioral verification and the official replay on macOS. Ubuntu offline execution remains a release gate.
 
 The candidate brief in `inputs/candidate-brief.pdf` and the API contract govern requirements. The exam runner and practice scenario define the supplied executable checks. The planning kit supplies the lettered acceptance IDs and additional adversarial cases. [API contract](../vendor/quiet-fleet/docs/CONTRACT.md), [practice expectations](../vendor/quiet-fleet/exam/PRACTICE.md), [acceptance matrix](../planning/03_ACCEPTANCE_TEST_MATRIX.md)
 
@@ -176,3 +176,14 @@ Only the selected persona's rows become grading gates. Shared API and diagnosis 
 | R22, R30, R31, R38, R40 | D28–D29, D32, G01–G14, H01 | The landscaping gap stays uncertain with no approved downtime. A negative closure appears as −900 seconds in the offline audit and is excluded from duration labels. A targeted replay of the 313 BX envelopes found 308 distinct readings and one technician battery item at the final checkpoint. All nine vendor hashes matched. |
 
 [Adversarial scenarios](../tests/test_adversarial.py) · [HTTP evidence auditor](../tests/evidence_client.py) · [Process test](../tests/test_process_lifecycle.py) · [Offline data tests](../tests/test_offline_analysis.py) · [Remaining gates](../planning/STATUS.md#next-phase)
+
+## P10 verification record
+
+| Requirements | Acceptance scenarios | Observed check |
+| --- | --- | --- |
+| R02–R06, R38 | A01–A06, H01, H10, H16 | Verified the full vendor hash manifest. The real entrypoint started and restarted against six renamed reference CSVs with macOS OS outbound restrictions, a Python socket and DNS guard, and denied corpus access. Health, ingest, status, triage and local OpenAPI worked. The fresh install matched all 15 runtime pins. Ubuntu 24.04 execution remains pending. |
+| R07–R13, R28, R32 | A10–A14, B01–B05, H02–H03, H07–H08 | Original preflight passed 10/10, with malformed-neighbor isolation, an unused kind and HTTP 400 for malformed JSON. Practice ran in a different empty process and passed 14/14. All 640,419 envelopes were accounted for and 7,609 retries matched the independent audit. Every 5,000-event request completed in under 2.57 s. The report includes measured percentiles, startup, wall time, peak service RSS and all checkpoint queries. |
+| R18, R19, R23–R26 | D01–D04, D05–D12, E01, E05, E12, H04–H06 | P1 grouped all 35 expected trackers in a carrier-owned incident. P2 preserved the storage-fault evidence and support-first action and excluded the expected sleeping camera. P3 retained power-loss evidence and technician ownership. Verified 405 evidence references by their receipt cutoffs. |
+| R26, R32, R34 | H08, H13 | Baseline P3 and END triage warnings led to a query-profile fix. The final run had zero warnings and its ten saved checkpoint responses matched the baseline byte for byte. The verifier captured and validated the complete seven-item queue at the exact END instant. Its Form 3 extraction remains P12. |
+
+[Measured report](../reports/release-verification.json) · [Reproduction commands](../README.md#release-verification) · [Focused tracker projection regression](../tests/test_support_triage.py) · [Process and vendor tests](../tests/test_process_lifecycle.py)

@@ -430,5 +430,8 @@ def open_store() -> Iterator[EventStore]:
             connection.execute("PRAGMA foreign_keys = ON")
             connection.execute("PRAGMA journal_mode = WAL")
             connection.execute("PRAGMA synchronous = NORMAL")
+            # A bounded cache for the repeated indexed reads in a fleet sweep.
+            # SQLite interprets negative cache_size values as kibibytes.
+            connection.execute("PRAGMA cache_size = -16000")
             connection.executescript(_SCHEMA)
             yield EventStore(connection)

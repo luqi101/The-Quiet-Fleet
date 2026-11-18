@@ -1,0 +1,176 @@
+{
+  "phase": "P10",
+  "command": "python scripts/release_check.py --data \"$PWD/data\" --persona support",
+  "runtime_sha256": "dda304dbf02dca9c964f58233180e3791d8f2b36c82ff9a36ef4645c086fe5b7",
+  "vendor_verified_file_count": 9,
+  "vendor_runner_sha256": "b6848dfb429b261f89a62ff4b85b56faac03e95bd466a58775958bcfee5eeaa2",
+  "vendor_scenario_sha256": "edd93191b138fb7cb07a02d7613e9b686b08788f5b50a41c69f173df9bc92266",
+  "environment": {
+    "python": "3.12.2",
+    "os": "macOS-15.7.9-x86_64-i386-64bit",
+    "macos": "15.7.9",
+    "sqlite": "3.45.1",
+    "hardware": "MacBookPro16,3",
+    "installed_runtime_pins": 15
+  },
+  "preflight": {
+    "exam_exit_code": 0,
+    "checks": {
+      "passed": 10,
+      "total": 10
+    },
+    "warnings": [],
+    "service_exit_code": 0,
+    "startup_seconds": 1.102061,
+    "batch_counters": {
+      "accepted": 602,
+      "inserted": 295,
+      "retries": 306,
+      "ignored": 1,
+      "malformed": 3,
+      "conflicts": 0
+    }
+  },
+  "practice": {
+    "exam_exit_code": 0,
+    "checks": {
+      "passed": 14,
+      "total": 14
+    },
+    "warnings": [],
+    "service_exit_code": 0,
+    "startup_seconds": 0.714719,
+    "peak_rss_mib": 82.574,
+    "exam_wall_seconds": 251.200542,
+    "vendor_stream_seconds": 251,
+    "eligible_evidence_ids": 405,
+    "unchanged_baseline_checkpoint_responses": 10,
+    "p1_expected_members_covered": 35,
+    "p1_expected_members": 35,
+    "end_checkpoint": {
+      "at": "2026-10-31T23:59:00Z",
+      "items": 7
+    },
+    "input_files_matched_to_offline_audit": 34,
+    "envelopes": 640419,
+    "batches": 132,
+    "batch_sizes": {
+      "1": 1,
+      "534": 1,
+      "1157": 1,
+      "1369": 1,
+      "2358": 1,
+      "5000": 127
+    },
+    "batch_counters": {
+      "accepted": 640419,
+      "inserted": 632810,
+      "retries": 7609,
+      "ignored": 0,
+      "malformed": 0,
+      "conflicts": 0
+    },
+    "store": {
+      "logical_messages": 632810,
+      "original_event_ids": 635066,
+      "stored_id_receipts": 640419,
+      "repeated_event_ids": 5353,
+      "new_id_aliases": 2256,
+      "clock_ahead_messages": 0,
+      "bx_messages": 308
+    },
+    "ingest_http_seconds": {
+      "p50": 1.727719,
+      "p95": 2.308416,
+      "p99": 2.44576,
+      "max": 2.569155,
+      "total": 214.324494
+    },
+    "batches_at_or_above_10_seconds": 0,
+    "queries": [
+      {
+        "path": "/devices/T-51205/status",
+        "at": "2026-10-12T14:45:00Z",
+        "status": 200,
+        "seconds": 6.324447
+      },
+      {
+        "path": "/devices/T-55244/status",
+        "at": "2026-10-12T14:45:00Z",
+        "status": 200,
+        "seconds": 0.01754
+      },
+      {
+        "path": "/devices/T-59467/status",
+        "at": "2026-10-12T14:45:00Z",
+        "status": 200,
+        "seconds": 0.01803
+      },
+      {
+        "path": "/triage",
+        "at": "2026-10-12T14:45:00Z",
+        "status": 200,
+        "seconds": 1.750986
+      },
+      {
+        "path": "/devices/C-2957/status",
+        "at": "2026-10-20T15:50:00Z",
+        "status": 200,
+        "seconds": 0.061221
+      },
+      {
+        "path": "/devices/C-2179/status",
+        "at": "2026-10-20T15:50:00Z",
+        "status": 200,
+        "seconds": 0.043949
+      },
+      {
+        "path": "/triage",
+        "at": "2026-10-20T15:50:00Z",
+        "status": 200,
+        "seconds": 5.424441
+      },
+      {
+        "path": "/devices/T-59847/status",
+        "at": "2026-10-26T23:30:00Z",
+        "status": 200,
+        "seconds": 0.041273
+      },
+      {
+        "path": "/triage",
+        "at": "2026-10-26T23:30:00Z",
+        "status": 200,
+        "seconds": 7.330573
+      },
+      {
+        "path": "/triage",
+        "at": "2026-10-31T23:59:00Z",
+        "status": 200,
+        "seconds": 9.97594
+      }
+    ],
+    "full_batch_http_seconds": {
+      "p50": 1.76735,
+      "p95": 2.308416,
+      "p99": 2.44576,
+      "max": 2.569155,
+      "total": 211.585576
+    }
+  },
+  "offline": {
+    "exit_code": 0,
+    "isolation": "macOS OS outbound sandbox and Python socket and DNS audit guard",
+    "native_probe_exit_code": 0,
+    "fresh_service_processes": 2,
+    "reference_files": 6
+  },
+  "baseline_warnings_seconds": {
+    "P3_triage": 10.9,
+    "END_triage": 13.6
+  },
+  "local_summary_paths": {
+    "preflight": "reports/preflight/run-wnic2p8m/summary.json",
+    "practice": "reports/practice/run-skxtethq/summary.json",
+    "offline": "reports/offline/run-w084v3c4/summary.json"
+  }
+}

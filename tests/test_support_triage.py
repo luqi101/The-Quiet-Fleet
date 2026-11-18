@@ -4,10 +4,12 @@ import tempfile
 import unittest
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from unittest.mock import patch
 
 from evidence_client import AuditedClient as TestClient
 
 from quiet_fleet.api import create_app
+from quiet_fleet.store import ReadSnapshot
 from test_http_foundation import RULES, STOCK_TRACKER, write_references
 
 
@@ -128,6 +130,33 @@ class SupportTriageTest(unittest.TestCase):
             self.assertEqual(result["reasons"], [*item["reasons"], item["next_action"]])
             self.assertTrue(set(item["evidence"]) <= set(result["evidence"]))
         return result
+
+    def test_paired_camera_reuses_one_full_tracker_history_per_queue_query(self):
+        tracker = self.device("Paired-history")
+        self.device("Unrelated-tracker")
+        camera = self.device("Paired-camera", "C", paired=tracker)
+        client = self.client()
+        self.ingest(client,
+            self.fix(tracker, 0),
+            self.camera(camera, 90, "storage_error"),
+            self.camera(camera, 150, "recording", received=210),
+        )
+        read_history = ReadSnapshot.facts_for
+        loads = []
+
+        def count_history(snapshot, serial):
+            if serial == tracker:
+                loads.append(snapshot.at_us)
+            return read_history(snapshot, serial)
+
+        with patch.object(ReadSnapshot, "facts_for", count_history):
+            item, = self.triage(client, 209)
+            self.assertEqual((item["serials"], item["likely_cause"], item["who_acts"]),
+                             ([camera], "camera_fault", "support"))
+            self.assertEqual(len(loads), 1)
+            self.assertEqual(self.triage(client, 210), [])
+            self.assertEqual(len(loads), 2)
+            self.assertLess(loads[0], loads[1])
 
     def test_every_actionable_cause_has_one_owner_and_shared_evidence(self):
         harness = self.device("Wiring")

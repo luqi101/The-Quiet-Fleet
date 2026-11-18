@@ -160,16 +160,24 @@ class DeviceContextReader:
         self.tracker_roster = {asset_id: tuple(serials) for asset_id, serials in tracker_roster.items()}
 
         self._cohort_facts: dict[str, DeviceFacts] = {}
+        self._last_full_tracker: tuple[str, DeviceFacts] | None = None
         self._trackers: dict[str, tuple[list[_Tracker], tuple[EventFact, ...], dict[str, tuple[EventFact, ...]]]] = {}
 
     def _project(self, serial: str, *, cohort_tracker: bool = False) -> DeviceFacts:
         if not cohort_tracker:
             device = self.references.devices[serial]
+            if self._last_full_tracker is not None and self._last_full_tracker[0] == serial:
+                return self._last_full_tracker[1]
             installed = _installation(device) if device.family == "BX" else None
-            return project_device(
+            facts = project_device(
                 self.snapshot.at_us, self.snapshot.facts_for(serial),
                 bx_installed_us=to_epoch_us(installed) if installed is not None else None,
             )
+            if device.family == "T":
+                # A paired camera can use the same immutable tracker history
+                # without keeping every tracker in memory for the whole queue.
+                self._last_full_tracker = serial, facts
+            return facts
         if serial not in self._cohort_facts:
             self._cohort_facts[serial] = project_device(self.snapshot.at_us, self.snapshot.tracker_cohort_facts(serial))
         return self._cohort_facts[serial]

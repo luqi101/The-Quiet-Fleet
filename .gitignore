@@ -27,6 +27,8 @@ htmlcov/
 /reports/bulk/
 /reports/preflight/
 /reports/practice/
+/reports/offline/
+/reports/release/
 /reports/raw/
 /reports/replay/
 /vendor/quiet-fleet/exam/results/

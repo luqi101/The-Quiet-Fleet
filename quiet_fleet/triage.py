@@ -109,6 +109,9 @@ class SupportView:
         self.references = references
         self.store = store
         self.operations = Operations(references.jobs.values(), rules)
+        self._queue_devices = tuple(sorted(
+            references.devices.values(), key=lambda device: (device.asset_id or "", device.family != "T", device.serial),
+        ))
         self._last: _IncidentView | None = None
 
     def _evaluation(self, at: datetime, snapshot: ReadSnapshot) -> _Evaluation:
@@ -156,7 +159,7 @@ class SupportView:
             grouped = self._incidents(snapshot)
             evaluation = self._evaluation(at, snapshot)
             entries = [evaluation.group(incident) for incident in grouped.incidents]
-            for device in self.references.devices.values():
+            for device in self._queue_devices:
                 if device.serial in grouped.by_serial:
                     continue
                 _, entry = evaluation.individual(evaluation.reader.read(device))
