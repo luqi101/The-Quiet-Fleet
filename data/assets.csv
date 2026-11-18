@@ -1,0 +1,252 @@
+asset_id,type,depot,use,make_model,year,vin,status
+V-101,van,MSS,locating,Ram ProMaster 2500,2024,Y9XA9NA909S4ZTCR4,active
+V-102,van,MSS,hvac,Ford E-Transit,2021,6PMRAAP28LNJSS2HL,active
+V-103,van,MSS,service,Ford Transit 250,2022,5P8A3HMXV4S11H6HW,active
+V-104,van,MSS,hvac,Ford E-Transit,2025,R8SDAE2RBMBSXXP0D,active
+V-105,van,MSS,service,Ford E-Transit,2025,W14HAWACEH91F4AG3,active
+V-106,van,MSS,service,Ford E-Transit,2022,9XEZD0UCPG6RZJC9N,active
+V-107,van,MSS,hvac,Ram ProMaster 2500,2023,F3U9Z5G08ZEYALWDB,active
+V-108,van,MSS,locating,Mercedes Sprinter 2500,2021,591GD11YRSK3LRZ82,active
+V-109,van,MSS,hvac,Ram ProMaster 2500,2023,XSND5ZVRV0B4RBRAL,active
+V-110,van,MSS,hvac,Ford Transit 250,2021,U35YNWHJVLR736DTD,active
+V-111,van,MSS,locating,Mercedes Sprinter 2500,2025,4J2W732KZE08A732A,active
+V-112,van,MSS,locating,Ram ProMaster 2500,2025,PGN9XWTY02G02FDNZ,active
+V-113,van,MSS,locating,Mercedes Sprinter 2500,2023,X81ZC17BK2FDU1U33,active
+V-114,van,MSS,hvac,Ram ProMaster 2500,2024,T83NLT87G96HXDLVC,active
+V-115,van,MSS,service,Ford Transit 250,2021,MU1K08VCEWKFMBEBD,active
+V-116,van,MSS,hvac,Ram ProMaster 2500,2024,1KM3CPCZ1DH061GMG,active
+V-117,van,MSS,hvac,Ford E-Transit,2021,VG28CZ1J01EFPMJLF,active
+V-118,van,MSS,locating,Ford E-Transit,2025,WJZT0768VA1V8KZJY,active
+V-119,van,MSS,locating,Mercedes Sprinter 2500,2022,5011CFLXTSR07DC3B,active
+V-120,van,MSS,hvac,Ram ProMaster 2500,2025,F1R58ECTZAPZBW1NR,active
+V-121,van,MSS,service,Ram ProMaster 2500,2021,41WBC9WV9G8E5VH8J,active
+V-122,van,MSS,hvac,Ford Transit 250,2025,M3UY82G9L2YX7UYCT,active
+V-123,van,MSS,service,Ram ProMaster 2500,2023,0CLCF2V5L8HKVELZ3,active
+V-124,van,MSS,service,Ford Transit 250,2025,83FV8FVUS1KNJLRER,active
+V-125,van,MSS,service,Ford Transit 250,2024,SXUEXAX0S4ACGF7EG,active
+V-126,van,MSS,locating,Mercedes Sprinter 2500,2023,ZWB6KPPXDWWD7JCJ5,active
+V-127,van,MSS,hvac,Ram ProMaster 2500,2021,K3PB4FA0KG6HCGRVR,active
+V-128,van,MSS,hvac,Ford E-Transit,2023,SMUPWF3HBSH6NVWLE,active
+V-129,van,MSS,service,Ford E-Transit,2023,VR2WPHBCXEYEPGW2E,active
+V-130,van,MSS,locating,Ford Transit 250,2025,HL75TS460L7EJNN15,active
+V-131,van,MSS,service,Ford Transit 250,2025,3K91XXTGD15YFFJKL,active
+V-132,van,MSS,locating,Mercedes Sprinter 2500,2024,NJBL60U86WUF6ES96,active
+V-133,van,MSS,hvac,Ram ProMaster 2500,2025,ADLKARB4JN7G7MNJV,active
+V-134,van,MSS,hvac,Mercedes Sprinter 2500,2024,BGS6R8364L1X18WR2,active
+V-135,van,MSS,service,Ford Transit 250,2022,6C5GSLRM321B5CUZM,active
+V-136,van,MSS,service,Ram ProMaster 2500,2022,1D3DAAXEA5J0SC001,active
+V-137,van,MSS,hvac,Ram ProMaster 2500,2024,11VRLC4FTWA6HK50R,active
+V-138,van,MSS,service,Mercedes Sprinter 2500,2024,URUZ4ZXNHFTD2XAXE,active
+V-139,van,MSS,service,Mercedes Sprinter 2500,2023,T5MF12FYCP7H0GA66,active
+V-140,van,MSS,hvac,Ford E-Transit,2025,6VTZDL1T3APAJ1TGE,active
+V-141,van,MSS,service,Ford Transit 250,2023,AM8LJ1WCB3G487LG5,active
+V-142,van,MSS,locating,Ram ProMaster 2500,2025,VWSYJDX5T659RPCK3,active
+V-143,van,MSS,locating,Ford Transit 250,2024,0D7WKHCU277FA37F4,active
+V-144,van,MSS,service,Ford Transit 250,2023,08UG77DD2XYU4FCD6,active
+V-145,van,MSS,locating,Ford E-Transit,2024,N4NGNY85BEXTT3CH4,active
+V-146,van,MSS,service,Mercedes Sprinter 2500,2023,5U2WKVKHVAA1EDNK1,active
+V-147,van,MSS,hvac,Mercedes Sprinter 2500,2022,8P4J7BZ1C3NU1YHMF,active
+V-148,van,MSS,locating,Ford Transit 250,2024,RZ15G4SB22XFTLDKR,active
+V-149,van,MSS,locating,Ram ProMaster 2500,2023,11RZXLR0BAVFJK95C,active
+V-150,van,MSS,service,Mercedes Sprinter 2500,2021,GPRF8B65UU054CZGB,active
+V-151,van,MSS,locating,Mercedes Sprinter 2500,2023,JGHSDYAUKX8FT3Z1H,active
+V-152,van,MSS,locating,Ford E-Transit,2022,GTT8CX4YFJ0520004,active
+V-153,van,MSS,hvac,Ram ProMaster 2500,2025,8H6PFCF7D22G8TC7R,active
+V-154,van,MSS,service,Mercedes Sprinter 2500,2024,UFGC53NXY93LL4ZXH,active
+V-155,van,MSS,service,Ford Transit 250,2021,0CLAK562G7M5J0XUD,active
+V-156,van,MSS,service,Ram ProMaster 2500,2023,JB2N8MM93Z2HE93LH,active
+V-157,van,MSS,service,Ford E-Transit,2024,NWCMBERZKYEUAZHZJ,active
+V-158,van,MSS,service,Ford Transit 250,2024,H2BA7SAYTKT4M3VC1,active
+V-159,van,MSS,hvac,Ford E-Transit,2023,7L6A6M9PVSVWP01N3,active
+V-160,van,MSS,service,Mercedes Sprinter 2500,2023,56F691MAVVM9WELPL,active
+V-161,van,MSS,service,Ford Transit 250,2024,D07NM6MMA5J5SWA5K,active
+V-162,van,MSS,hvac,Ford Transit 250,2022,ZR7JAG2RPABBH49EN,active
+V-163,van,MSS,service,Ford Transit 250,2021,FUZW6UXMGYPRX97LJ,active
+V-164,van,MSS,hvac,Ford E-Transit,2022,L9RSYFP2ET0SBB89P,active
+V-165,van,MSS,locating,Ram ProMaster 2500,2023,BCNMJMBMZFCN3Z6AF,active
+V-166,van,MSS,service,Mercedes Sprinter 2500,2021,6FCH4T2L19M4VV138,active
+V-167,van,MSS,service,Ford Transit 250,2023,N0ZKZ3Z029PHMTZNE,active
+V-168,van,MSS,locating,Ram ProMaster 2500,2023,LBB0DH20X6U5WHU2J,active
+V-169,van,MSS,locating,Ford E-Transit,2023,MEAEKMYTA95WPP2FZ,active
+V-170,van,MSS,locating,Ford Transit 250,2022,3L2BXXRCWZWFCP7UJ,active
+K-01,pickup,MSS,service,Chevrolet Silverado 1500,2023,H07GUMKSSAKDPY16H,active
+K-02,pickup,MSS,service,Ram 1500,2024,TT3VFRTPP5JNTATZN,active
+K-03,pickup,MSS,locating,Ford F-150,2023,XLA95VXKJXK27SUVG,active
+K-04,pickup,MSS,locating,Ford F-150,2022,74HD5C6A1BYAKFV2F,active
+K-05,pickup,MSS,service,Ford F-150,2023,0A81UTFBSD3WF9HC4,active
+K-06,pickup,MSS,service,Ram 1500,2022,CY79H9S32N9JX5EXX,active
+K-07,pickup,MSS,service,Ford F-150,2023,1UCPRCFMRFGZ90ETW,active
+K-08,pickup,MSS,locating,Ford F-150,2024,HEYCXDTWTTFJ1VVSK,active
+K-09,pickup,MSS,service,Chevrolet Silverado 1500,2023,G0804A80HW14ED2WU,active
+K-10,pickup,MSS,locating,Ram 1500,2022,ZZKTPF4F42NJ2XX1W,active
+K-11,pickup,MSS,service,Ford F-150,2022,E8EW60S2K6SKS3TY5,active
+K-12,pickup,MSS,locating,Ram 1500,2022,MLP8S10C5FY0T94A5,active
+K-13,pickup,MSS,service,Ford F-150,2022,KCNMLUTHMCMD6C32H,active
+K-14,pickup,MSS,locating,Chevrolet Silverado 1500,2020,LFEA6STDT3348ASGH,active
+K-15,pickup,MSS,locating,Chevrolet Silverado 1500,2023,SH38941KE1FP1P001,active
+K-16,pickup,MSS,locating,Ram 1500,2020,2Z3BTFAJ5NJB27R9M,active
+K-17,pickup,MSS,service,Chevrolet Silverado 1500,2020,BW6WC0DMMD341566R,active
+K-18,pickup,MSS,locating,Chevrolet Silverado 1500,2024,7CYW9MKJGB7G2R4TY,active
+K-19,pickup,MSS,service,Ford F-150,2020,VWJB7BX90LC0YNP2A,active
+K-20,pickup,MSS,service,Ram 1500,2024,TP34VJ0VW6JYKMNW3,active
+V-201,van,REG,hvac,Ram ProMaster 2500,2023,239U0HJ24ZALP5B5U,active
+V-202,van,REG,hvac,Mercedes Sprinter 2500,2023,YB8AP7DUUZZ9GGMDW,active
+V-203,van,REG,hvac,Ford E-Transit,2022,M632DMG4J8MCUE7H4,active
+V-204,van,REG,locating,Ford Transit 250,2025,4G653ZJTG9PTS1FKP,active
+V-205,van,REG,hvac,Ford E-Transit,2025,4059APP8D9K0EB2MG,active
+V-206,van,REG,locating,Ford Transit 250,2022,LNPFY5X3CED7MKKYS,active
+V-207,van,REG,service,Ford Transit 250,2023,4LKYN0X9VUJNUNZXS,active
+V-208,van,REG,hvac,Mercedes Sprinter 2500,2022,GUPP8BXCBKAHGFH51,active
+V-209,van,REG,service,Mercedes Sprinter 2500,2022,LK1UPM2A7WLYEU9DH,active
+V-210,van,REG,service,Ford Transit 250,2021,X9A6CKC96GYAMFU2S,active
+V-211,van,REG,service,Ford Transit 250,2025,MUBWR0622SA1X0AER,active
+V-212,van,REG,locating,Ford Transit 250,2022,2PENCKJMWRKA0V81V,active
+V-213,van,REG,locating,Ford Transit 250,2021,HJBSBE3CPPCTG7P0T,active
+V-214,van,REG,service,Ford Transit 250,2021,AZ6UR0E039M7D5F1Z,active
+V-215,van,REG,locating,Ram ProMaster 2500,2024,38HWDEYHRKAPGSFZY,active
+V-216,van,REG,locating,Ford E-Transit,2025,YKYZ64L0Z4G0G5BG5,active
+V-217,van,REG,hvac,Ford Transit 250,2024,F6LV0YATUJ9HKCH5R,active
+V-218,van,REG,service,Ford E-Transit,2021,AE0EYRFR8S8Y5U5SR,active
+V-219,van,REG,hvac,Mercedes Sprinter 2500,2022,5RND03RJ99XE837DR,active
+V-220,van,REG,service,Ford E-Transit,2025,PE393R041LSPVY0AF,active
+V-221,van,REG,locating,Ram ProMaster 2500,2022,G7UUSH8510GAZJU0A,active
+V-222,van,REG,service,Ram ProMaster 2500,2025,PZAFHVGJUF6WFBU3L,active
+V-223,van,REG,hvac,Mercedes Sprinter 2500,2021,JKPGLK81LK03U81V2,active
+V-224,van,REG,locating,Ford E-Transit,2024,NAR4LECYW11GE5HNF,active
+V-225,van,REG,service,Ford E-Transit,2025,JDS2FFXS4Y5C760LX,active
+V-226,van,REG,locating,Ford Transit 250,2021,MXCG29PTEMU2MLNZ2,active
+V-227,van,REG,locating,Ram ProMaster 2500,2021,YYE6DG6UNLEALSFCN,active
+V-228,van,REG,service,Ram ProMaster 2500,2022,A975G3YEASNV52XF8,active
+V-229,van,REG,locating,Ford Transit 250,2021,KU2B1KWMMSYR8RPDK,active
+V-230,van,REG,hvac,Ford Transit 250,2025,ALNCNF8BY30XNZ3H4,active
+V-231,van,REG,locating,Ford Transit 250,2025,BS0H276DSTG568TR1,active
+V-232,van,REG,service,Ford Transit 250,2023,XV00P1VN7FM59MYE7,active
+V-233,van,REG,hvac,Ford E-Transit,2024,CCWB5MCZRSWPE7V07,active
+V-234,van,REG,locating,Mercedes Sprinter 2500,2023,JBY073VV5FJA72VGE,active
+V-235,van,REG,hvac,Ford E-Transit,2021,UU6KW0NZLUMRAHPS1,active
+V-236,van,REG,locating,Ford E-Transit,2021,5W47VT7JZTWFB8B01,active
+V-237,van,REG,locating,Mercedes Sprinter 2500,2022,T05Z0F386C9UKBBGZ,active
+V-238,van,REG,locating,Mercedes Sprinter 2500,2022,GEZBS48SWHEAC148T,active
+V-239,van,REG,hvac,Mercedes Sprinter 2500,2021,JN9UEPNPX5811XDTF,active
+V-240,van,REG,locating,Ford Transit 250,2025,8PMC45S4MVJDAT15N,active
+V-241,van,REG,hvac,Mercedes Sprinter 2500,2024,ZUS1Y8VDTTL7J0A5X,active
+V-242,van,REG,service,Ram ProMaster 2500,2023,AML5AW20EEP8AWJHW,active
+V-243,van,REG,locating,Ford Transit 250,2025,LR7UVSLPAUBJXWBXY,active
+V-244,van,REG,service,Ford Transit 250,2021,YSTGN19Y4SED8JVCP,active
+V-245,van,REG,locating,Mercedes Sprinter 2500,2022,B2GXVWFYLACC4TTN8,active
+V-246,van,REG,locating,Ford E-Transit,2024,4VC64SETXNL65LZK5,active
+V-247,van,REG,service,Mercedes Sprinter 2500,2025,MBVRULAG00L2B2RCB,active
+V-248,van,REG,hvac,Mercedes Sprinter 2500,2021,R6XN1GYNE77AEK70B,active
+V-249,van,REG,service,Ram ProMaster 2500,2022,5W66MC1GJL6CYKGTV,active
+V-250,van,REG,hvac,Ford Transit 250,2024,LM85BC2NGPN89R4JF,active
+K-21,pickup,REG,locating,Ford F-150,2020,G2WK120BR6J25C57G,active
+K-22,pickup,REG,locating,Chevrolet Silverado 1500,2024,LYV1HLM8YZ7C91MC5,active
+K-23,pickup,REG,service,Ram 1500,2023,GGWAL3RBEH1H5PG3G,active
+K-24,pickup,REG,service,Chevrolet Silverado 1500,2023,TSU2XYCMESYBHJ3LU,active
+K-25,pickup,REG,locating,Ram 1500,2020,GA2MBJATDM7491S85,active
+K-26,pickup,REG,service,Chevrolet Silverado 1500,2020,7JHB9Z0VZUUL2SJ1R,active
+K-27,pickup,REG,locating,Ram 1500,2022,A0HETJ5UDVYT7NNL5,active
+K-28,pickup,REG,service,Chevrolet Silverado 1500,2023,EDRXF51SEYC54M94B,active
+K-29,pickup,REG,locating,Ford F-150,2022,FZKWN16SWG5HEYG3T,active
+K-30,pickup,REG,locating,Chevrolet Silverado 1500,2023,9YVSW0N3W84KD2Y0Y,active
+K-31,pickup,REG,service,Ram 1500,2023,FY1AX7D2K8V0Z7W6T,active
+K-32,pickup,REG,locating,Chevrolet Silverado 1500,2022,LL28AP4DH75BS9ZKM,active
+K-33,pickup,REG,service,Chevrolet Silverado 1500,2022,VE9CTMUM6K3BJEFUF,active
+K-34,pickup,REG,locating,Ram 1500,2022,SR6RSLU8ZB8GPAZMD,active
+K-35,pickup,REG,locating,Ram 1500,2023,XP4PR6M9BVKJ5BASB,active
+TR-01,trailer,REG,general,Big Tex 35SA,2019,,active
+TR-02,trailer,REG,snow,PJ Utility 14ft,2018,,active
+TR-03,trailer,REG,snow,PJ Utility 14ft,2023,,active
+TR-04,trailer,REG,general,PJ Utility 14ft,2021,,active
+TR-05,trailer,REG,snow,PJ Utility 14ft,2021,,active
+TR-06,trailer,REG,general,Big Tex 35SA,2021,,active
+TR-07,trailer,REG,snow,PJ Utility 14ft,2023,,active
+TR-08,trailer,REG,snow,PJ Utility 14ft,2019,,active
+TR-09,trailer,REG,snow,PJ Utility 14ft,2023,,active
+TR-10,trailer,REG,general,PJ Utility 14ft,2018,,active
+TR-11,trailer,REG,snow,PJ Utility 14ft,2019,,active
+TR-12,trailer,REG,general,Big Tex 35SA,2021,,active
+TR-13,trailer,REG,general,PJ Utility 14ft,2021,,active
+TR-14,trailer,REG,snow,Karavan 5x10,2019,,active
+TR-15,trailer,REG,general,Karavan 5x10,2019,,active
+TR-16,trailer,REG,snow,PJ Utility 14ft,2023,,active
+TR-17,trailer,REG,snow,PJ Utility 14ft,2019,,active
+TR-18,trailer,REG,snow,Karavan 5x10,2019,,active
+TR-19,trailer,REG,general,Big Tex 35SA,2018,,active
+TR-20,trailer,REG,snow,Big Tex 35SA,2021,,active
+TR-21,trailer,REG,general,Karavan 5x10,2023,,active
+TR-22,trailer,REG,general,Big Tex 35SA,2021,,active
+TR-23,trailer,REG,snow,Karavan 5x10,2021,,active
+TR-24,trailer,REG,general,PJ Utility 14ft,2019,,active
+TR-25,trailer,REG,general,Big Tex 35SA,2021,,active
+TR-26,trailer,REG,snow,PJ Utility 14ft,2018,,active
+TR-27,trailer,REG,snow,Big Tex 35SA,2018,,active
+TR-28,trailer,REG,general,Karavan 5x10,2023,,active
+TR-29,trailer,REG,snow,PJ Utility 14ft,2018,,active
+TR-30,trailer,REG,snow,PJ Utility 14ft,2019,,active
+TR-31,trailer,REG,snow,PJ Utility 14ft,2018,,active
+TR-32,trailer,REG,general,PJ Utility 14ft,2019,,active
+TR-33,trailer,REG,snow,Big Tex 35SA,2021,,active
+TR-34,trailer,REG,snow,Karavan 5x10,2021,,active
+TR-35,trailer,REG,general,PJ Utility 14ft,2021,,active
+TR-36,trailer,REG,general,Big Tex 35SA,2019,,active
+TR-50,trailer,MSS,general,Karavan 5x10,2019,,active
+TR-51,trailer,MSS,snow,PJ Utility 14ft,2019,,active
+TR-52,trailer,MSS,snow,Karavan 5x10,2021,,active
+TR-53,trailer,MSS,general,Karavan 5x10,2019,,active
+TR-54,trailer,MSS,general,PJ Utility 14ft,2021,,active
+TR-55,trailer,MSS,general,Karavan 5x10,2021,,active
+TR-56,trailer,MSS,snow,Big Tex 35SA,2021,,active
+TR-57,trailer,MSS,snow,PJ Utility 14ft,2019,,active
+TR-58,trailer,MSS,general,Big Tex 35SA,2023,,active
+TR-59,trailer,MSS,general,Karavan 5x10,2018,,active
+TR-60,trailer,MSS,landscaping,PJ Utility 14ft,2021,,active
+TR-61,trailer,MSS,landscaping,PJ Utility 14ft,2021,,active
+TR-62,trailer,MSS,landscaping,Big Tex 35SA,2018,,active
+TR-63,trailer,MSS,landscaping,Big Tex 35SA,2021,,active
+TR-64,trailer,MSS,landscaping,Karavan 5x10,2019,,active
+TR-65,trailer,MSS,landscaping,Big Tex 35SA,2023,,active
+TR-66,trailer,MSS,landscaping,Karavan 5x10,2021,,active
+TR-67,trailer,MSS,landscaping,Big Tex 35SA,2023,,active
+TR-68,trailer,MSS,landscaping,Karavan 5x10,2021,,active
+TR-69,trailer,MSS,landscaping,Big Tex 35SA,2019,,active
+TR-70,trailer,MSS,landscaping,Karavan 5x10,2019,,active
+TR-71,trailer,MSS,landscaping,PJ Utility 14ft,2023,,active
+TR-72,trailer,MSS,snow,PJ Utility 14ft,2023,,active
+TR-73,trailer,MSS,snow,Karavan 5x10,2019,,active
+TR-74,trailer,MSS,general,Karavan 5x10,2019,,active
+TR-75,trailer,MSS,snow,Karavan 5x10,2019,,active
+TR-76,trailer,MSS,general,Big Tex 35SA,2021,,active
+TR-77,trailer,MSS,snow,Big Tex 35SA,2023,,active
+TR-78,trailer,MSS,general,Big Tex 35SA,2021,,active
+TR-79,trailer,MSS,snow,Karavan 5x10,2023,,active
+EQ-01,equipment,MSS,generator,Honda EU7000,2019,,active
+EQ-02,equipment,MSS,vac excavator,Bobcat S66,2023,,active
+EQ-03,equipment,MSS,compact loader,Honda EU7000,2021,,active
+EQ-04,equipment,MSS,generator,Vactor 2100,2021,,active
+EQ-05,equipment,MSS,compact loader,Vactor 2100,2023,,active
+EQ-06,equipment,MSS,vac excavator,Honda EU7000,2019,,active
+EQ-07,equipment,MSS,vac excavator,Bobcat S66,2019,,active
+EQ-08,equipment,MSS,vac excavator,Bobcat S66,2019,,active
+EQ-09,equipment,MSS,compact loader,Bobcat S66,2023,,active
+EQ-10,equipment,MSS,vac excavator,Vactor 2100,2023,,active
+EQ-11,equipment,MSS,generator,Vactor 2100,2023,,active
+EQ-12,equipment,MSS,generator,Vactor 2100,2019,,active
+EQ-13,equipment,MSS,generator,Honda EU7000,2019,,active
+EQ-14,equipment,MSS,compact loader,Vactor 2100,2021,,active
+EQ-15,equipment,MSS,compact loader,Bobcat S66,2021,,active
+EQ-21,equipment,REG,generator,Vactor 2100,2023,,active
+EQ-22,equipment,REG,vac excavator,Honda EU7000,2021,,active
+EQ-23,equipment,REG,generator,Honda EU7000,2023,,active
+EQ-24,equipment,REG,vac excavator,Honda EU7000,2019,,active
+EQ-25,equipment,REG,compact loader,Bobcat S66,2019,,active
+EQ-26,equipment,REG,generator,Honda EU7000,2023,,active
+EQ-27,equipment,REG,generator,Vactor 2100,2021,,active
+EQ-28,equipment,REG,generator,Bobcat S66,2019,,active
+EQ-29,equipment,REG,generator,Vactor 2100,2019,,active
+EQ-30,equipment,REG,compact loader,Bobcat S66,2023,,active
+EQ-31,equipment,REG,compact loader,Vactor 2100,2019,,active
+EQ-32,equipment,REG,vac excavator,Honda EU7000,2019,,active
+EQ-33,equipment,REG,vac excavator,Honda EU7000,2021,,active
+EQ-34,equipment,REG,compact loader,Honda EU7000,2019,,active
+EQ-35,equipment,REG,generator,Vactor 2100,2021,,active

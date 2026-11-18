@@ -1,0 +1,33 @@
+{
+  "description": "The Quiet Fleet planning kit. No service has been implemented by this deliverable.",
+  "files": {
+    "00_START_HERE.md": {
+      "size_bytes": 13512,
+      "sha256": "b3f940c2727a5378205fdcfe196c49052a185a5d1210d5784f51fd2df64f5b9a"
+    },
+    "01_IMPLEMENTATION_PLAN.md": {
+      "size_bytes": 56963,
+      "sha256": "22d78d3fe51bc8520934dd1902f4f8acaeb6b7f2c5acc125fa94e11b2ec4fe1d"
+    },
+    "02_CODEX_PROMPTS.md": {
+      "size_bytes": 54612,
+      "sha256": "7d74f26e650d9d11e686d2e9a08f46a9ab9c40ddb6da00837b67f4283bda648d"
+    },
+    "03_ACCEPTANCE_TEST_MATRIX.md": {
+      "size_bytes": 17612,
+      "sha256": "aff18d287c5118f268fb8dfc04e66eedbcf4be4cae67294d350f617a3e134de0"
+    },
+    "04_FORM3_AND_LIVE_CALL.md": {
+      "size_bytes": 10024,
+      "sha256": "5388f83abeab45fa490b4f73f16101d02e295296ececab05c0704891126f2c9b"
+    },
+    "AGENTS.template.md": {
+      "size_bytes": 3825,
+      "sha256": "4b68f99b6af5de0e5d7c0481a82446cd712bb75213241d5d3062110a9d6ba75f"
+    },
+    "data_findings.json": {
+      "size_bytes": 21836,
+      "sha256": "67d93c4eef7ed06c7c812e488c38571079b974f93380e686aaaebe45a35e370d"
+    }
+  }
+}

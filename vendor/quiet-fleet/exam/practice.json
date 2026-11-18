@@ -1,0 +1,529 @@
+{
+ "name": "Practice exam (3 checkpoints in the history)",
+ "streams": [
+  "{data}/telemetry/*.jsonl"
+ ],
+ "checkpoints": [
+  {
+   "id": "P1",
+   "at": "2026-10-12T14:45:00Z",
+   "title": "Mississauga, Monday Oct 12, 10:45 local. Many trackers stopped at once.",
+   "unavailable_assets": [
+    "EQ-01",
+    "EQ-02",
+    "EQ-03",
+    "EQ-04",
+    "EQ-06",
+    "EQ-08",
+    "EQ-09",
+    "EQ-11",
+    "EQ-12",
+    "EQ-13",
+    "EQ-15",
+    "K-01",
+    "K-03",
+    "K-04",
+    "K-05",
+    "K-06",
+    "K-07",
+    "K-09",
+    "K-12",
+    "K-14",
+    "K-15",
+    "K-18",
+    "K-24",
+    "TR-50",
+    "TR-51",
+    "TR-52",
+    "TR-53",
+    "TR-55",
+    "TR-57",
+    "TR-58",
+    "TR-59",
+    "TR-60",
+    "TR-63",
+    "TR-66",
+    "TR-67",
+    "TR-69",
+    "TR-70",
+    "TR-74",
+    "TR-77",
+    "TR-78",
+    "TR-79",
+    "V-101",
+    "V-102",
+    "V-105",
+    "V-106",
+    "V-107",
+    "V-108",
+    "V-109",
+    "V-111",
+    "V-112",
+    "V-113",
+    "V-114",
+    "V-115",
+    "V-116",
+    "V-117",
+    "V-118",
+    "V-119",
+    "V-120",
+    "V-121",
+    "V-122",
+    "V-123",
+    "V-124",
+    "V-125",
+    "V-126",
+    "V-128",
+    "V-129",
+    "V-130",
+    "V-131",
+    "V-132",
+    "V-133",
+    "V-134",
+    "V-135",
+    "V-137",
+    "V-138",
+    "V-139",
+    "V-140",
+    "V-141",
+    "V-142",
+    "V-143",
+    "V-144",
+    "V-145",
+    "V-146",
+    "V-147",
+    "V-148",
+    "V-149",
+    "V-150",
+    "V-151",
+    "V-154",
+    "V-158",
+    "V-159",
+    "V-160",
+    "V-161",
+    "V-162",
+    "V-163",
+    "V-164",
+    "V-166",
+    "V-167",
+    "V-168",
+    "V-210"
+   ],
+   "checks": [
+    {
+     "type": "status",
+     "label": "Outage tracker is explained by the carrier",
+     "serial": "T-51205",
+     "state": [
+      "needs_action",
+      "unknown"
+     ],
+     "cause": [
+      "carrier_outage"
+     ]
+    },
+    {
+     "type": "status",
+     "label": "Outage tracker is explained by the carrier",
+     "serial": "T-55244",
+     "state": [
+      "needs_action",
+      "unknown"
+     ],
+     "cause": [
+      "carrier_outage"
+     ]
+    },
+    {
+     "type": "status",
+     "label": "Outage tracker is explained by the carrier",
+     "serial": "T-59467",
+     "state": [
+      "needs_action",
+      "unknown"
+     ],
+     "cause": [
+      "carrier_outage"
+     ]
+    },
+    {
+     "type": "triage_item",
+     "persona": "support",
+     "label": "One incident for the outage, owned by the carrier",
+     "serials": [
+      "T-51205",
+      "T-51227",
+      "T-51516",
+      "T-51815",
+      "T-51901",
+      "T-51949",
+      "T-52005",
+      "T-52063",
+      "T-52494",
+      "T-52890",
+      "T-53120",
+      "T-53792",
+      "T-54060",
+      "T-54212",
+      "T-54598",
+      "T-55045",
+      "T-55101",
+      "T-55244",
+      "T-55323",
+      "T-55409",
+      "T-55652",
+      "T-55926",
+      "T-56171",
+      "T-56387",
+      "T-56624",
+      "T-56867",
+      "T-57174",
+      "T-57835",
+      "T-58352",
+      "T-58699",
+      "T-58721",
+      "T-59040",
+      "T-59271",
+      "T-59381",
+      "T-59467"
+     ],
+     "min_cover": 0.8,
+     "cause": [
+      "carrier_outage"
+     ],
+     "who_acts": [
+      "carrier"
+     ],
+     "kind": [
+      "incident"
+     ]
+    },
+    {
+     "type": "jobs_no_swap_or_gap",
+     "persona": "fleet",
+     "label": "No swaps or gaps because of the outage",
+     "query": {
+      "depot": "MSS",
+      "hours": 4
+     },
+     "asset_ids": [
+      "K-03",
+      "K-04",
+      "K-06",
+      "K-07",
+      "K-09",
+      "K-12",
+      "K-14",
+      "K-15",
+      "V-101",
+      "V-102",
+      "V-106",
+      "V-107",
+      "V-112",
+      "V-113",
+      "V-114",
+      "V-115",
+      "V-116",
+      "V-128",
+      "V-130",
+      "V-132",
+      "V-138",
+      "V-139",
+      "V-140",
+      "V-141",
+      "V-147",
+      "V-148",
+      "V-154",
+      "V-158",
+      "V-160",
+      "V-161",
+      "V-162",
+      "V-164",
+      "V-166",
+      "V-167",
+      "V-168"
+     ]
+    },
+    {
+     "type": "visits_exclude",
+     "persona": "scheduler",
+     "label": "No technician visits for the outage",
+     "query": {
+      "days": 1
+     },
+     "asset_ids": [
+      "K-03",
+      "K-04",
+      "K-06",
+      "K-07",
+      "K-09",
+      "K-12",
+      "K-14",
+      "K-15",
+      "V-101",
+      "V-102",
+      "V-106",
+      "V-107",
+      "V-112",
+      "V-113",
+      "V-114",
+      "V-115",
+      "V-116",
+      "V-128",
+      "V-130",
+      "V-132",
+      "V-138",
+      "V-139",
+      "V-140",
+      "V-141",
+      "V-147",
+      "V-148",
+      "V-154",
+      "V-158",
+      "V-160",
+      "V-161",
+      "V-162",
+      "V-164",
+      "V-166",
+      "V-167",
+      "V-168"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "P2",
+   "at": "2026-10-20T15:50:00Z",
+   "title": "Mississauga, Tuesday Oct 20, 11:50 local. One camera failed, another is asleep.",
+   "unavailable_assets": [
+    "V-120",
+    "V-133",
+    "V-205"
+   ],
+   "checks": [
+    {
+     "type": "status",
+     "label": "Failed camera on V-133 needs action",
+     "serial": "C-2957",
+     "state": [
+      "needs_action"
+     ],
+     "cause": [
+      "camera_fault"
+     ],
+     "evidence_any": [
+      "e47594389"
+     ]
+    },
+    {
+     "type": "status",
+     "label": "Sleeping camera on parked V-140 is quiet as expected",
+     "serial": "C-2179",
+     "state": [
+      "quiet_expected"
+     ],
+     "cause": [
+      "sleeping_by_design"
+     ]
+    },
+    {
+     "type": "triage_item",
+     "persona": "support",
+     "label": "V-133 camera: support tries a remote reboot first",
+     "serials": [
+      "C-2957"
+     ],
+     "cause": [
+      "camera_fault"
+     ],
+     "who_acts": [
+      "support"
+     ],
+     "evidence_any": [
+      "e47594389"
+     ]
+    },
+    {
+     "type": "triage_excludes",
+     "persona": "support",
+     "label": "Sleeping camera is not in triage",
+     "serials": [
+      "C-2179"
+     ]
+    },
+    {
+     "type": "job",
+     "persona": "fleet",
+     "label": "V-133's next job can't be recorded",
+     "query": {
+      "depot": "MSS",
+      "hours": 4
+     },
+     "job_id": "J-MSS-1020-01936",
+     "problem": [
+      "no_video",
+      "both"
+     ],
+     "decision": [
+      "swap",
+      "keep",
+      "gap"
+     ]
+    },
+    {
+     "type": "jobs_exclude_assets",
+     "persona": "fleet",
+     "label": "Sleeping camera's van isn't flagged",
+     "query": {
+      "depot": "MSS",
+      "hours": 24
+     },
+     "asset_ids": [
+      "V-140"
+     ]
+    },
+    {
+     "type": "visits_exclude",
+     "persona": "scheduler",
+     "label": "No visit for V-133 yet: a remote reboot comes first",
+     "query": {
+      "days": 2
+     },
+     "asset_ids": [
+      "V-133"
+     ]
+    },
+    {
+     "type": "visits_exclude",
+     "persona": "scheduler",
+     "label": "No visit for the sleeping camera",
+     "query": {
+      "days": 2
+     },
+     "asset_ids": [
+      "V-140"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "P3",
+   "at": "2026-10-26T23:30:00Z",
+   "title": "Regina, Monday Oct 26, 17:30 local. A pickup's tracker lost power mid-shift.",
+   "unavailable_assets": [
+    "K-27",
+    "V-129",
+    "V-141"
+   ],
+   "checks": [
+    {
+     "type": "status",
+     "label": "K-27 tracker lost power",
+     "serial": "T-59847",
+     "state": [
+      "needs_action"
+     ],
+     "cause": [
+      "power_loss"
+     ],
+     "evidence_any": [
+      "e33683614",
+      "e78779377"
+     ]
+    },
+    {
+     "type": "triage_item",
+     "persona": "support",
+     "label": "K-27: a technician has to reconnect the tracker",
+     "serials": [
+      "T-59847"
+     ],
+     "cause": [
+      "power_loss"
+     ],
+     "who_acts": [
+      "technician"
+     ],
+     "evidence_any": [
+      "e33683614",
+      "e78779377"
+     ]
+    },
+    {
+     "type": "job",
+     "persona": "fleet",
+     "label": "K-27's first job tomorrow moves to a free pickup",
+     "query": {
+      "depot": "REG",
+      "hours": 24
+     },
+     "job_id": "J-REG-1027-08488",
+     "problem": [
+      "no_location",
+      "both"
+     ],
+     "decision": [
+      "swap"
+     ]
+    },
+    {
+     "type": "job",
+     "persona": "fleet",
+     "label": "K-27's second job tomorrow is listed",
+     "query": {
+      "depot": "REG",
+      "hours": 24
+     },
+     "job_id": "J-REG-1027-08489",
+     "problem": [
+      "no_location",
+      "both"
+     ]
+    },
+    {
+     "type": "visit",
+     "persona": "scheduler",
+     "label": "K-27 gets a visit on Tuesday, within visit hours",
+     "query": {
+      "days": 2
+     },
+     "asset_id": "K-27",
+     "between": [
+      "2026-10-27T13:00:00Z",
+      "2026-10-27T21:00:00Z"
+     ],
+     "reason": [
+      "power_loss"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "END",
+   "at": "2026-10-31T23:59:00Z",
+   "title": "End of the history. Your answers are saved for Form 3 (top 3 actions).",
+   "unavailable_assets": [],
+   "checks": [],
+   "also_query": {
+    "support": [
+     {}
+    ],
+    "fleet": [
+     {
+      "depot": "MSS",
+      "hours": 24
+     },
+     {
+      "depot": "REG",
+      "hours": 24
+     }
+    ],
+    "scheduler": [
+     {
+      "days": 1
+     }
+    ]
+   }
+  }
+ ]
+}

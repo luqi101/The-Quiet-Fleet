@@ -1,0 +1,853 @@
+{
+  "status": "Measured planning findings; not service implementation or test results",
+  "repository": {
+    "url": "https://github.com/luqi101/The-Quiet-Fleet.git",
+    "observed_visibility": "public",
+    "observed_default_branch": "main",
+    "observed_empty": true
+  },
+  "assumptions": {
+    "recommended_persona": "support",
+    "actual_submitted_form1_persona": "not available",
+    "recommended_tradeoff": "false alarms worse",
+    "hidden_exam_access": false
+  },
+  "counts": {
+    "assets": 251,
+    "devices": 360,
+    "schedule_jobs": 8957,
+    "support_cases": 179,
+    "plan_changes": 22,
+    "weather_rows": 62,
+    "telemetry_envelopes": 640419,
+    "distinct_event_ids": 635066,
+    "raw_semantic_messages": 632810,
+    "exact_id_duplicate_excess": 5353,
+    "semantic_duplicate_excess": 7609,
+    "additional_event_id_aliases": 2256,
+    "bx_envelopes": 313,
+    "bx_distinct_raw_frames_in_telemetry": 308,
+    "bx_raw_sample_file_lines": 300
+  },
+  "duplicate_definition": "SHA256 of JSON-sorted envelope contents excluding event_id and received_at; retains original device_time and raw frame representation",
+  "duplicate_receipt_delay_seconds": {
+    "median": 301,
+    "p99": 593,
+    "max": 599
+  },
+  "family_counts": {
+    "A": 76,
+    "BX": 20,
+    "C": 93,
+    "T": 171
+  },
+  "inventory_status_counts": {
+    "active": 341,
+    "stock": 13,
+    "removed": 6
+  },
+  "camera_case_actions": {
+    "remote_reboot": 28,
+    "technician_visit": 12,
+    "total": 40,
+    "firmware_4.2.1": {
+      "remote_reboot": 27,
+      "technician_visit": 10
+    },
+    "firmware_4.3.0": {
+      "remote_reboot": 1,
+      "technician_visit": 2
+    }
+  },
+  "support_case_anomalies": [
+    {
+      "case_id": "CS-0016",
+      "opened_at": "2026-10-07T20:33:09Z",
+      "closed_at": "2026-10-07T20:28:09Z",
+      "policy": "exclude invalid duration; preserve anomaly"
+    }
+  ],
+  "healthy_A_daily_intervals_seconds": {
+    "cohort": "adjacent observations both >=25% battery and gap <30h",
+    "n": 1734,
+    "min": 84120,
+    "median": 86400,
+    "p95": 88080,
+    "p99": 88500,
+    "max": 88800
+  },
+  "continuous_ignition_on_position_intervals_seconds": {
+    "n": 479626,
+    "median": 120,
+    "p95": 123,
+    "p99": 123,
+    "note": "includes faulty/abnormal long gaps; use appropriate cohorts for fitting"
+  },
+  "bx_mapping": {
+    "serial": "u unchanged",
+    "time": "int(t,16) Unix seconds UTC",
+    "battery_pct": "100*b/4095 (inferred model matching rounded anchors)",
+    "moving_mask": 1,
+    "low_battery_mask": 2,
+    "gps_fix_mask": 8,
+    "unknown_observed_mask": 4,
+    "coordinates": "split signed p integers and divide by 100000",
+    "portal_timezone": "America/Regina"
+  },
+  "bx_anchor_validation": [
+    {
+      "raw": {
+        "u": "BX40471",
+        "t": "6ADA16E0",
+        "b": 3094,
+        "s": 8,
+        "p": "5042719,-10456695"
+      },
+      "portal": {
+        "unit": "BX40471",
+        "last_report_portal_time": "2026-10-22 08:00:00",
+        "battery": "76%",
+        "moving": "No",
+        "low_battery": "No",
+        "gps_fix": "Yes",
+        "latitude": "50.42719",
+        "longitude": "-104.56695"
+      },
+      "decoded": {
+        "serial": "BX40471",
+        "utc": "2026-10-22T14:00:00Z",
+        "battery_pct_display": 76,
+        "moving": false,
+        "low_battery": false,
+        "gps_fix": true,
+        "latitude": 50.42719,
+        "longitude": -104.56695
+      },
+      "matches_all_supplied_fields": true
+    },
+    {
+      "raw": {
+        "u": "BX41085",
+        "t": "6AD8D76C",
+        "b": 2583,
+        "s": 9,
+        "p": "5043083,-10466817"
+      },
+      "portal": {
+        "unit": "BX41085",
+        "last_report_portal_time": "2026-10-21 09:17:00",
+        "battery": "63%",
+        "moving": "Yes",
+        "low_battery": "No",
+        "gps_fix": "Yes",
+        "latitude": "50.43083",
+        "longitude": "-104.66817"
+      },
+      "decoded": {
+        "serial": "BX41085",
+        "utc": "2026-10-21T15:17:00Z",
+        "battery_pct_display": 63,
+        "moving": true,
+        "low_battery": false,
+        "gps_fix": true,
+        "latitude": 50.43083,
+        "longitude": -104.66817
+      },
+      "matches_all_supplied_fields": true
+    },
+    {
+      "raw": {
+        "u": "BX47068",
+        "t": "6AE4B4B0",
+        "b": 573,
+        "s": 10,
+        "p": "5046073,-10467404"
+      },
+      "portal": {
+        "unit": "BX47068",
+        "last_report_portal_time": "2026-10-30 09:16:00",
+        "battery": "14%",
+        "moving": "No",
+        "low_battery": "Yes",
+        "gps_fix": "Yes",
+        "latitude": "50.46073",
+        "longitude": "-104.67404"
+      },
+      "decoded": {
+        "serial": "BX47068",
+        "utc": "2026-10-30T15:16:00Z",
+        "battery_pct_display": 14,
+        "moving": false,
+        "low_battery": true,
+        "gps_fix": true,
+        "latitude": 50.46073,
+        "longitude": -104.67404
+      },
+      "matches_all_supplied_fields": true
+    }
+  ],
+  "profile": {
+    "events": 640419,
+    "types": {
+      "heartbeat": 19541,
+      "check_in": 1977,
+      "ignition_on": 5097,
+      "camera_status": 117761,
+      "position": 490497,
+      "ignition_off": 5093,
+      "command": 54,
+      "plan_change": 22,
+      "power_disconnect": 25,
+      "low_voltage": 15,
+      "power_restore": 24,
+      "bx_raw": 313
+    },
+    "device_time_formats": [
+      [
+        "A",
+        "1.9.0",
+        "nonstring",
+        252
+      ],
+      [
+        "A",
+        "2.0.4",
+        "utc_z",
+        1725
+      ],
+      [
+        "BX",
+        "?",
+        "missing",
+        313
+      ],
+      [
+        "C",
+        "4.2.1",
+        "utc_z",
+        57399
+      ],
+      [
+        "C",
+        "4.3.0",
+        "utc_z",
+        60438
+      ],
+      [
+        "T",
+        "7.1.2",
+        "utc_z",
+        327146
+      ],
+      [
+        "T",
+        "7.2.0",
+        "utc_z",
+        193146
+      ]
+    ],
+    "examples": {
+      "heartbeat": {
+        "event_id": "e37557379",
+        "serial": "T-56005",
+        "type": "heartbeat",
+        "device_time": "2026-10-04T04:04:59Z",
+        "received_at": "2026-10-04T04:05:02Z",
+        "payload": {
+          "battery_v": 12.15,
+          "signal": 3,
+          "vin": "KCNMLUTHMCMD6C32H"
+        }
+      },
+      "check_in": {
+        "event_id": "e58445119",
+        "serial": "A-31996",
+        "type": "check_in",
+        "device_time": "2026-10-04T09:02:00Z",
+        "received_at": "2026-10-04T09:02:02Z",
+        "payload": {
+          "battery_pct": 49,
+          "lat": 43.58969,
+          "lng": -79.61194,
+          "temp_c": 10.7
+        }
+      },
+      "ignition_on": {
+        "event_id": "e53996927",
+        "serial": "T-56325",
+        "type": "ignition_on",
+        "device_time": "2026-10-04T11:44:00Z",
+        "received_at": "2026-10-04T11:44:01Z",
+        "payload": {
+          "vin": "08UG77DD2XYU4FCD6"
+        }
+      },
+      "camera_status": {
+        "event_id": "e16832096",
+        "serial": "C-2138",
+        "type": "camera_status",
+        "device_time": "2026-10-04T11:44:05Z",
+        "received_at": "2026-10-04T11:44:08Z",
+        "payload": {
+          "status": "booting"
+        }
+      },
+      "position": {
+        "event_id": "e92952677",
+        "serial": "T-56325",
+        "type": "position",
+        "device_time": "2026-10-04T11:45:40Z",
+        "received_at": "2026-10-04T11:45:42Z",
+        "payload": {
+          "lat": 43.68977,
+          "lng": -79.47839,
+          "speed_kmh": 0,
+          "ignition": true
+        }
+      },
+      "ignition_off": {
+        "event_id": "e25341857",
+        "serial": "T-56325",
+        "type": "ignition_off",
+        "device_time": "2026-10-04T12:12:00Z",
+        "received_at": "2026-10-04T12:12:03Z",
+        "payload": {}
+      },
+      "command": {
+        "event_id": "e80922629",
+        "serial": "C-2827",
+        "type": "command",
+        "device_time": "2026-10-05T17:05:30Z",
+        "received_at": "2026-10-05T17:05:30Z",
+        "payload": {
+          "command": "reboot",
+          "issued_by": "support"
+        }
+      },
+      "plan_change": {
+        "event_id": "e66298120",
+        "serial": "C-2823",
+        "type": "plan_change",
+        "device_time": "2026-10-06T16:41:00Z",
+        "received_at": "2026-10-06T16:41:00Z",
+        "payload": {
+          "plan": "video",
+          "status": "paused",
+          "reason": "data_limit"
+        }
+      },
+      "power_disconnect": {
+        "event_id": "e94695354",
+        "serial": "T-51301",
+        "type": "power_disconnect",
+        "device_time": "2026-10-07T14:02:00Z",
+        "received_at": "2026-10-07T14:02:04Z",
+        "payload": {}
+      },
+      "low_voltage": {
+        "event_id": "e55295643",
+        "serial": "T-51301",
+        "type": "low_voltage",
+        "device_time": "2026-10-07T14:16:00Z",
+        "received_at": "2026-10-07T14:16:01Z",
+        "payload": {
+          "volts": 3.52,
+          "source": "backup_battery"
+        }
+      },
+      "power_restore": {
+        "event_id": "e66154726",
+        "serial": "T-56754",
+        "type": "power_restore",
+        "device_time": "2026-10-07T17:34:00Z",
+        "received_at": "2026-10-07T17:34:02Z",
+        "payload": {}
+      },
+      "bx_raw": {
+        "event_id": "e32014277",
+        "type": "bx_raw",
+        "received_at": "2026-10-16T12:55:07Z",
+        "raw": "{\"u\":\"BX48377\",\"t\":\"6AD21EA4\",\"b\":3359,\"s\":8,\"p\":\"5042293,-10462700\"}"
+      }
+    },
+    "non_utc_samples": [
+      {
+        "event_id": "e71924390",
+        "serial": "A-35416",
+        "type": "check_in",
+        "device_time": 1791109320,
+        "received_at": "2026-10-04T10:22:01Z",
+        "payload": {
+          "battery_pct": 65,
+          "lat": 43.57852,
+          "lng": -79.66138,
+          "temp_c": 12.0
+        }
+      },
+      {
+        "event_id": "e34680403",
+        "serial": "A-31022",
+        "type": "check_in",
+        "device_time": 1791110100,
+        "received_at": "2026-10-04T10:35:03Z",
+        "payload": {
+          "battery_pct": 81,
+          "lat": 43.59301,
+          "lng": -79.61602,
+          "temp_c": 11.2
+        }
+      },
+      {
+        "event_id": "e48866676",
+        "serial": "A-39695",
+        "type": "check_in",
+        "device_time": 1791110700,
+        "received_at": "2026-10-04T10:45:05Z",
+        "payload": {
+          "battery_pct": 55,
+          "lat": 43.57522,
+          "lng": -79.65651,
+          "temp_c": 10.4
+        }
+      },
+      {
+        "event_id": "e38717911",
+        "serial": "A-39624",
+        "type": "check_in",
+        "device_time": 1791114780,
+        "received_at": "2026-10-04T11:53:03Z",
+        "payload": {
+          "battery_pct": 51,
+          "lat": 50.45983,
+          "lng": -104.57966,
+          "temp_c": 9.2
+        }
+      },
+      {
+        "event_id": "e11152160",
+        "serial": "A-38028",
+        "type": "check_in",
+        "device_time": 1791118440,
+        "received_at": "2026-10-04T12:54:05Z",
+        "payload": {
+          "battery_pct": 90,
+          "lat": 43.56224,
+          "lng": -79.63222,
+          "temp_c": 6.3
+        }
+      },
+      {
+        "event_id": "e41153886",
+        "serial": "A-30011",
+        "type": "check_in",
+        "device_time": 1791118740,
+        "received_at": "2026-10-04T12:59:05Z",
+        "payload": {
+          "battery_pct": 53,
+          "lat": 43.61525,
+          "lng": -79.61069,
+          "temp_c": 11.7
+        }
+      },
+      {
+        "event_id": "e11152160",
+        "serial": "A-38028",
+        "type": "check_in",
+        "device_time": 1791118440,
+        "received_at": "2026-10-04T13:01:32Z",
+        "payload": {
+          "battery_pct": 90,
+          "lat": 43.56224,
+          "lng": -79.63222,
+          "temp_c": 6.3
+        }
+      },
+      {
+        "event_id": "e60413894",
+        "serial": "A-36510",
+        "type": "check_in",
+        "device_time": 1791120000,
+        "received_at": "2026-10-04T13:20:01Z",
+        "payload": {
+          "battery_pct": 51,
+          "lat": 50.45831,
+          "lng": -104.58799,
+          "temp_c": 7.4
+        }
+      },
+      {
+        "event_id": "e47845241",
+        "serial": "A-38214",
+        "type": "check_in",
+        "device_time": 1791121440,
+        "received_at": "2026-10-04T13:44:02Z",
+        "payload": {
+          "battery_pct": 50,
+          "lat": 50.47121,
+          "lng": -104.6156,
+          "temp_c": 8.7
+        }
+      },
+      {
+        "event_id": "e84469337",
+        "serial": "A-30254",
+        "type": "check_in",
+        "device_time": 1791122040,
+        "received_at": "2026-10-04T13:54:04Z",
+        "payload": {
+          "battery_pct": 45,
+          "lat": 50.42166,
+          "lng": -104.65818,
+          "temp_c": 10.8
+        }
+      },
+      {
+        "event_id": "e13192227",
+        "serial": "A-31002",
+        "type": "check_in",
+        "device_time": 1791128580,
+        "received_at": "2026-10-04T15:43:03Z",
+        "payload": {
+          "battery_pct": 94,
+          "lat": 50.44943,
+          "lng": -104.63478,
+          "temp_c": 6.7
+        }
+      },
+      {
+        "event_id": "e21303190",
+        "serial": "A-31022",
+        "type": "check_in",
+        "device_time": 1791196620,
+        "received_at": "2026-10-05T10:37:04Z",
+        "payload": {
+          "battery_pct": 80,
+          "lat": 43.59159,
+          "lng": -79.61609,
+          "temp_c": 9.7
+        }
+      }
+    ],
+    "id_duplicates": [
+      5353,
+      5353
+    ],
+    "semantic_duplicate_groups_and_excess": [
+      7608,
+      7609
+    ],
+    "id_collision_examples": [],
+    "payload_fields": {
+      "heartbeat": {
+        "battery_v": 19541,
+        "signal": 19541,
+        "vin": 19541
+      },
+      "check_in": {
+        "battery_pct": 1977,
+        "lat": 1977,
+        "lng": 1977,
+        "temp_c": 1977
+      },
+      "ignition_on": {
+        "vin": 5097
+      },
+      "camera_status": {
+        "status": 117761,
+        "code": 31
+      },
+      "position": {
+        "lat": 490497,
+        "lng": 490497,
+        "speed_kmh": 490497,
+        "ignition": 490497
+      },
+      "command": {
+        "command": 54,
+        "issued_by": 54
+      },
+      "plan_change": {
+        "plan": 22,
+        "status": 22,
+        "reason": 22
+      },
+      "low_voltage": {
+        "volts": 15,
+        "source": 15
+      }
+    }
+  },
+  "timing_statistics": {
+    "lags_sec": {
+      "T/7.2.0": {
+        "n": 190860,
+        "min": 1.0,
+        "p50": 3.0,
+        "p90": 6.0,
+        "p95": 6.0,
+        "p99": 213.0,
+        "max": 5396.0
+      },
+      "T/7.1.2": {
+        "n": 323243,
+        "min": 1.0,
+        "p50": 4.0,
+        "p90": 6.0,
+        "p95": 6.0,
+        "p99": 665.0,
+        "max": 5384.0
+      },
+      "C/4.2.1": {
+        "n": 56723,
+        "min": 0.0,
+        "p50": 3.0,
+        "p90": 5.0,
+        "p95": 5.0,
+        "p99": 5.0,
+        "max": 6.0
+      },
+      "C/4.3.0": {
+        "n": 59724,
+        "min": 0.0,
+        "p50": 3.0,
+        "p90": 5.0,
+        "p95": 5.0,
+        "p99": 5.0,
+        "max": 6.0
+      },
+      "A/2.0.4": {
+        "n": 1705,
+        "min": 1.0,
+        "p50": 3.0,
+        "p90": 5.0,
+        "p95": 5.0,
+        "p99": 5.0,
+        "max": 5.0
+      },
+      "BX/unknown": {
+        "n": 308,
+        "min": 2.0,
+        "p50": 5.0,
+        "p90": 8.0,
+        "p95": 8.0,
+        "p99": 8.0,
+        "max": 8.0
+      },
+      "A/1.9.0": {
+        "n": 247,
+        "min": 1.0,
+        "p50": 3.0,
+        "p90": 5.0,
+        "p95": 5.0,
+        "p99": 5.0,
+        "max": 5.0
+      }
+    },
+    "future_device_times": {},
+    "future_examples": {},
+    "gaps_sec": {
+      "T/7.2.0/position": {
+        "n": 180198,
+        "min": 117.0,
+        "p50": 120.0,
+        "p90": 122.0,
+        "p95": 123.0,
+        "p99": 123.0,
+        "max": 412056.0
+      },
+      "T/7.1.2/position": {
+        "n": 304308,
+        "min": 117.0,
+        "p50": 120.0,
+        "p90": 122.0,
+        "p95": 123.0,
+        "p99": 3865.0,
+        "max": 825809.0
+      },
+      "T/7.1.2/ignition_off": {
+        "n": 3110,
+        "min": 4800.0,
+        "p50": 57120.0,
+        "p90": 170460.0,
+        "p95": 250200.0,
+        "p99": 336120.0,
+        "max": 828000.0
+      },
+      "C/4.2.1/camera_status": {
+        "n": 56618,
+        "min": 4.0,
+        "p50": 300.0,
+        "p90": 300.0,
+        "p95": 300.0,
+        "p99": 54845.0,
+        "max": 499445.0
+      },
+      "C/4.3.0/camera_status": {
+        "n": 59663,
+        "min": 9.0,
+        "p50": 300.0,
+        "p90": 300.0,
+        "p95": 300.0,
+        "p99": 55625.0,
+        "max": 671525.0
+      },
+      "T/7.1.2/ignition_on": {
+        "n": 3111,
+        "min": 4920.0,
+        "p50": 56940.0,
+        "p90": 171600.0,
+        "p95": 253080.0,
+        "p99": 344940.0,
+        "max": 861540.0
+      },
+      "A/2.0.4/check_in": {
+        "n": 1639,
+        "min": 84000.0,
+        "p50": 86460.0,
+        "p90": 87900.0,
+        "p95": 88260.0,
+        "p99": 173760.0,
+        "max": 433080.0
+      },
+      "T/7.2.0/ignition_on": {
+        "n": 1761,
+        "min": 4980.0,
+        "p50": 58740.0,
+        "p90": 171300.0,
+        "p95": 249960.0,
+        "p99": 331500.0,
+        "max": 518400.0
+      },
+      "T/7.1.2/heartbeat": {
+        "n": 12261,
+        "min": 9900.0,
+        "p50": 14400.0,
+        "p90": 43080.0,
+        "p95": 52020.0,
+        "p99": 60600.0,
+        "max": 277620.0
+      },
+      "T/7.2.0/heartbeat": {
+        "n": 6877,
+        "min": 14400.0,
+        "p50": 14400.0,
+        "p90": 43560.0,
+        "p95": 51840.0,
+        "p99": 60900.0,
+        "max": 105720.0
+      },
+      "BX/unknown/bx_raw": {
+        "n": 288,
+        "min": 82980.0,
+        "p50": 86340.0,
+        "p90": 88500.0,
+        "p95": 88860.0,
+        "p99": 89460.0,
+        "max": 89940.0
+      },
+      "T/7.2.0/ignition_off": {
+        "n": 1765,
+        "min": 4860.0,
+        "p50": 58320.0,
+        "p90": 166260.0,
+        "p95": 246060.0,
+        "p99": 335940.0,
+        "max": 438480.0
+      },
+      "A/1.9.0/check_in": {
+        "n": 237,
+        "min": 84060.0,
+        "p50": 86460.0,
+        "p90": 87900.0,
+        "p95": 88680.0,
+        "p99": 172440.0,
+        "max": 260400.0
+      },
+      "C/4.2.1/command": {
+        "n": 17,
+        "min": 10800.0,
+        "p50": 21600.0,
+        "p90": 588885.0,
+        "p95": 918127.0,
+        "p99": 918127.0,
+        "max": 927079.0
+      },
+      "C/4.3.0/plan_change": {
+        "n": 5,
+        "min": 154800.0,
+        "p50": 194400.0,
+        "p90": 212400.0,
+        "p95": 212400.0,
+        "p99": 212400.0,
+        "max": 234000.0
+      },
+      "C/4.2.1/plan_change": {
+        "n": 6,
+        "min": 118800.0,
+        "p50": 169200.0,
+        "p90": 190800.0,
+        "p95": 190800.0,
+        "p99": 190800.0,
+        "max": 219600.0
+      },
+      "C/4.3.0/command": {
+        "n": 2,
+        "min": 10800.0,
+        "p50": 10800.0,
+        "p90": 10800.0,
+        "p95": 10800.0,
+        "p99": 10800.0,
+        "max": 10800.0
+      },
+      "T/7.1.2/power_disconnect": {
+        "n": 1,
+        "min": 603300.0,
+        "p50": 603300.0,
+        "p90": 603300.0,
+        "p95": 603300.0,
+        "p99": 603300.0,
+        "max": 603300.0
+      },
+      "T/7.1.2/power_restore": {
+        "n": 1,
+        "min": 524460.0,
+        "p50": 524460.0,
+        "p90": 524460.0,
+        "p95": 524460.0,
+        "p99": 524460.0,
+        "max": 524460.0
+      }
+    },
+    "camera_status_counts": {
+      "recording": 110633,
+      "sleeping": 2827,
+      "booting": 2880,
+      "storage_error": 31
+    },
+    "camera_code_counts": {
+      "None": 116340,
+      "SD_WRITE_FAIL": 31
+    },
+    "known_serial_count": 348,
+    "unknown_serial_rows": []
+  },
+  "source_sha256": {
+    "The_Quiet_Fleet_Take_Home_Candidate_Brief(1).pdf": "3df2ab56f3c7ac4e97a6fb8dab97ba1c78d380407494c823acb7dbf88357d0d6",
+    "quiet-fleet-data-pack.zip": "b7bca5ead37a022f530850c71d143a43a5027883c567d6d519d5ae53ba5edea3",
+    "quiet-fleet-data-pack/README.md": "38b956661de1d6da9362b23e0a85853b59feec8e021e5955f16070219ca661d8",
+    "quiet-fleet-data-pack/data/assets.csv": "6a67920f1cc726db2b9a8da7e15f9404e6d41c0012375a76403d98d610e679ab",
+    "quiet-fleet-data-pack/data/devices.csv": "2a0d19b9d875f75a7301955f664b5d1dd7b99f22ad22c2cd8e5aa38f27eb8fa9",
+    "quiet-fleet-data-pack/data/plan_changes.csv": "ac6dcbef39b31c6b57717c37a87384033998c527c206ffcd6940132f2008c1dc",
+    "quiet-fleet-data-pack/data/schedule.csv": "827fb52331bff0a37e9793b64a31cc0b38cc0a53dcecf9f67625e9111e4f7f5b",
+    "quiet-fleet-data-pack/data/support_cases.csv": "9c6268b4348d0585788d182f7c0910eb4683e2286cb184fe9fff5986fae0dca1",
+    "quiet-fleet-data-pack/data/weather.csv": "f3519fadf3d27a0c5f5a3a880ea58b65ad0a25254b364857dd1c1601efe98f78",
+    "quiet-fleet-data-pack/docs/CONTRACT.md": "81e6572fb5ec2695d7c722469d24070bc1608fc1a2ad5c1b1233224cfa5d77b6",
+    "quiet-fleet-data-pack/docs/PRIMER.md": "6cb0fdb08e5317d3117ccda153b85721883103338a85d56b18e7bd9693235735",
+    "quiet-fleet-data-pack/exam/PRACTICE.md": "8b24a9e552433488094acfdec2f06a641035cf614a7171a1f9ef50e433f63d93",
+    "quiet-fleet-data-pack/exam/practice.json": "edd93191b138fb7cb07a02d7613e9b686b08788f5b50a41c69f173df9bc92266",
+    "quiet-fleet-data-pack/exam/qf_exam.py": "b6848dfb429b261f89a62ff4b85b56faac03e95bd466a58775958bcfee5eeaa2",
+    "quiet-fleet-data-pack/new_hardware/README.md": "04e804c3344ded070b8931da5972e9ea5b423aa89458536028be73e5602b34d5",
+    "quiet-fleet-data-pack/new_hardware/bx_raw_messages.txt": "56114a69eed0cde471062b833ee8abfa7fc318da7cbdfd7bdff44551607c48e4",
+    "quiet-fleet-data-pack/new_hardware/portal_readout.csv": "dad2e2899ca1fd7ce5fc9fe6a7527914fb6d9845a3acd12b3fb0735e64696f05"
+  }
+}

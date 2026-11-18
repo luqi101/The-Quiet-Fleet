@@ -1,0 +1,32 @@
+# Original and extracted inputs
+/inputs/
+/.local/
+/data/telemetry/
+
+# Python environment and caches
+/.venv/
+__pycache__/
+*.py[cod]
+.cache/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.DS_Store
+
+# Local runtime state
+*.db
+*.db-*
+*.sqlite
+*.sqlite-*
+*.sqlite3
+*.sqlite3-*
+
+# Generated replay results and bulky intermediates
+/reports/bulk/
+/reports/preflight/
+/reports/practice/
+/reports/raw/
+/reports/replay/
+/vendor/quiet-fleet/exam/results/

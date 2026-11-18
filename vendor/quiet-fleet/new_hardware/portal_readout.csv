@@ -1,0 +1,4 @@
+unit,last_report_portal_time,battery,moving,low_battery,gps_fix,latitude,longitude
+BX40471,2026-10-22 08:00:00,76%,No,No,Yes,50.42719,-104.56695
+BX41085,2026-10-21 09:17:00,63%,Yes,No,Yes,50.43083,-104.66817
+BX47068,2026-10-30 09:16:00,14%,No,Yes,Yes,50.46073,-104.67404

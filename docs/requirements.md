@@ -1,0 +1,80 @@
+# Quiet Fleet requirement traceability
+
+This is the P00 verification plan. All implementation and release checks in the matrix are **pending**. The matrix preserves R01–R37 from the planning kit and adds explicit source requirements where needed. Update each row with the exact test name and observed result as later phases complete.
+
+The candidate brief in `inputs/candidate-brief.pdf` and the API contract govern requirements. The exam runner and practice scenario define the supplied executable checks. The planning kit supplies the lettered acceptance IDs and additional adversarial cases. [API contract](../vendor/quiet-fleet/docs/CONTRACT.md), [practice expectations](../vendor/quiet-fleet/exam/PRACTICE.md), [acceptance matrix](../planning/03_ACCEPTANCE_TEST_MATRIX.md)
+
+Support and prioritizing fewer false alarms are provisional planning choices. Before persona work, compare them with any verified Form 1 text and update the applicable rows. The shared rows apply regardless of persona. [Decisions](decisions.md)
+
+## Startup, HTTP, and immutable inputs
+
+| ID | Requirement | Future module or artifact | Meaningful verification |
+| --- | --- | --- | --- |
+| R01 | Target Ubuntu 24.04 with Python 3.12 | `requirements.txt`, release checks | H09. In a clean Ubuntu environment, install the pinned dependencies and run documented startup under Python 3.12. |
+| R02 | One start command on localhost port 8080, offline after install | `quiet_fleet/__main__.py`, README | A01, A06, H10. Start by the documented command with outbound networking unavailable and issue real loopback HTTP requests. |
+| R03 | Load the six named reference CSVs from `QF_DATA_DIR`, default `./data` | `reference.py` | A02, A05. Start with only the six files in an alternate directory, confirm a query uses that roster, then verify a missing required file prevents readiness. |
+| R04 | Start each normal process with empty telemetry | `store.py`, startup lifecycle | A04. Ingest, restart, then verify the known device has no prior contact or evidence. |
+| R05 | Telemetry enters through `/ingest` only | Startup dependency boundary | A03. Start with no corpus and with a deliberately unreadable or invalid telemetry directory. Check readiness and empty state both times. |
+| R06 | `GET /health` returns `200 {"status":"ok"}` when ready | `api.py`, startup lifecycle | A01, A05. Verify exact JSON after successful initialization and failure to become ready with invalid critical inputs. |
+| R07 | `POST /ingest` accepts batches of up to 5,000 events within 10 seconds and returns integer `accepted` | `api.py`, `store.py` | A11, A12, A16, H07. Measure each batch on full replay, exercise an empty envelope and the 5,001 limit, and verify concurrent queries see coherent batches. |
+| R08 | Isolate individual malformed events | `normalize.py`, `api.py` | A13. Place malformed rows between valid observations, assert HTTP 200 and the documented count, and verify each valid neighbor affects status. |
+| R09 | Accept and ignore unfamiliar event types | `normalize.py` | A14. Include a valid unknown envelope and verify it is counted per policy without changing status, freshness, or evidence. |
+| R27 | Emit complete contract JSON with UTC timestamps, valid enum values, finite confidence in [0, 1], and the selected persona's required fields | `models.py`, `api.py` | A07, C15, E13. Run an independent strict schema assertion on populated and empty responses, including `reporting/none`. |
+| R28 | Return JSON 400 for invalid or missing parameters and malformed batch envelopes, 404 for unknown serials and unsupported personas | `api.py` | A08–A11, A15. Exercise malformed JSON, invalid query times, unknown serial, known stock serial, and persona discovery. |
+| R38 | Keep vendor files byte-identical, six reference CSVs available at startup, and the original corpus local | `vendor/quiet-fleet/`, `data/`, `.gitignore` | H01, H16. Recheck the source hash manifest and six staged CSVs. Verify originals, telemetry and generated bulk outputs stay outside Git. |
+
+## Temporal model, identity, and evidence
+
+| ID | Requirement | Future module or artifact | Meaningful verification |
+| --- | --- | --- | --- |
+| R10 | Deduplicate exact event IDs and semantic retries with new IDs | `normalize.py`, `store.py` | B01–B05. Retry a batch, reorder keys, change retry IDs and receipt times, and verify unchanged domain facts. Separate actual readings at different observation times and preserve the first valid record on conflicted ID. |
+| R11 | Reconstruct facts independent of ingestion order | `store.py`, `projection.py` | B08–B12, B21. Vary arrival ordering and batch boundaries over equivalent accepted facts. Verify backfill can add retrospective knowledge without replacing newer observations. |
+| R12 | At query time, apply the inclusive platform receipt cutoff and the ingested-so-far constraint | `store.py`, `projection.py`, persona evaluator | B06–B08, B20. Add a receipt exactly at `at` and one just after. Compare prior status, association, incident and action results under repeated queries. |
+| R13 | Normalize and preserve device observation time independently of receipt | `time_utils.py`, `normalize.py`, `projection.py` | B09–B17. Test buffered observations, legacy numeric Unix seconds, malformed and future times, and platform-only events. Backfill may show a receipt while the old reading remains stale. |
+| R21 | Reconstruct historical asset assignments with VIN, roster and dated transition evidence | `projection.py` | D15–D19. Preserve a removed unit before the observed swap, recognize a matching VIN from stock, and retain ambiguity when two serials remain credible. |
+| R26 | Return original evidence event IDs available by `at` and meaningful reasons | `projection.py`, diagnosis and persona response builders | B07, B18, B19, E21, H05–H06. Resolve every output ID to an eligible receipt, include the key fault evidence, and return an explained empty evidence list when no event exists. |
+| R39 | Supply every required status field, including asset association and `last_heard_at` | `projection.py`, `models.py` | A07, A08, B02, B13, B17, B19. Verify no-contact nulls for known devices and that commands, plan changes, and later retry receipts cannot advance the latest first receipt of a distinct device observation. |
+| R40 | Read reference context without introducing future outcome information into runtime decisions | `reference.py`, `projection.py` | B22, C06, D25, D32. Make case and CSV plan rows match a hidden future fault, then verify the current result derives only from eligible facts. Test legitimate future schedule context with local-date weather. |
+
+## Diagnosis and calibration
+
+| ID | Requirement | Future module or artifact | Meaningful verification |
+| --- | --- | --- | --- |
+| R14 | Respect the given tracker parked heartbeat of four hours and lateness after four hours 30 minutes | `config/rules.json`, `diagnosis.py` | C03, C04. Exercise 269:59, 270:00, and 270:01 at stable ignition-off and verify behavior around the boundary. |
+| R15 | Use the given two-minute driving position cadence and a separately calibrated overdue threshold | `config/rules.json`, `diagnosis.py` | C01, C02, C05. Compare ordinary cadence, zero speed with ignition on, and overdue driving reports. |
+| R16 | Camera sleeps 15 minutes after ignition off and wakes with ignition | `projection.py`, `diagnosis.py` | C07–C10, H05. Verify before and after the 15-minute transition and a new ignition-on before a recording resumes. |
+| R17 | A-series normally reports daily with calibrated jitter/grace | `calibrate.py`, `diagnosis.py` | C11–C14. Check one and multiple missed opportunities, ordinary jitter, and sparse newly installed devices using only earlier observations. |
+| R18 | Keep power loss active through backup transmissions and close on credible restoration | `diagnosis.py` | B12, D01–D04, H06. Ingest disconnect, backup low voltage and positions, then a real restore, and compare subsequent status. |
+| R19 | Track camera fault, remote-first intervention, and true recording recovery | `diagnosis.py`, persona actions | B10, D05–D12, H05. Verify old recording, booting, sleep, and duplicate reboots leave the episode unresolved. Escalate under tested policy after distinct failed awake attempts and clear on later recording. |
+| R20 | Apply ingested pause/end and resume transitions as of query | `projection.py`, `diagnosis.py` | D13, D14, B22. Compare paused, ended, and resumed states, including a later-delivered transition, with account ownership and separate device freshness. |
+| R22 | Keep battery, cold, downtime, and coverage explanations evidence-based and bounded | `diagnosis.py`, `config/rules.json` | D20–D31. Exercise low-battery hysteresis/recovery, a cold healthy miss versus a proven depleted battery, independently confirmed seasonal policy, and backfill without future knowledge. |
+| R23 | Correlate due-reporting losses by carrier and depot with meaningful controls and recovery | `incidents.py` | E01–E11, H04. Use renamed cohorts, healthy other-carrier peers, ordinary shift changes, individual failures, retry bursts, and partial and complete recovery. |
+| R29 | Config holds chosen thresholds and provisional business cutoffs with units, comparators, and provenance | `config/rules.json`, calibration register | F07, H14. Validate config on startup and inspect every chosen rule and boundary against its documented origin and synthetic case. |
+| R30 | Reproduce calibration from history and document limitations | `scripts/audit_data.py`, `scripts/calibrate.py`, `docs/calibration.md` | D32, H14. Check source hashes and cohort sizes, reproduce candidate sweeps on chronological development and validation slices, and report alert volume independently of selected case labels. |
+| R31 | Integrate optional BX decoding through ingest, status and selected persona | `bx.py`, `normalize.py`, `diagnosis.py` | G01–G14. Verify three original portal anchors and a new valid frame, malformed isolation, flags/no fix, receipt cutoff, duplicate safety and actual battery actions/recovery. Record in Form 3 if omitted. |
+| R41 | Apply real depot-local dates, daily 06:00 shifts, and the November DST change | `time_utils.py`, `projection.py`, persona evaluator | F01–F06. Verify Mississauga's repeated hour, year-round Regina offset, a UTC/local date split, exact 06:00 and weekend jobs. |
+
+## Persona-specific decision surfaces
+
+Only the selected persona's rows become grading gates. Shared API and diagnosis rows apply in every case.
+
+| ID | Requirement | Future module or artifact | Meaningful verification |
+| --- | --- | --- | --- |
+| R24 | Support `GET /triage?at=` returns only actionable or follow-up items, with each serial in at most one item | `triage.py` | E12–E14, E19–E22, H04. Validate single-device versus incident shape, stable output, shared status consistency and no duplicate serial ownership or side effects. |
+| R25 | Support supplies who acts, next action, reasons, evidence and priority based on actual operating needs | `triage.py` | E15–E22, H04–H06. Check owner/action and active versus ended jobs, then verify sleeping camera exclusion, remote-first camera, carrier group, and physical power dispatch. |
+| R42 | If fleet manager is selected, `GET /job-cover?depot=&at=&hours=` covers impaired jobs starting in the half-open window | Fleet job-cover evaluator | Validate MSS/REG and integer hours 1–72. Assert `no_location`, `no_video`, or `both` and `swap`, `keep`, or `gap` with required fields, same type/depot and visible/recordable free replacements for the full slot, and no overlapping bookings. Exercise P1 keep or omit, P2 video loss and P3 valid swap. |
+| R43 | If field-tech scheduler is selected, `GET /visits?at=&days=` books only technician work and explains deferred work | Field-tech visit evaluator | Verify integer days 1–3 and the depot-local window, strictly after `at`, weekdays 07:00–15:00, at most six per depot/day and no new visits for remote-first, carrier, or sleeping cases. Assert required visit/kit/evidence fields, deferred asset/reason/why fields, and P3 power visit. |
+| R44 | Describe the chosen persona, decision timing, cost of mistakes and deliberate false-alarm/miss trade-off | README, selected persona evaluator, `docs/decisions.md` | H14. Compare the profile and policy to verified Form 1 if available and use synthetic false-alarm and missed-fault cases to show the choice and its safeguards in behavior. |
+
+## Verification, submission evidence, and live call
+
+| ID | Requirement | Future module or artifact | Meaningful verification |
+| --- | --- | --- | --- |
+| R32 | Run the unmodified preflight and practice against separate fresh processes | `scripts/release_check.py` | H01–H09. Capture the official results and review warnings. Independently enforce strict errors, replay idempotence, per-batch latency, checkpoint query latency, and memory. |
+| R33 | Keep a truthful AI record and meaningful local commits | `docs/ai-usage.md`, planning status, Git history | H14–H16. Check actual authorship, corrections or independent validations, original form text where available, and no fabricated results or times. |
+| R34 | Capture the persona's actual top actions at `2026-10-31T23:59:00Z` | `scripts/capture_end_state.py`, Form 3 worksheet | H13. Compare the draft to the saved real endpoint response at the exact cutoff. Record an actual shortage of items if applicable. |
+| R35 | Form 3 product note stays at or below 300 words | Form 3 worksheet | H14. Count words and review the proposed first version, user, value to customers, and 60-day measure. |
+| R36 | Keep development commits local until the submission stage | Git workflow and release checklist | H15, H16. Inspect the exact remote, tested commit, and allowlisted contents. Require separate user direction for publication and form submission. |
+| R37 | Candidate can demo a fresh checkpoint and make a small live code change | Live-call notes and focused tests | Rehearse one configurable behavior change, its focused test, and the brief's demo and discussion timings. |
+| R45 | Form 3 records the repository and AI log, actual tests, thresholds, trade-off, BX disposition, top actions, Form 1 changes and AI verification | Form 3 worksheet and supporting docs | H13–H15. Verify every answer against actual source, replay outputs, user-confirmed intent, and recorded checks. Review release source identity and the setup-only post-submission exception. |
+| R46 | Use only provided data and general public knowledge, and track the ops allowance accurately | Calibration provenance, decisions, ops notes | Review provenance, verify no runtime external API or AI calls, and compare any attributed ops fact and question count with actual records. |
