@@ -3,10 +3,11 @@
 import json
 from collections.abc import Iterator
 from dataclasses import dataclass
+from itertools import groupby
 
 from .bx import BX_REPORT
 from .config import RulesConfig
-from .fault import FaultDecision
+from .fault import FaultDecision, active_episode
 from .models import LikelyCause, WhoActs
 from .projection import DeviceFacts
 from .store import EventFact
@@ -21,10 +22,18 @@ class PlanState:
 
 
 def plan_changes(observations: tuple[EventFact, ...]) -> Iterator[tuple[EventFact, str, str]]:
-    for event in observations:
-        if event.kind == "plan_change":
+    changes = (event for event in observations if event.kind == "plan_change")
+    severity = {"active": 0, "paused": 1, "ended": 2}
+    for _, simultaneous in groupby(changes, key=lambda event: event.observed_us):
+        by_plan = {}
+        for event in simultaneous:
             change = json.loads(event.payload_json)
-            yield event, change["plan"], change["status"]
+            plan, status = change["plan"], change["status"]
+            previous = by_plan.get(plan)
+            if previous is None or severity[status] >= severity[previous[2]]:
+                by_plan[plan] = event, plan, status
+        # Across plans, apply new holds before removals at the same instant.
+        yield from sorted(by_plan.values(), key=lambda change: change[2] == "active")
 
 
 def plan_timeline(observations: tuple[EventFact, ...]) -> PlanState:
@@ -71,19 +80,16 @@ def battery_fault(facts: DeviceFacts, family: str, rules: RulesConfig) -> FaultD
     if latest is None:
         return None
 
-    readings = ((event, json.loads(event.payload_json)) for event in facts.observations if event.kind == kind)
-    # At an equal BX clock, a clear cannot split an episode renewed by a low flag.
-    if bx:
-        readings = sorted(readings, key=lambda item: (item[0].observed_us, not item[1]["low_battery"]))
-    opening = last_low = None
-    for event, reading in readings:
-        percent = reading["battery_pct"]
-        low = reading["low_battery"] if bx else percent <= policy.a_low_battery.value
-        if low:
-            opening = opening or event
-            last_low = event
-        elif last_low is not None and percent >= recovery and event.observed_us > last_low.observed_us:
-            opening = last_low = None
+    payloads = ((event, json.loads(event.payload_json)) for event in facts.observations if event.kind == kind)
+    readings = (
+        (
+            event,
+            reading["battery_pct"],
+            reading["low_battery"] if bx else reading["battery_pct"] <= policy.a_low_battery.value,
+        )
+        for event, reading in payloads
+    )
+    opening, last_low = active_episode((event, low) for event, percent, low in readings if low or percent >= recovery)
     if opening is None or last_low is None:
         return None
 

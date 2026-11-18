@@ -7,7 +7,7 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-from fastapi.testclient import TestClient
+from evidence_client import AuditedClient as TestClient
 
 from quiet_fleet.api import create_app
 from quiet_fleet.bx import BX_REPORT, decode_bx

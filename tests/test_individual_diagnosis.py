@@ -1,7 +1,7 @@
 import csv
 import json
 
-from fastapi.testclient import TestClient
+from evidence_client import AuditedClient as TestClient
 
 import test_normal_reporting as fixture
 from quiet_fleet.api import create_app
@@ -91,6 +91,7 @@ class IndividualDiagnosisTest(fixture.ReportingFixture):
             event("mid-check-off", tracker, "ignition_off", 400, {}),
             event("next-ignition", tracker, "ignition_on", 1000, {"vin": fixture.VIN}),
             event("completed-command", camera, "command", 1100, command),
+            fixture.position("mid-check-position", tracker, 1340),
             fixture.position("same-drive-position", tracker, 1690),
         )
         outcome = self.assessment(client, camera, 1700)

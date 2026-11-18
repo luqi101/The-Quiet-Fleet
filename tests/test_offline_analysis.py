@@ -6,9 +6,9 @@ import unittest
 from datetime import UTC, datetime
 from pathlib import Path
 
-from scripts.audit_data import decode_bx, open_dataset, parse_time
+from scripts.audit_data import _case_audit, decode_bx, open_dataset, parse_time
 from scripts.battery_analysis import Reading, credible_recoveries, latest_available, select_daily, stale_opportunities
-from scripts.outage_analysis import onset_windows
+from scripts.outage_analysis import evaluation_labels, onset_windows
 
 
 class OfflineAnalysisTest(unittest.TestCase):
@@ -103,6 +103,23 @@ class OfflineAnalysisTest(unittest.TestCase):
         onsets = [0, 10, 20, 30, 240, 1000]
         self.assertEqual(onset_windows(onsets, 240), [(5, 0, 240)])
         self.assertEqual(onset_windows(onsets, 239), [])
+
+    def test_negative_case_duration_stays_visible_and_is_excluded_from_duration_labels(self):
+        case = {
+            "case_id": "valid-case", "serial": "T-fake", "depot": "REG", "root_cause": "carrier_outage",
+            "action": "carrier_referral", "outcome": "closed", "notes": "Orchard Mobile interruption",
+            "opened_at": "2026-11-01T05:30:00Z", "closed_at": "2026-11-01T06:00:00Z",
+        }
+        invalid = case | {"case_id": "backwards-case", "closed_at": "2026-11-01T05:15:00Z"}
+        rows = [case, invalid]
+        report = _case_audit(rows, {})
+        self.assertEqual(report["invalid_durations"], [{
+            "case_id": "backwards-case", "opened_at": "2026-11-01T05:30:00Z",
+            "closed_at": "2026-11-01T05:15:00Z", "duration_seconds": -900,
+        }])
+        self.assertEqual(report["by_cause"], {"carrier_outage": 2})
+        label, = evaluation_labels({"support_cases": rows}, {"Orchard Mobile"})
+        self.assertEqual((label.case_id, label.end - label.start), ("valid-case", 1800))
 
 
 if __name__ == "__main__":

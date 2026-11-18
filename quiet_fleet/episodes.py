@@ -5,7 +5,7 @@ from itertools import takewhile
 
 from .asset_context import DeviceContext
 from .config import RulesConfig
-from .fault import FaultDecision
+from .fault import FaultDecision, active_episode
 from .individual_faults import plan_changes, plan_timeline
 from .models import LikelyCause, WhoActs
 from .projection import DeviceFacts, project_device
@@ -32,14 +32,10 @@ def power_fault(at_us: int, context: DeviceContext, rules: RulesConfig) -> Fault
     if context.device.family != "T" or disconnect is None:
         return None
 
-    opening = last_disconnect = None
-    for event in facts.observations:
-        if event.kind == "power_disconnect":
-            opening = opening or event
-            last_disconnect = event
-        elif event.kind == "power_restore" and last_disconnect is not None:
-            if _observed(event) > _observed(last_disconnect):
-                opening = last_disconnect = None
+    opening, _ = active_episode(
+        (event, event.kind == "power_disconnect")
+        for event in facts.observations if event.kind in {"power_disconnect", "power_restore"}
+    )
     assert opening is not None
 
     backup = next(
@@ -81,16 +77,12 @@ def power_fault(at_us: int, context: DeviceContext, rules: RulesConfig) -> Fault
 def _storage_episode_opening(facts: DeviceFacts) -> EventFact | None:
     if facts.camera_storage_error is None:
         return None
-    opening = last_error = None
-    for event in facts.observations:
-        if event.kind != "camera_status":
-            continue
-        status = json.loads(event.payload_json).get("status")
-        if status == "storage_error":
-            opening = opening or event
-            last_error = event
-        elif status == "recording" and last_error is not None and _observed(event) > _observed(last_error):
-            opening = last_error = None
+    statuses = (
+        (event, json.loads(event.payload_json)["status"]) for event in facts.observations if event.kind == "camera_status"
+    )
+    opening, _ = active_episode(
+        (event, status == "storage_error") for event, status in statuses if status in {"storage_error", "recording"}
+    )
     return opening
 
 
@@ -188,23 +180,44 @@ def _plan_usable_through(observations: tuple[EventFact, ...], start_us: int, end
 
 
 def _awake_through(
-    tracker: DeviceFacts, attempt: EventFact, end_us: int, at_us: int, expected_vin: str | None
-) -> EventFact | None:
-    # Apply the query's receipt cutoff and inspect physical ignition through
-    # the trial interval. Backfilled off/on transitions can disprove continuity.
+    tracker: DeviceFacts, attempt: EventFact, end_us: int, at_us: int, expected_vin: str | None, drive_window_us: int,
+) -> tuple[EventFact, EventFact] | None:
+    issued = _observed(attempt)
+    # The command needs ignition evidence available when issued. Like any
+    # retrospective view, later eligible receipts can disprove the trial.
     history = tuple(takewhile(lambda event: _observed(event) < end_us, tracker.observations))
-    end = project_device(at_us, history)
-    mode = end.ignition_since
+    before = tuple(takewhile(lambda event: _observed(event) <= issued, history))
+    known = project_device(attempt.first_received_us, before)
+    first = known.ignition_evidence
     if (
-        end.ignition_on is True
-        and mode is not None
-        and _observed(mode) <= _observed(attempt)
-        and mode.first_received_us <= attempt.first_received_us
-        and end.power_disconnect is None
-        and _same_asset_since(history, _observed(mode), expected_vin)
+        known.ignition_on is not True or first is None or issued - _observed(first) > drive_window_us
+        or not _same_asset_since(history, _observed(first), expected_vin)
     ):
-        return mode
-    return None
+        return None
+    power = tuple(event for event in before if event.kind in {"power_disconnect", "power_restore"})
+    if project_device(at_us, power).power_disconnect is not None:
+        return None
+
+    first_us = _observed(first)
+    latest = first
+    for event in history:
+        observed = _observed(event)
+        if observed >= issued and event.kind == "power_disconnect":
+            return None
+        if observed < first_us:
+            continue
+        if event.kind == "position":
+            on = json.loads(event.payload_json)["ignition"]
+        elif event.kind in {"ignition_on", "ignition_off"}:
+            on = event.kind == "ignition_on"
+        else:
+            continue
+        if not on or observed - _observed(latest) > drive_window_us:
+            return None
+        latest = event
+    if min(at_us, end_us) - _observed(latest) > drive_window_us:
+        return None
+    return first, latest
 
 
 def _reboot_checks(
@@ -212,8 +225,8 @@ def _reboot_checks(
     context: DeviceContext,
     opening_us: int,
     opening_facts: tuple[EventFact, ...],
-    grace_seconds: int,
-) -> tuple[list[tuple[EventFact, EventFact]], EventFact | None]:
+    rules: RulesConfig,
+) -> tuple[list[tuple[EventFact, EventFact, EventFact]], EventFact | None]:
     tracker = context.tracker_facts
     failed = []
     pending = None
@@ -223,21 +236,23 @@ def _reboot_checks(
     commands = context.facts.reboot_commands
     expected_vin = context.asset.vin if context.asset is not None else None
     opening_receipt = max(event.first_received_us for event in opening_facts)
+    grace_us = rules.operational_assumptions.camera_reboot_response_grace.value * _US_PER_SECOND
+    drive_window_us = rules.calibrated_parameters.tracker_driving_overdue.value * _US_PER_SECOND
     for index, command in enumerate(commands):
         issued = _observed(command)
         if issued <= opening_us or command.first_received_us < opening_receipt:
             continue
-        deadline = issued + grace_seconds * _US_PER_SECOND
+        deadline = issued + grace_us
         if index + 1 < len(commands) and _observed(commands[index + 1]) < deadline:
             continue
         end_us = min(deadline, at_us + 1)
         if not _plan_usable_through(context.facts.observations, issued, end_us):
             continue
-        awake_mode = _awake_through(tracker, command, end_us, at_us, expected_vin)
-        if awake_mode is None:
+        awake_evidence = _awake_through(tracker, command, end_us, at_us, expected_vin, drive_window_us)
+        if awake_evidence is None:
             continue
         if at_us >= deadline:
-            failed.append((command, awake_mode))
+            failed.append((command, *awake_evidence))
         else:
             pending = command
     return failed, pending
@@ -265,11 +280,9 @@ def camera_fault(
         reason = f"Tracker ignition is on and the camera's recording deadline passed at {utc_text(from_epoch_us(opening_us))}."
 
     policy = rules.operational_assumptions
-    failed, pending = _reboot_checks(
-        at_us, context, opening_us, opening_facts, policy.camera_reboot_response_grace.value
-    )
+    failed, pending = _reboot_checks(at_us, context, opening_us, opening_facts, rules)
     required = policy.camera_failed_reboots_before_visit.value
-    failed_evidence = (event for pair in failed[-required:] for event in pair)
+    failed_evidence = (event for trial in failed[-required:] for event in trial)
     ignition = tracker.ignition_evidence if tracker is not None and not context.tracker_ambiguous else None
     parked = ignition is not None and tracker.ignition_on is False
     recheck_us = None

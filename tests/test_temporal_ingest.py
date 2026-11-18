@@ -7,7 +7,7 @@ from pathlib import Path
 from threading import Event
 from unittest.mock import patch
 
-from fastapi.testclient import TestClient
+from evidence_client import AuditedClient as TestClient
 
 from quiet_fleet.api import create_app
 from quiet_fleet.config import load_config

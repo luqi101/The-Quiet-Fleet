@@ -4,7 +4,7 @@ import unittest
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
-from fastapi.testclient import TestClient
+from evidence_client import AuditedClient as TestClient
 
 from quiet_fleet.api import create_app
 from test_http_foundation import ASSET, RULES, STOCK_TRACKER, TRACKER, write_references

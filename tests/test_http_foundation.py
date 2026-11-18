@@ -10,7 +10,7 @@ from contextlib import ExitStack
 from pathlib import Path
 from unittest.mock import patch
 
-from fastapi.testclient import TestClient
+from evidence_client import AuditedClient as TestClient
 
 from quiet_fleet.api import create_app
 from quiet_fleet.models import DeviceState, ItemKind, LikelyCause, Priority, WhoActs

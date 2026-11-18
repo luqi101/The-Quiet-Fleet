@@ -49,6 +49,7 @@ This is a checklist for tests to implement and execute, not a report of tests al
 | B20 | Repeated GET / host clock changes | Same inputs/at produce identical decision content; no wall-clock dependence |
 | B21 | Equivalent batch partitions/permutations | Same final eligible message set yields equivalent decisions and deterministic evidence policy |
 | B22 | CSV future case/plan rows | Do not reveal future current-episode diagnosis, recovery, pause, or resume |
+| B23 | Recovery and adverse evidence share an observation instant | Power, camera, battery and account holds retain their opening and causal evidence regardless of event-ID ordering. A strictly later valid recovery closes the issue. |
 
 ## C. Normal device behavior
 
@@ -106,6 +107,8 @@ This is a checklist for tests to implement and execute, not a report of tests al
 | D30 | Known isolated coverage pattern | No automatic physical dispatch; bounded follow-up |
 | D31 | Currently unexplained gap later recovers | Earlier answer cannot use future recovery as a feature |
 | D32 | Case closure before open | Reported/excluded for duration calibration, not silently fixed or made a current feature |
+| D33 | Reboot with stale ignition or an interrupted awake window | Retain remote support if ignition evidence expires or power/ignition is interrupted. A backfilled interruption revises the check only from its eligible receipt. |
+| D34 | Repeated on confirmations within an awake window | Fresh, continuous ignition confirmations allow a trial to finish at the grace boundary. Escalate after two complete, unique failed trials. |
 
 ## E. Incidents, support ownership, and priority
 
