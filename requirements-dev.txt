@@ -1,0 +1,6 @@
+-r requirements.txt
+
+# In-process HTTP testing uses the standard-library unittest runner.
+httpcore2==2.16.2
+httpx2==2.16.2
+truststore==0.10.5

@@ -14,7 +14,7 @@ The materials folder had no Git metadata. The candidate selected a new child che
 
 - At P00, support and false-alarm aversion were provisional because the Form 1 and ops records were unavailable. P01 settled the persona and trade-off from the supplied Form 1.
 - The unresolved operational facts are approved seasonal downtime scope and effective dates, and Larchmont’s high-priority deadline around the 06:00 local shift. Form 2 usage is unverified. The original kit retains its candidate topics, and new drafts depend on confirmed allowance.
-- Python 3.12.2, pip 25.0.1, Git 2.50.1, SQLite 3.45.1, both depot time zones, and local PDF and ZIP tools were available. The pinned FastAPI, Uvicorn, and pytest environment belongs to P02. Docker and other checked local container tools were unavailable. Ubuntu 24.04 offline execution remains a P13 verification dependency.
+- Python 3.12.2, pip 25.0.1, Git 2.50.1, SQLite 3.45.1, both depot time zones, and local PDF and ZIP tools were available. Docker and other checked local container tools were unavailable. Ubuntu 24.04 offline execution remains a P13 verification dependency.
 
 ## P01 · Offline data audit and calibration
 
@@ -24,6 +24,13 @@ The materials folder had no Git metadata. The candidate selected a new child che
 - The focused offline tests passed with `python3.12 -B -m unittest discover -s tests -v`. Service behavior, official preflight and practice, and Ubuntu offline startup remain pending. [Requirement matrix](../docs/requirements.md)
 - Regenerated both reports, both generated docs, and both config files using an absolute `--data` and temporary output directories. All six outputs matched byte for byte. The full calibration command took 69 seconds on the development host.
 
+## P02 · Runnable HTTP foundation
+
+- `python -m quiet_fleet` starts a single Uvicorn worker on localhost:8080. Startup validates the checked-in rules and all six reference CSVs before readiness, opens a fresh temporary SQLite database, and closes and removes it on shutdown. The support-case duration anomaly remains flagged in its typed reference row.
+- The four routes expose readiness, envelope validation, known-device status and triage. Invalid requests return JSON 400. Unknown serials and unsupported paths return 404. Known devices currently return `unknown` with null last contact and empty evidence. Triage is empty. Valid ingest envelopes currently return `accepted: 0` because this phase processes zero entries. Event normalization, storage, replay and diagnosis remain future work. [README](../README.md)
+- A fresh runtime-only install with the pinned requirements passed `pip check` under Python 3.12.2 on macOS. The real entrypoint passed loopback HTTP smoke checks with the packaged references and with only six alternate CSVs under a Python outbound socket guard. Python 3.12 Linux x86-64 wheels resolved for all runtime pins. Ubuntu runtime verification remains pending.
+- `.venv/bin/python -B -m unittest discover -s tests -v` passed all 16 tests, including 10 HTTP foundation tests. The checks covered readiness, database recreation, a guarded telemetry directory, 400/404 responses, UTC normalization and response shapes. Official preflight, practice and full replay remain pending. [Requirement matrix](../docs/requirements.md)
+
 ## Next phase
 
-**P02 · Build the minimal runnable service and exact HTTP contract.** Pin Python 3.12 dependencies, validate configuration and six CSVs at startup, and implement readiness and the strict HTTP boundary before adding event storage and diagnosis. [P02 prompt](02_CODEX_PROMPTS.md#p02-build-the-minimal-runnable-service-and-exact-http-contract)
+**P03 · Implement the temporal event store and idempotent mixed ingestion.** Validate and normalize each item independently, preserve observation and receipt time, and implement exact-ID and semantic retry handling. Replace the P02 acknowledgment with the count of entries actually accepted for processing. [P03 prompt](02_CODEX_PROMPTS.md#p03-implement-the-temporal-event-store-and-idempotent-mixed-ingestion)

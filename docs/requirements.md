@@ -1,6 +1,6 @@
 # Quiet Fleet requirement traceability
 
-This matrix preserves R01–R37 from the planning kit and adds explicit source requirements. P01 measured the offline rows noted below. Service behavior and release checks remain pending.
+This matrix preserves R01–R37 from the planning kit and adds explicit source requirements. The phase records below describe verified offline analysis and HTTP foundation behavior. Event processing, diagnosis and release checks remain pending.
 
 The candidate brief in `inputs/candidate-brief.pdf` and the API contract govern requirements. The exam runner and practice scenario define the supplied executable checks. The planning kit supplies the lettered acceptance IDs and additional adversarial cases. [API contract](../vendor/quiet-fleet/docs/CONTRACT.md), [practice expectations](../vendor/quiet-fleet/exam/PRACTICE.md), [acceptance matrix](../planning/03_ACCEPTANCE_TEST_MATRIX.md)
 
@@ -89,3 +89,15 @@ Only the selected persona's rows become grading gates. Shared API and diagnosis 
 | R38, R44 | Source hashes and local Git exclusions were checked. The exact supplied Form 1 record confirms support and the false-alarm trade-off. | Final repo integrity and behavioral checks for the trade-off. |
 
 [Audit results](../reports/data-audit.json) · [Calibration evidence](calibration.md) · [Threshold register](../config/rules.json) · [Analysis tests](../tests/test_offline_analysis.py)
+
+## P02 verification record
+
+| Row | Observed evidence | Remaining work |
+| --- | --- | --- |
+| R01–R03, R06 | The pinned runtime installed under Python 3.12.2 and the documented command served real loopback HTTP with default and alternate references. The six-CSV-only alternate run passed under a Python outbound socket guard. `test_default_and_alternate_reference_directory` and both invalid-startup tests passed. | Ubuntu 24.04 runtime and OS-level network isolation. |
+| R04, R05 | `test_lifespan_ignores_telemetry_and_recreates_store` blocked telemetry-directory access and verified that the prior database connection closed and its test marker was absent in the next store. | Verify persistence boundaries after P03 actually inserts observations. |
+| R07–R09, R28 | The HTTP suite verified valid arrays of 0 and 5,000 entries, mixed raw items, invalid JSON and envelope handling, 5,001-entry rejection, required aware timestamps, and 404 for unknown serials or unsupported routes. Every valid envelope acknowledges zero processed entries in P02. | Independent event processing, accepted count semantics, and full replay latency. |
+| R26, R27, R39, R40 | `test_health_status_and_triage_contract` and `test_response_enum_values_match_vendor_contract` verified the no-observation shape, contract enums, UTC output, and empty evidence. Fixture plan and case entries did not create a diagnosis. | Real facts, evidence cutoffs and nonempty triage items. |
+| R29 | Startup validated the shipped rule register and rejected missing or invalid config. | Verify diagnosed behavior at each registered threshold. |
+
+[Start and test commands](../README.md) · [HTTP tests](../tests/test_http_foundation.py)
