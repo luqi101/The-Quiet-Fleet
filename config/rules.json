@@ -1,0 +1,528 @@
+{
+  "calibrated_parameters": {
+    "a_daily_overdue": {
+      "comparator": "elapsed > value",
+      "provenance": "Development A healthy daily intervals",
+      "rationale": "Minimum tested deadline with zero eligible cohort crossings and at least one hour beyond p99.",
+      "sample_size": 1358,
+      "sensitivity_candidates": [
+        86400,
+        90000,
+        93600,
+        100800,
+        108000
+      ],
+      "test": "C11\u2013C14, G11",
+      "unit": "seconds",
+      "value": 93600
+    },
+    "bx_daily_overdue": {
+      "comparator": "elapsed > value",
+      "provenance": "Development BX healthy daily intervals",
+      "rationale": "Minimum tested deadline with zero eligible cohort crossings and at least one hour beyond p99.",
+      "sample_size": 148,
+      "sensitivity_candidates": [
+        86400,
+        90000,
+        93600,
+        100800,
+        108000
+      ],
+      "test": "C11\u2013C14, G11",
+      "unit": "seconds",
+      "value": 93600
+    },
+    "camera_recording_overdue": {
+      "comparator": "elapsed > value",
+      "provenance": "Development awake-camera cadence",
+      "rationale": "First tested value covering a median recording interval plus the p95 interval.",
+      "sample_size": 76125,
+      "sensitivity_candidates": [
+        600,
+        720,
+        900
+      ],
+      "test": "D06",
+      "unit": "seconds",
+      "value": 600
+    },
+    "normal_receipt_lag": {
+      "comparator": "receipt minus observation <= value",
+      "provenance": "Development first-receipt lag sweep",
+      "rationale": "Smallest tested bound covering 99% of the routine cohort with lag at most 60 seconds. Larger lag remains recorded.",
+      "sample_size": 464711,
+      "sensitivity_candidates": [
+        5,
+        8,
+        10,
+        20,
+        30,
+        60
+      ],
+      "test": "B13, D30",
+      "unit": "seconds",
+      "value": 8
+    },
+    "tracker_driving_overdue": {
+      "comparator": "elapsed > value",
+      "provenance": "Development driving cadence and outage sweep",
+      "rationale": "The observed within-drive maximum is 123 seconds. The grid ties retain the kit's three-position allowance. Use the same deadline for status and cohort analysis.",
+      "sample_size": 354813,
+      "sensitivity_candidates": [
+        240,
+        360,
+        480,
+        600
+      ],
+      "test": "C05, E01\u2013E03",
+      "unit": "seconds",
+      "value": 360
+    }
+  },
+  "defensive_limits": {
+    "clock_ahead_tolerance": {
+      "comparator": "observation - receipt > value means clock quality uncertain",
+      "provenance": "P00 clock policy and supplied first-receipt distribution",
+      "rationale": "Keep the receipt for contact and withhold future-dated state.",
+      "sample_size": null,
+      "sensitivity_candidates": [
+        0,
+        5,
+        30
+      ],
+      "test": "B14\u2013B16",
+      "unit": "seconds",
+      "value": 0
+    },
+    "query_timestamp_requires_offset": {
+      "comparator": "explicit UTC offset required",
+      "provenance": "Contract UTC and P00 clock policy",
+      "rationale": "Timezone-aware input avoids host-local interpretation.",
+      "sample_size": null,
+      "sensitivity_candidates": [],
+      "test": "A09, test_timestamp_offsets_and_epoch_units",
+      "unit": "boolean",
+      "value": true
+    }
+  },
+  "given_rules": {
+    "a_checkin_interval": {
+      "comparator": "target cadence",
+      "provenance": "Candidate brief \u00a71",
+      "rationale": "A tags normally check in daily.",
+      "sample_size": null,
+      "sensitivity_candidates": [],
+      "test": "C11\u2013C13",
+      "unit": "seconds",
+      "value": 86400
+    },
+    "camera_sleep_delay": {
+      "comparator": "elapsed >= value",
+      "provenance": "Candidate brief \u00a71",
+      "rationale": "Expected sleep after asset ignition off.",
+      "sample_size": null,
+      "sensitivity_candidates": [],
+      "test": "C07\u2013C09",
+      "unit": "seconds",
+      "value": 900
+    },
+    "ingest_batch_max": {
+      "comparator": "count <= value",
+      "provenance": "Vendor contract",
+      "rationale": "Largest supported HTTP batch.",
+      "sample_size": null,
+      "sensitivity_candidates": [],
+      "test": "A11",
+      "unit": "events",
+      "value": 5000
+    },
+    "ingest_response_limit": {
+      "comparator": "elapsed <= value",
+      "provenance": "Vendor contract",
+      "rationale": "Full-size request deadline. Release verification targets strictly under ten seconds.",
+      "sample_size": null,
+      "sensitivity_candidates": [],
+      "test": "H07",
+      "unit": "seconds",
+      "value": 10
+    },
+    "shift_start_local": {
+      "comparator": "daily instant",
+      "provenance": "Candidate brief \u00a71",
+      "rationale": "Join operational deadlines in the asset's depot zone.",
+      "sample_size": null,
+      "sensitivity_candidates": [],
+      "test": "F05\u2013F06",
+      "unit": "depot-local HH:MM",
+      "value": "06:00"
+    },
+    "tracker_parked_heartbeat_interval": {
+      "comparator": "target cadence",
+      "provenance": "Candidate brief \u00a71",
+      "rationale": "Ignition-off T heartbeat cadence.",
+      "sample_size": null,
+      "sensitivity_candidates": [],
+      "test": "C03",
+      "unit": "seconds",
+      "value": 14400
+    },
+    "tracker_parked_overdue": {
+      "comparator": "elapsed > value",
+      "provenance": "Candidate brief \u00a71",
+      "rationale": "Four hours 30 minutes with no valid report.",
+      "sample_size": null,
+      "sensitivity_candidates": [],
+      "test": "C04",
+      "unit": "seconds",
+      "value": 16200
+    },
+    "tracker_position_interval": {
+      "comparator": "target cadence",
+      "provenance": "Candidate brief \u00a71",
+      "rationale": "Ignition-on T position cadence.",
+      "sample_size": null,
+      "sensitivity_candidates": [],
+      "test": "C01",
+      "unit": "seconds",
+      "value": 120
+    }
+  },
+  "operational_assumptions": {
+    "a_battery_recovery": {
+      "comparator": "reading >= value",
+      "provenance": "A recovery transition sweep",
+      "rationale": "A hysteresis margin above the low threshold. The observed replacements do not identify a unique boundary.",
+      "sample_size": null,
+      "sensitivity_candidates": [
+        10,
+        15,
+        20,
+        25,
+        30
+      ],
+      "test": "D21\u2013D22",
+      "unit": "percent",
+      "value": 20
+    },
+    "a_low_battery": {
+      "comparator": "reading <= value",
+      "provenance": "Latest eligible telemetry at development battery case opening",
+      "rationale": "Smallest inclusive tested cutoff covering the available selected case readings. Validation has no labelled battery cases.",
+      "sample_size": 11,
+      "sensitivity_candidates": [
+        5,
+        8,
+        10,
+        12,
+        15,
+        20,
+        25
+      ],
+      "test": "D20\u2013D22",
+      "unit": "percent",
+      "value": 10
+    },
+    "bx_battery_recovery": {
+      "comparator": "reading >= value and low flag clear",
+      "provenance": "BX recovery transition sweep",
+      "rationale": "Conservative clear with hysteresis. No labelled recovery identifies an exact cutoff.",
+      "sample_size": null,
+      "sensitivity_candidates": [
+        10,
+        15,
+        20,
+        25,
+        30
+      ],
+      "test": "G14",
+      "unit": "percent",
+      "value": 20
+    },
+    "bx_percentage_only_low_enabled": {
+      "comparator": "low flag governs",
+      "provenance": "BX portal and stream flag comparison",
+      "rationale": "The supplied readouts support the flag. Percentage-only decisions have no independent outcome labels.",
+      "sample_size": null,
+      "sensitivity_candidates": [
+        false,
+        true
+      ],
+      "test": "G09",
+      "unit": "boolean",
+      "value": false
+    },
+    "camera_failed_reboots_before_visit": {
+      "comparator": "count >= value",
+      "provenance": "Support history and remote-first policy",
+      "rationale": "Two failures in one episode justify a physical check. Wear and case selection limit the evidence.",
+      "sample_size": null,
+      "sensitivity_candidates": [
+        1,
+        2,
+        3
+      ],
+      "test": "D07\u2013D10",
+      "unit": "distinct failed awake attempts",
+      "value": 2
+    },
+    "camera_reboot_response_grace": {
+      "comparator": "elapsed >= value",
+      "provenance": "Awake reboot response sweep and camera cadence",
+      "rationale": "Allow two ordinary recording opportunities to avoid premature escalation. The shorter tested window caught the same observed responses in a small selected sample.",
+      "sample_size": 27,
+      "sensitivity_candidates": [
+        120,
+        300,
+        600,
+        900,
+        1800
+      ],
+      "test": "D07\u2013D12",
+      "unit": "seconds",
+      "value": 600
+    },
+    "camera_wake_grace": {
+      "comparator": "elapsed <= value",
+      "provenance": "Development first-recording timings",
+      "rationale": "First tested grace at or above first-recording p95 plus receipt margin. Runtime should retest its boundary.",
+      "sample_size": 2009,
+      "sensitivity_candidates": [
+        30,
+        60,
+        120,
+        180,
+        300
+      ],
+      "test": "C09\u2013C10",
+      "unit": "seconds",
+      "value": 60
+    },
+    "cold_healthy_battery_minimum": {
+      "comparator": "latest eligible reading >= value",
+      "provenance": "Restricted healthy daily cohort",
+      "rationale": "Require positive battery margin before cold can explain a missed report.",
+      "sample_size": null,
+      "sensitivity_candidates": [
+        20,
+        25,
+        30
+      ],
+      "test": "D23\u2013D24",
+      "unit": "percent",
+      "value": 25
+    },
+    "cold_silence_limit": {
+      "comparator": "elapsed <= value",
+      "provenance": "Cold recovery and first-overdue sweep",
+      "rationale": "Allow roughly one extra daily opportunity. Surface uncertainty when the grace expires.",
+      "sample_size": 41,
+      "sensitivity_candidates": [
+        172800,
+        180000,
+        187200,
+        194400
+      ],
+      "test": "D23\u2013D26",
+      "unit": "seconds",
+      "value": 187200
+    },
+    "cold_temperature": {
+      "comparator": "depot local-day low <= value",
+      "provenance": "Development and held-out cold opportunity sweep",
+      "rationale": "Apply only to a healthy recent A battery context. This is bounded suppression of an unconfirmed symptom.",
+      "sample_size": 12,
+      "sensitivity_candidates": [
+        -8,
+        -10,
+        -12,
+        -15
+      ],
+      "test": "D23\u2013D26",
+      "unit": "degrees Celsius",
+      "value": -10
+    },
+    "incident_close_below_remaining_devices": {
+      "comparator": "remaining < value",
+      "provenance": "Contract incident cardinality and P00 episode policy",
+      "rationale": "A group requires several devices. Reevaluate remaining serials individually.",
+      "sample_size": null,
+      "sensitivity_candidates": [
+        2,
+        3
+      ],
+      "test": "E08\u2013E10",
+      "unit": "serials",
+      "value": 2
+    },
+    "outage_maximum_onset_spread_seconds": {
+      "comparator": "spread <= value",
+      "provenance": "Development outage anchor and background snapshot grid",
+      "rationale": "Requires carrier-specific contrast and distinct due reporters. One labelled incident per split limits inference.",
+      "sample_size": 30152,
+      "sensitivity_candidates": [
+        240,
+        600,
+        900
+      ],
+      "test": "E01\u2013E11, H04",
+      "unit": "seconds",
+      "value": 600
+    },
+    "outage_minimum_affected_devices": {
+      "comparator": "count >= value",
+      "provenance": "Development outage anchor and background snapshot grid",
+      "rationale": "Requires carrier-specific contrast and distinct due reporters. One labelled incident per split limits inference.",
+      "sample_size": 30152,
+      "sensitivity_candidates": [
+        5,
+        8,
+        12
+      ],
+      "test": "E01\u2013E11, H04",
+      "unit": "serials",
+      "value": 5
+    },
+    "outage_minimum_affected_share": {
+      "comparator": "share >= value",
+      "provenance": "Development outage anchor and background snapshot grid",
+      "rationale": "Requires carrier-specific contrast and distinct due reporters. One labelled incident per split limits inference.",
+      "sample_size": 30152,
+      "sensitivity_candidates": [
+        0.35,
+        0.5,
+        0.65
+      ],
+      "test": "E01\u2013E11, H04",
+      "unit": "ratio",
+      "value": 0.5
+    },
+    "outage_minimum_healthy_comparison_devices": {
+      "comparator": "count >= value",
+      "provenance": "Development outage anchor and background snapshot grid",
+      "rationale": "Requires carrier-specific contrast and distinct due reporters. One labelled incident per split limits inference.",
+      "sample_size": 30152,
+      "sensitivity_candidates": [
+        2,
+        3,
+        5
+      ],
+      "test": "E01\u2013E11, H04",
+      "unit": "serials",
+      "value": 3
+    },
+    "outage_minimum_healthy_comparison_share": {
+      "comparator": "share >= value",
+      "provenance": "Development outage anchor and background snapshot grid",
+      "rationale": "Requires carrier-specific contrast and distinct due reporters. One labelled incident per split limits inference.",
+      "sample_size": 30152,
+      "sensitivity_candidates": [
+        0.25,
+        0.5,
+        0.75
+      ],
+      "test": "E01\u2013E11, H04",
+      "unit": "ratio",
+      "value": 0.5
+    },
+    "seasonal_downtime_suppression_enabled": {
+      "comparator": "requires approved scope and effective dates",
+      "provenance": "Ops confirmation pending",
+      "rationale": "Observed seasonal silence supports an investigation without approval for suppression.",
+      "sample_size": null,
+      "sensitivity_candidates": [
+        false,
+        true
+      ],
+      "test": "D27\u2013D29",
+      "unit": "boolean",
+      "value": false
+    },
+    "urgent_operational_horizon": {
+      "comparator": "deadline - at <= value",
+      "provenance": "P00 working assumption, awaiting Larchmont policy",
+      "rationale": "Default to two hours for verified faults on an asset with upcoming work.",
+      "sample_size": null,
+      "sensitivity_candidates": [
+        3600,
+        7200,
+        14400
+      ],
+      "test": "E16\u2013E18",
+      "unit": "seconds",
+      "value": 7200
+    }
+  },
+  "schema_version": 1,
+  "wire_format_constants": {
+    "a_legacy_timestamp_scale": {
+      "comparator": "multiply",
+      "provenance": "Legacy A numeric observations",
+      "rationale": "Decode numeric device times as epoch seconds.",
+      "sample_size": null,
+      "sensitivity_candidates": [],
+      "test": "test_timestamp_offsets_and_epoch_units",
+      "unit": "seconds per epoch unit",
+      "value": 1
+    },
+    "bx_battery_full_scale": {
+      "comparator": "100 \u00d7 raw / value",
+      "provenance": "Three rounded vendor portal anchors",
+      "rationale": "12-bit full-scale inference.",
+      "sample_size": 3,
+      "sensitivity_candidates": [],
+      "test": "G01\u2013G02",
+      "unit": "raw units",
+      "value": 4095
+    },
+    "bx_battery_low_mask": {
+      "comparator": "(flags & value) != 0",
+      "provenance": "Vendor portal anchors and frame combinations",
+      "rationale": "Low battery flag includes the 14% portal example.",
+      "sample_size": 3,
+      "sensitivity_candidates": [],
+      "test": "G01, G09",
+      "unit": "bit mask",
+      "value": 2
+    },
+    "bx_coordinate_scale": {
+      "comparator": "raw / value",
+      "provenance": "Three vendor portal anchors",
+      "rationale": "Decode the two signed coordinate integers.",
+      "sample_size": 3,
+      "sensitivity_candidates": [],
+      "test": "G01",
+      "unit": "raw units per degree",
+      "value": 100000
+    },
+    "bx_epoch_radix": {
+      "comparator": "parse in radix",
+      "provenance": "Three vendor portal anchors",
+      "rationale": "Hexadecimal Unix epoch seconds.",
+      "sample_size": 3,
+      "sensitivity_candidates": [],
+      "test": "test_bx_anchor_and_unknown_bits",
+      "unit": "base",
+      "value": 16
+    },
+    "bx_gps_fix_mask": {
+      "comparator": "(flags & value) != 0",
+      "provenance": "Vendor portal anchors and frame combinations",
+      "rationale": "A no-fix frame retains contact without a new position.",
+      "sample_size": 3,
+      "sensitivity_candidates": [],
+      "test": "G01, G07",
+      "unit": "bit mask",
+      "value": 8
+    },
+    "bx_moving_mask": {
+      "comparator": "(flags & value) != 0",
+      "provenance": "Vendor portal anchors and frame combinations",
+      "rationale": "Moving flag.",
+      "sample_size": 3,
+      "sensitivity_candidates": [],
+      "test": "G01\u2013G03",
+      "unit": "bit mask",
+      "value": 1
+    }
+  }
+}

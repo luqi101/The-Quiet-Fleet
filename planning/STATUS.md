@@ -12,10 +12,18 @@ The materials folder had no Git metadata. The candidate selected a new child che
 
 ## Decisions and open facts
 
-- Support and false-alarm aversion are **provisional**. No submitted Form 1 text or ops answers were available. Shared work can proceed. Check the actual submission and revise persona-specific sections before implementing a different endpoint.
+- At P00, support and false-alarm aversion were provisional because the Form 1 and ops records were unavailable. P01 settled the persona and trade-off from the supplied Form 1.
 - The unresolved operational facts are approved seasonal downtime scope and effective dates, and Larchmont’s high-priority deadline around the 06:00 local shift. Form 2 usage is unverified. The original kit retains its candidate topics, and new drafts depend on confirmed allowance.
 - Python 3.12.2, pip 25.0.1, Git 2.50.1, SQLite 3.45.1, both depot time zones, and local PDF and ZIP tools were available. The pinned FastAPI, Uvicorn, and pytest environment belongs to P02. Docker and other checked local container tools were unavailable. Ubuntu 24.04 offline execution remains a P13 verification dependency.
 
+## P01 · Offline data audit and calibration
+
+- The supplied Form 1 confirms **support, false-alarm aversion, and one consolidated customer alert for major outages**. Preserved the exact record and carried forward the source contract's readiness endpoint alongside the planned user endpoints. [Form 1 record](form1.md)
+- Ran both offline tools over 28 JSONL files and the six reference CSVs. Observed 640,419 envelopes, 635,066 distinct IDs, 632,810 logical observations, 2,256 new-ID aliases, 252 legacy numeric-clock envelopes, 313 BX frames and no conflicting IDs in the pack. Three original BX portal anchors matched. The report preserves the excluded negative case duration and documents the percentile convention difference. [Data quality](../docs/data-quality.md) · [Audit report](../reports/data-audit.json)
+- The October 4–24 development cohort selected the 360 s tracker, 600 s recording, 26 h A/BX and 8 s routine receipt-lag bounds. Separate October 25–31 validation showed zero healthy daily intervals crossing 26 h. Carrier onset was detected on both labeled cases, with a held-out persistence limitation and no observed background groups across 40,169 unguarded minute probes. Provisional policy and open operational facts remain explicit. [Calibration](../docs/calibration.md) · [Threshold register](../config/rules.json)
+- The focused offline tests passed with `python3.12 -B -m unittest discover -s tests -v`. Service behavior, official preflight and practice, and Ubuntu offline startup remain pending. [Requirement matrix](../docs/requirements.md)
+- Regenerated both reports, both generated docs, and both config files using an absolute `--data` and temporary output directories. All six outputs matched byte for byte. The full calibration command took 69 seconds on the development host.
+
 ## Next phase
 
-**P01 · Reproduce the data audit and establish the threshold register.** Use the ignored local replay, derive separate calibration and validation cohorts, and record reproducible findings and threshold provenance before creating the service in P02. [P01 prompt](02_CODEX_PROMPTS.md#p01-audit-the-data-and-establish-a-defensible-threshold-register)
+**P02 · Build the minimal runnable service and exact HTTP contract.** Pin Python 3.12 dependencies, validate configuration and six CSVs at startup, and implement readiness and the strict HTTP boundary before adding event storage and diagnosis. [P02 prompt](02_CODEX_PROMPTS.md#p02-build-the-minimal-runnable-service-and-exact-http-contract)

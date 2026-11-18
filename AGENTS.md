@@ -1,6 +1,6 @@
 # The Quiet Fleet working agreement
 
-Use the candidate brief and the unmodified vendor contract as the source of truth. Read `planning/STATUS.md`, `docs/decisions.md`, and the relevant kit phase before working. Read the actual Form 1 and ops answers if available. Support and false-alarm aversion are provisional. If the submitted choice differs, update the persona plan and tests before building its endpoint.
+Use the candidate brief and the unmodified vendor contract as the source of truth. Read `planning/STATUS.md`, `docs/decisions.md`, and the relevant kit phase before working. The Form 1 record confirms the support persona, false-alarm aversion, and a single consolidated customer alert for a major outage. Check for documented ops answers before changing operational policy.
 
 Target Python 3.12 on Ubuntu 24.04. The grading entrypoint is `python -m quiet_fleet` on localhost:8080 with one worker and a fresh empty event store. Read the six reference CSVs from `QF_DATA_DIR` (default `./data`). Receive telemetry through HTTP. Install pinned dependencies separately. Runtime uses local assets and makes no outbound calls.
 

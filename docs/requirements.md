@@ -1,10 +1,10 @@
 # Quiet Fleet requirement traceability
 
-This is the P00 verification plan. All implementation and release checks in the matrix are **pending**. The matrix preserves R01–R37 from the planning kit and adds explicit source requirements where needed. Update each row with the exact test name and observed result as later phases complete.
+This matrix preserves R01–R37 from the planning kit and adds explicit source requirements. P01 measured the offline rows noted below. Service behavior and release checks remain pending.
 
 The candidate brief in `inputs/candidate-brief.pdf` and the API contract govern requirements. The exam runner and practice scenario define the supplied executable checks. The planning kit supplies the lettered acceptance IDs and additional adversarial cases. [API contract](../vendor/quiet-fleet/docs/CONTRACT.md), [practice expectations](../vendor/quiet-fleet/exam/PRACTICE.md), [acceptance matrix](../planning/03_ACCEPTANCE_TEST_MATRIX.md)
 
-Support and prioritizing fewer false alarms are provisional planning choices. Before persona work, compare them with any verified Form 1 text and update the applicable rows. The shared rows apply regardless of persona. [Decisions](decisions.md)
+Support, prioritizing fewer false alarms, and one grouped customer alert for a major outage are confirmed by the supplied Form 1 record. [Form 1 record](../planning/form1.md) · [Decisions](decisions.md)
 
 ## Startup, HTTP, and immutable inputs
 
@@ -78,3 +78,14 @@ Only the selected persona's rows become grading gates. Shared API and diagnosis 
 | R37 | Candidate can demo a fresh checkpoint and make a small live code change | Live-call notes and focused tests | Rehearse one configurable behavior change, its focused test, and the brief's demo and discussion timings. |
 | R45 | Form 3 records the repository and AI log, actual tests, thresholds, trade-off, BX disposition, top actions, Form 1 changes and AI verification | Form 3 worksheet and supporting docs | H13–H15. Verify every answer against actual source, replay outputs, user-confirmed intent, and recorded checks. Review release source identity and the setup-only post-submission exception. |
 | R46 | Use only provided data and general public knowledge, and track the ops allowance accurately | Calibration provenance, decisions, ops notes | Review provenance, verify no runtime external API or AI calls, and compare any attributed ops fact and question count with actual records. |
+
+## P01 verification record
+
+| Row | Observed evidence | Remaining work |
+| --- | --- | --- |
+| R10, R13, R21 | The full audit reproduced the identity and clock counts. The focused offline cases exercised retry aliases, ID conflicts, timezone/epoch equivalence and delayed recovery. The audit lists observed VIN transitions and a transmitting stock unit. | Runtime ingestion, historical assignments and HTTP noninterference tests. |
+| R29, R30 | The threshold register and aggregate report cover separate development and validation slices, candidate sweeps, provenance, limits and source hashes. Both sensor timing and case-aligned analyses ran on the complete pack. | Startup validation and future behavior tests at the registered boundaries. |
+| R23, R31 | The offline driving seed matched both labeled carrier openings. All three BX portal examples were matched and a focused decoder test checked an unknown flag and invalid battery input. | Runtime episode continuation and recovery, BX integration, status and triage. |
+| R38, R44 | Source hashes and local Git exclusions were checked. The exact supplied Form 1 record confirms support and the false-alarm trade-off. | Final repo integrity and behavioral checks for the trade-off. |
+
+[Audit results](../reports/data-audit.json) · [Calibration evidence](calibration.md) · [Threshold register](../config/rules.json) · [Analysis tests](../tests/test_offline_analysis.py)

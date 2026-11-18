@@ -1,0 +1,903 @@
+{
+  "bx_examples": {
+    "anchors": [
+      {
+        "all_fields_match": true,
+        "display": {
+          "battery": "76%",
+          "gps_fix": "Yes",
+          "last_report_portal_time": "2026-10-22 08:00:00",
+          "latitude": "50.42719",
+          "longitude": "-104.56695",
+          "low_battery": "No",
+          "moving": "No"
+        },
+        "observed_utc": "2026-10-22T14:00:00Z",
+        "serial": "BX40471"
+      },
+      {
+        "all_fields_match": true,
+        "display": {
+          "battery": "63%",
+          "gps_fix": "Yes",
+          "last_report_portal_time": "2026-10-21 09:17:00",
+          "latitude": "50.43083",
+          "longitude": "-104.66817",
+          "low_battery": "No",
+          "moving": "Yes"
+        },
+        "observed_utc": "2026-10-21T15:17:00Z",
+        "serial": "BX41085"
+      },
+      {
+        "all_fields_match": true,
+        "display": {
+          "battery": "14%",
+          "gps_fix": "Yes",
+          "last_report_portal_time": "2026-10-30 09:16:00",
+          "latitude": "50.46073",
+          "longitude": "-104.67404",
+          "low_battery": "Yes",
+          "moving": "No"
+        },
+        "observed_utc": "2026-10-30T15:16:00Z",
+        "serial": "BX47068"
+      }
+    ],
+    "anchors_expected": 3,
+    "anchors_matching": 3,
+    "sample_messages": 300,
+    "sample_serials": 20,
+    "sources_sha256": {
+      "bx_raw_messages.txt": "56114a69eed0cde471062b833ee8abfa7fc318da7cbdfd7bdff44551607c48e4",
+      "portal_readout.csv": "dad2e2899ca1fd7ce5fc9fe6a7527914fb6d9845a3acd12b3fb0735e64696f05"
+    },
+    "unknown_flag_values": {
+      "0": 294,
+      "4": 6
+    }
+  },
+  "methodology": {
+    "camera_case_firmware": "firmware mentioned in case notes, falling back to the reference roster",
+    "logical_identity": "serial, event kind, normalized observation instant, canonical payload",
+    "quantiles": "nearest rank, with p99_lower for comparison to the lower order statistic",
+    "receipt_lag": "representative receipt minus observation, in seconds, excluding clocks ahead of receipt",
+    "representative_receipt": "minimum (receipt Unix seconds, original event ID)",
+    "seasonal_activity": "last observed A or BX report on current reference trailer assignments, by local depot date",
+    "stream_order": "lexical daily filename then physical line order"
+  },
+  "plan_changes": {
+    "field_mismatch_ids": [],
+    "reference_events": 22,
+    "reference_only_ids": [],
+    "reference_status_counts": {
+      "active": 11,
+      "paused": 11
+    },
+    "stream_events": 22,
+    "stream_only_ids": []
+  },
+  "references": {
+    "assets": {
+      "blank_by_field": {
+        "asset_id": 0,
+        "depot": 0,
+        "make_model": 0,
+        "status": 0,
+        "type": 0,
+        "use": 0,
+        "vin": 96,
+        "year": 0
+      },
+      "by_depot_type": {
+        "MSS/equipment": 15,
+        "MSS/pickup": 20,
+        "MSS/trailer": 30,
+        "MSS/van": 70,
+        "REG/equipment": 15,
+        "REG/pickup": 15,
+        "REG/trailer": 36,
+        "REG/van": 50
+      },
+      "by_status": {
+        "active": 251
+      },
+      "duplicate_primary_key_excess": 0,
+      "fields": [
+        "asset_id",
+        "type",
+        "depot",
+        "use",
+        "make_model",
+        "year",
+        "vin",
+        "status"
+      ],
+      "rows": 251,
+      "rows_with_blank_primary_key": 0
+    },
+    "devices": {
+      "blank_by_field": {
+        "asset_id": 13,
+        "carrier": 0,
+        "family": 0,
+        "firmware": 0,
+        "installed_at": 13,
+        "model": 0,
+        "serial": 0,
+        "status": 0
+      },
+      "by_family": {
+        "A": 76,
+        "BX": 20,
+        "C": 93,
+        "T": 171
+      },
+      "by_status": {
+        "active": 341,
+        "removed": 6,
+        "stock": 13
+      },
+      "duplicate_primary_key_excess": 0,
+      "fields": [
+        "serial",
+        "family",
+        "model",
+        "firmware",
+        "carrier",
+        "asset_id",
+        "status",
+        "installed_at"
+      ],
+      "rows": 360,
+      "rows_with_blank_primary_key": 0,
+      "unresolved_asset_id": []
+    },
+    "plan_changes": {
+      "blank_by_field": {
+        "event_id": 0,
+        "plan": 0,
+        "reason": 0,
+        "serial": 0,
+        "status": 0,
+        "time": 0
+      },
+      "duplicate_primary_key_excess": 0,
+      "fields": [
+        "serial",
+        "time",
+        "plan",
+        "status",
+        "reason",
+        "event_id"
+      ],
+      "rows": 22,
+      "rows_with_blank_primary_key": 0,
+      "unresolved_serial": []
+    },
+    "schedule": {
+      "blank_by_field": {
+        "asset_id": 0,
+        "depot": 0,
+        "end": 0,
+        "job_id": 0,
+        "job_type": 0,
+        "start": 0
+      },
+      "duplicate_primary_key_excess": 0,
+      "fields": [
+        "job_id",
+        "asset_id",
+        "depot",
+        "start",
+        "end",
+        "job_type"
+      ],
+      "first_start": "2026-10-04T12:10:00Z",
+      "last_end": "2026-11-03T23:49:00Z",
+      "rows": 8957,
+      "rows_with_blank_primary_key": 0,
+      "unresolved_asset_id": []
+    },
+    "support_cases": {
+      "blank_by_field": {
+        "action": 0,
+        "asset_id": 2,
+        "case_id": 0,
+        "closed_at": 0,
+        "depot": 0,
+        "notes": 0,
+        "opened_at": 0,
+        "outcome": 0,
+        "reported_by": 0,
+        "root_cause": 0,
+        "serial": 2,
+        "symptom": 0
+      },
+      "duplicate_primary_key_excess": 0,
+      "fields": [
+        "case_id",
+        "opened_at",
+        "closed_at",
+        "depot",
+        "asset_id",
+        "serial",
+        "reported_by",
+        "symptom",
+        "root_cause",
+        "action",
+        "outcome",
+        "notes"
+      ],
+      "rows": 179,
+      "rows_with_blank_primary_key": 0,
+      "unresolved_asset_id": [],
+      "unresolved_serial": []
+    },
+    "weather": {
+      "blank_by_field": {
+        "date": 0,
+        "depot": 0,
+        "high_c": 0,
+        "low_c": 0
+      },
+      "duplicate_primary_key_excess": 0,
+      "fields": [
+        "date",
+        "depot",
+        "low_c",
+        "high_c"
+      ],
+      "first_date": "2026-10-04",
+      "last_date": "2026-11-03",
+      "rows": 62,
+      "rows_with_blank_primary_key": 0
+    }
+  },
+  "schema_version": 1,
+  "seasonal_activity": {
+    "landscaping_trailers": [
+      {
+        "asset_id": "TR-60",
+        "depot": "MSS",
+        "last_observed": "2026-10-23T13:43:00Z",
+        "local_last_report_date": "2026-10-23"
+      },
+      {
+        "asset_id": "TR-61",
+        "depot": "MSS",
+        "last_observed": "2026-10-23T10:44:00Z",
+        "local_last_report_date": "2026-10-23"
+      },
+      {
+        "asset_id": "TR-62",
+        "depot": "MSS",
+        "last_observed": "2026-10-23T13:48:00Z",
+        "local_last_report_date": "2026-10-23"
+      },
+      {
+        "asset_id": "TR-63",
+        "depot": "MSS",
+        "last_observed": "2026-10-23T13:38:00Z",
+        "local_last_report_date": "2026-10-23"
+      },
+      {
+        "asset_id": "TR-64",
+        "depot": "MSS",
+        "last_observed": "2026-10-23T10:16:00Z",
+        "local_last_report_date": "2026-10-23"
+      },
+      {
+        "asset_id": "TR-65",
+        "depot": "MSS",
+        "last_observed": "2026-10-23T12:33:00Z",
+        "local_last_report_date": "2026-10-23"
+      },
+      {
+        "asset_id": "TR-66",
+        "depot": "MSS",
+        "last_observed": "2026-10-23T13:42:00Z",
+        "local_last_report_date": "2026-10-23"
+      },
+      {
+        "asset_id": "TR-67",
+        "depot": "MSS",
+        "last_observed": "2026-10-23T09:29:00Z",
+        "local_last_report_date": "2026-10-23"
+      },
+      {
+        "asset_id": "TR-68",
+        "depot": "MSS",
+        "last_observed": "2026-10-23T13:10:00Z",
+        "local_last_report_date": "2026-10-23"
+      },
+      {
+        "asset_id": "TR-69",
+        "depot": "MSS",
+        "last_observed": "2026-10-23T11:51:00Z",
+        "local_last_report_date": "2026-10-23"
+      },
+      {
+        "asset_id": "TR-70",
+        "depot": "MSS",
+        "last_observed": "2026-10-23T11:43:00Z",
+        "local_last_report_date": "2026-10-23"
+      },
+      {
+        "asset_id": "TR-71",
+        "depot": "MSS",
+        "last_observed": "2026-10-23T12:47:00Z",
+        "local_last_report_date": "2026-10-23"
+      }
+    ],
+    "last_local_report_date_by_trailer_use": {
+      "general": {
+        "2026-10-30": 2,
+        "2026-10-31": 23
+      },
+      "landscaping": {
+        "2026-10-23": 12
+      },
+      "snow": {
+        "2026-10-29": 1,
+        "2026-10-30": 1,
+        "2026-10-31": 27
+      }
+    }
+  },
+  "sources_sha256": {
+    "assets.csv": "6a67920f1cc726db2b9a8da7e15f9404e6d41c0012375a76403d98d610e679ab",
+    "devices.csv": "2a0d19b9d875f75a7301955f664b5d1dd7b99f22ad22c2cd8e5aa38f27eb8fa9",
+    "plan_changes.csv": "ac6dcbef39b31c6b57717c37a87384033998c527c206ffcd6940132f2008c1dc",
+    "schedule.csv": "827fb52331bff0a37e9793b64a31cc0b38cc0a53dcecf9f67625e9111e4f7f5b",
+    "support_cases.csv": "9c6268b4348d0585788d182f7c0910eb4683e2286cb184fe9fff5986fae0dca1",
+    "telemetry/2026-10-04.jsonl": "50fa539b14d519d80ed6a59b1a7a5086fdd81b13c67c4065aefeadeea359fdba",
+    "telemetry/2026-10-05.jsonl": "1da005b16c469bccf251551e115f3d1719eed8b0f0113b122ad0071a712dfa08",
+    "telemetry/2026-10-06.jsonl": "c060fe35b7a26e94f9763658e0332b66bef02d8c3fdef77d5f30b2b3a3006054",
+    "telemetry/2026-10-07.jsonl": "29dcbf261b649c6f1850a20959b5680bcf933419deb92212d642a1473746d80b",
+    "telemetry/2026-10-08.jsonl": "dfcc3a02a4db5a39fa8109b047ae4dd431f9f34f9f14f34ec42b968402b161d7",
+    "telemetry/2026-10-09.jsonl": "5fedae08dd3dfb97acaa8eed0394d5f66bf1c343155163484ce87257df9fc6ac",
+    "telemetry/2026-10-10.jsonl": "ebc766333271e01a8d15210930018f52249d85c15dc1260683d783842bbf1bbb",
+    "telemetry/2026-10-11.jsonl": "7a8dfc23c08315696d0f4e9e7dcbf7f60fcec97823b8b7e2f12966ded0c95ed8",
+    "telemetry/2026-10-12.jsonl": "fe6d093b8b762e355111334dae25c58b277bc8eb718a44974a84ac5672ff3782",
+    "telemetry/2026-10-13.jsonl": "9b6cf61a8c2f3fa10bc29b226f237ffa6b9bb14dcf309bb891ba3a6a200d58e3",
+    "telemetry/2026-10-14.jsonl": "7ee10f5f757fbab2b2e72db59a2e8fab2251c03eb51dd43da6f8cdf5a916cf6d",
+    "telemetry/2026-10-15.jsonl": "f89a12fd30dab9255a8c9c5e8fc2b0feae73137970c80f60a7e507bd906d9cf5",
+    "telemetry/2026-10-16.jsonl": "4ba0d1ee72744bf46205c5aed23ff4abad6f90d2b5a8c0fbf9bbed2567250f87",
+    "telemetry/2026-10-17.jsonl": "fe4ea5ed8afda5ff59ed3f836eb418a6c7789aac150e1380f2f7af1aa793accf",
+    "telemetry/2026-10-18.jsonl": "364a291b0bb38b84a87dd0d0e14a1a6cf6812ec3f5bb4df0a00fd894b3bd9afc",
+    "telemetry/2026-10-19.jsonl": "dad5e02362fdb2d01cc0058bdca998d61c900ab3e51c68efbfea77739e18338f",
+    "telemetry/2026-10-20.jsonl": "f3185527b4d43ea0a69c92d9689f80c28c86cff0bfea7905baed37b8d67ddaab",
+    "telemetry/2026-10-21.jsonl": "45d45923503dc263766682e894e3c7e6403d7267deb09a273f469f7c0da62719",
+    "telemetry/2026-10-22.jsonl": "11d6e14256901bfe5859c1e9a54a37de72aaf766854c6eb28567f9f0596a9483",
+    "telemetry/2026-10-23.jsonl": "947b4995aec9b7a5cfbf791650782c501614875932f5524823ae13cf966c889b",
+    "telemetry/2026-10-24.jsonl": "0cc335633ac55c5a8b5c19055bb219289f5598908b0a42bb59d4622ba980203c",
+    "telemetry/2026-10-25.jsonl": "184039b2f40d0f5ced0eb16d0c7ea01b8358b596508861cac99f52b24e79a265",
+    "telemetry/2026-10-26.jsonl": "1e6a5b8287f115a947152f8bc60d6e4040ddf511be8383f369c0e516b9f63cd8",
+    "telemetry/2026-10-27.jsonl": "b03f14438bb4909b82792d21764c123684531a752779cf67f053c054ce656ac2",
+    "telemetry/2026-10-28.jsonl": "798d32c046fbb04c74212d5e32a99149a9249d09c2ead24347f34b0ae78e3511",
+    "telemetry/2026-10-29.jsonl": "8c12b50762be8cb0384438c735cc2ba1f834b390b3bc59771f8d5eb8e7bc40f2",
+    "telemetry/2026-10-30.jsonl": "cb293990b16d1fa17ca8411b358f25b9abd8df635fe41a28472e2aa732b4df69",
+    "telemetry/2026-10-31.jsonl": "fa44d707c25fdf774379a574649e0e8524412cdebd0de947be77c34eeb8f74bc",
+    "weather.csv": "f3519fadf3d27a0c5f5a3a880ea58b65ad0a25254b364857dd1c1601efe98f78"
+  },
+  "support_cases": {
+    "actions_by_cause": {
+      "battery_low": {
+        "technician_visit": 11
+      },
+      "camera_fault": {
+        "remote_reboot": 28,
+        "technician_visit": 12
+      },
+      "carrier_outage": {
+        "carrier_wait": 2
+      },
+      "cold_weather": {
+        "none": 23
+      },
+      "coverage_gap": {
+        "none": 14
+      },
+      "device_swapped": {
+        "record_fix": 6
+      },
+      "parked_normal": {
+        "none": 26
+      },
+      "plan_paused": {
+        "account_action": 11
+      },
+      "power_loss": {
+        "technician_visit": 14
+      },
+      "sleeping_by_design": {
+        "none": 32
+      }
+    },
+    "by_cause": {
+      "battery_low": 11,
+      "camera_fault": 40,
+      "carrier_outage": 2,
+      "cold_weather": 23,
+      "coverage_gap": 14,
+      "device_swapped": 6,
+      "parked_normal": 26,
+      "plan_paused": 11,
+      "power_loss": 14,
+      "sleeping_by_design": 32
+    },
+    "camera_actions_by_firmware": {
+      "4.2.1": {
+        "remote_reboot": 27,
+        "technician_visit": 10
+      },
+      "4.3.0": {
+        "remote_reboot": 1,
+        "technician_visit": 2
+      }
+    },
+    "invalid_durations": [
+      {
+        "case_id": "CS-0016",
+        "closed_at": "2026-10-07T20:28:09Z",
+        "duration_seconds": -300.0,
+        "opened_at": "2026-10-07T20:33:09Z"
+      }
+    ],
+    "outcomes_by_cause": {
+      "battery_low": {
+        "resolved": 11
+      },
+      "camera_fault": {
+        "resolved": 40
+      },
+      "carrier_outage": {
+        "resolved": 2
+      },
+      "cold_weather": {
+        "no_fault_found": 23
+      },
+      "coverage_gap": {
+        "resolved": 14
+      },
+      "device_swapped": {
+        "resolved": 6
+      },
+      "parked_normal": {
+        "no_fault_found": 26
+      },
+      "plan_paused": {
+        "resolved": 11
+      },
+      "power_loss": {
+        "resolved": 14
+      },
+      "sleeping_by_design": {
+        "no_fault_found": 32
+      }
+    }
+  },
+  "telemetry": {
+    "bx_unknown_flag_values": {
+      "0": 302,
+      "4": 6
+    },
+    "bx_without_outer_serial_or_device_time": 313,
+    "clock_ahead_envelopes": 0,
+    "duplicates": {
+      "conflicting_event_id_envelopes": 0,
+      "distinct_event_ids": 635066,
+      "logical_observations": 632810,
+      "new_id_alias_excess": 2256,
+      "repeated_event_id_excess": 5353,
+      "semantic_retry_excess": 7609,
+      "semantic_retry_groups": 7608
+    },
+    "envelopes": 640419,
+    "envelopes_by_type": {
+      "bx_raw": 313,
+      "camera_status": 117761,
+      "check_in": 1977,
+      "command": 54,
+      "heartbeat": 19541,
+      "ignition_off": 5093,
+      "ignition_on": 5097,
+      "low_voltage": 15,
+      "plan_change": 22,
+      "position": 490497,
+      "power_disconnect": 25,
+      "power_restore": 24
+    },
+    "files": {
+      "telemetry/2026-10-04.jsonl": 1322,
+      "telemetry/2026-10-05.jsonl": 30945,
+      "telemetry/2026-10-06.jsonl": 31487,
+      "telemetry/2026-10-07.jsonl": 31011,
+      "telemetry/2026-10-08.jsonl": 29685,
+      "telemetry/2026-10-09.jsonl": 31555,
+      "telemetry/2026-10-10.jsonl": 4226,
+      "telemetry/2026-10-11.jsonl": 1890,
+      "telemetry/2026-10-12.jsonl": 30384,
+      "telemetry/2026-10-13.jsonl": 28970,
+      "telemetry/2026-10-14.jsonl": 28047,
+      "telemetry/2026-10-15.jsonl": 29403,
+      "telemetry/2026-10-16.jsonl": 28324,
+      "telemetry/2026-10-17.jsonl": 3876,
+      "telemetry/2026-10-18.jsonl": 2097,
+      "telemetry/2026-10-19.jsonl": 33619,
+      "telemetry/2026-10-20.jsonl": 32679,
+      "telemetry/2026-10-21.jsonl": 30778,
+      "telemetry/2026-10-22.jsonl": 30997,
+      "telemetry/2026-10-23.jsonl": 31003,
+      "telemetry/2026-10-24.jsonl": 3628,
+      "telemetry/2026-10-25.jsonl": 1907,
+      "telemetry/2026-10-26.jsonl": 31351,
+      "telemetry/2026-10-27.jsonl": 31818,
+      "telemetry/2026-10-28.jsonl": 31875,
+      "telemetry/2026-10-29.jsonl": 31479,
+      "telemetry/2026-10-30.jsonl": 31128,
+      "telemetry/2026-10-31.jsonl": 4935
+    },
+    "ignored_unknown_types": 0,
+    "logical_observations_by_type": {
+      "bx_raw": 308,
+      "camera_status": 116371,
+      "check_in": 1952,
+      "command": 54,
+      "heartbeat": 19300,
+      "ignition_off": 5037,
+      "ignition_on": 5034,
+      "low_voltage": 15,
+      "plan_change": 22,
+      "position": 484668,
+      "power_disconnect": 25,
+      "power_restore": 24
+    },
+    "malformed_envelopes": 0,
+    "malformed_reasons": {},
+    "observation_formats_by_family_firmware": {
+      "A/1.9.0/epoch_seconds": 252,
+      "A/2.0.4/utc_z": 1725,
+      "BX/unknown/bx_hex_epoch_seconds": 313,
+      "C/4.2.1/utc_z": 57399,
+      "C/4.3.0/utc_z": 60438,
+      "T/7.1.2/utc_z": 327146,
+      "T/7.2.0/utc_z": 193146
+    },
+    "receipt_day_mismatches": 0,
+    "receipt_lag_seconds": {
+      "A/1.9.0": {
+        "max": 5.0,
+        "min": 1.0,
+        "n": 247,
+        "p50": 3.0,
+        "p90": 5.0,
+        "p95": 5.0,
+        "p99": 5.0,
+        "p99_lower": 5.0
+      },
+      "A/2.0.4": {
+        "max": 5.0,
+        "min": 1.0,
+        "n": 1705,
+        "p50": 3.0,
+        "p90": 5.0,
+        "p95": 5.0,
+        "p99": 5.0,
+        "p99_lower": 5.0
+      },
+      "BX/unknown": {
+        "max": 8.0,
+        "min": 2.0,
+        "n": 308,
+        "p50": 5.0,
+        "p90": 8.0,
+        "p95": 8.0,
+        "p99": 8.0,
+        "p99_lower": 8.0
+      },
+      "C/4.2.1": {
+        "max": 6.0,
+        "min": 0.0,
+        "n": 56723,
+        "p50": 3.0,
+        "p90": 5.0,
+        "p95": 5.0,
+        "p99": 5.0,
+        "p99_lower": 5.0
+      },
+      "C/4.3.0": {
+        "max": 6.0,
+        "min": 0.0,
+        "n": 59724,
+        "p50": 3.0,
+        "p90": 5.0,
+        "p95": 5.0,
+        "p99": 5.0,
+        "p99_lower": 5.0
+      },
+      "T/7.1.2": {
+        "max": 5384.0,
+        "min": 1.0,
+        "n": 323243,
+        "p50": 4.0,
+        "p90": 6.0,
+        "p95": 6.0,
+        "p99": 665.0,
+        "p99_lower": 665.0
+      },
+      "T/7.2.0": {
+        "max": 5396.0,
+        "min": 1.0,
+        "n": 190860,
+        "p50": 3.0,
+        "p90": 6.0,
+        "p95": 6.0,
+        "p99": 218.0,
+        "p99_lower": 213.0
+      }
+    },
+    "receipt_order_inversions": 0,
+    "semantic_retry_receipt_delay_seconds": {
+      "max": 599.0,
+      "min": 0.0,
+      "n": 7609,
+      "p50": 301.0,
+      "p90": 543.0,
+      "p95": 572.0,
+      "p99": 593.0,
+      "p99_lower": 593.0
+    },
+    "unknown_serials": {},
+    "unknown_types": {}
+  },
+  "vin_assignments": {
+    "ambiguous_asset_vins": {},
+    "distinct_nonblank_asset_vins": 155,
+    "roster_mismatches": [
+      {
+        "asset_candidates": [
+          "V-214"
+        ],
+        "first_observed": "2026-10-24T00:26:00Z",
+        "first_received": "2026-10-24T00:26:02Z",
+        "last_observed": "2026-10-31T20:23:00Z",
+        "raw_envelopes": 1084,
+        "roster_asset_id": null,
+        "roster_installed_at": null,
+        "roster_status": "stock",
+        "serial": "T-58830",
+        "vin": "AZ6UR0E039M7D5F1Z",
+        "vin_observations": 45
+      }
+    ],
+    "serials_with_vin_observations": 162,
+    "shared_vin_serial_timelines": [
+      [
+        {
+          "asset_candidates": [
+            "V-149"
+          ],
+          "first_observed": "2026-10-04T07:54:17Z",
+          "first_received": "2026-10-04T07:54:22Z",
+          "last_observed": "2026-10-14T10:14:00Z",
+          "raw_envelopes": 989,
+          "roster_asset_id": "V-149",
+          "roster_installed_at": "2024-02-11",
+          "roster_status": "removed",
+          "serial": "T-57476",
+          "vin": "11RZXLR0BAVFJK95C",
+          "vin_observations": 59
+        },
+        {
+          "asset_candidates": [
+            "V-149"
+          ],
+          "first_observed": "2026-10-14T14:14:00Z",
+          "first_received": "2026-10-14T14:14:05Z",
+          "last_observed": "2026-10-31T22:36:00Z",
+          "raw_envelopes": 1650,
+          "roster_asset_id": "V-149",
+          "roster_installed_at": "2026-10-14",
+          "roster_status": "active",
+          "serial": "T-56109",
+          "vin": "11RZXLR0BAVFJK95C",
+          "vin_observations": 102
+        }
+      ],
+      [
+        {
+          "asset_candidates": [
+            "V-201"
+          ],
+          "first_observed": "2026-10-04T08:28:50Z",
+          "first_received": "2026-10-04T08:28:54Z",
+          "last_observed": "2026-10-23T13:29:00Z",
+          "raw_envelopes": 2705,
+          "roster_asset_id": "V-201",
+          "roster_installed_at": "2025-06-19",
+          "roster_status": "removed",
+          "serial": "T-52456",
+          "vin": "239U0HJ24ZALP5B5U",
+          "vin_observations": 112
+        },
+        {
+          "asset_candidates": [
+            "V-201"
+          ],
+          "first_observed": "2026-10-23T22:27:00Z",
+          "first_received": "2026-10-23T22:27:04Z",
+          "last_observed": "2026-10-31T20:00:00Z",
+          "raw_envelopes": 784,
+          "roster_asset_id": "V-201",
+          "roster_installed_at": "2026-10-23",
+          "roster_status": "active",
+          "serial": "T-58117",
+          "vin": "239U0HJ24ZALP5B5U",
+          "vin_observations": 46
+        }
+      ],
+      [
+        {
+          "asset_candidates": [
+            "V-106"
+          ],
+          "first_observed": "2026-10-04T07:54:33Z",
+          "first_received": "2026-10-04T07:54:35Z",
+          "last_observed": "2026-10-19T11:22:00Z",
+          "raw_envelopes": 2018,
+          "roster_asset_id": "V-106",
+          "roster_installed_at": "2024-03-05",
+          "roster_status": "removed",
+          "serial": "T-59271",
+          "vin": "9XEZD0UCPG6RZJC9N",
+          "vin_observations": 87
+        },
+        {
+          "asset_candidates": [
+            "V-106"
+          ],
+          "first_observed": "2026-10-19T21:06:00Z",
+          "first_received": "2026-10-19T21:06:02Z",
+          "last_observed": "2026-10-31T22:34:00Z",
+          "raw_envelopes": 1857,
+          "roster_asset_id": "V-106",
+          "roster_installed_at": "2026-10-19",
+          "roster_status": "active",
+          "serial": "T-52798",
+          "vin": "9XEZD0UCPG6RZJC9N",
+          "vin_observations": 68
+        }
+      ],
+      [
+        {
+          "asset_candidates": [
+            "V-214"
+          ],
+          "first_observed": "2026-10-04T07:54:53Z",
+          "first_received": "2026-10-04T07:54:55Z",
+          "last_observed": "2026-10-23T13:26:00Z",
+          "raw_envelopes": 2518,
+          "roster_asset_id": "V-214",
+          "roster_installed_at": "2024-10-05",
+          "roster_status": "active",
+          "serial": "T-55102",
+          "vin": "AZ6UR0E039M7D5F1Z",
+          "vin_observations": 108
+        },
+        {
+          "asset_candidates": [
+            "V-214"
+          ],
+          "first_observed": "2026-10-24T00:26:00Z",
+          "first_received": "2026-10-24T00:26:02Z",
+          "last_observed": "2026-10-31T20:23:00Z",
+          "raw_envelopes": 1084,
+          "roster_asset_id": null,
+          "roster_installed_at": null,
+          "roster_status": "stock",
+          "serial": "T-58830",
+          "vin": "AZ6UR0E039M7D5F1Z",
+          "vin_observations": 45
+        }
+      ],
+      [
+        {
+          "asset_candidates": [
+            "K-28"
+          ],
+          "first_observed": "2026-10-04T06:56:37Z",
+          "first_received": "2026-10-04T06:56:42Z",
+          "last_observed": "2026-10-20T12:53:00Z",
+          "raw_envelopes": 2256,
+          "roster_asset_id": "K-28",
+          "roster_installed_at": "2024-12-12",
+          "roster_status": "removed",
+          "serial": "T-51994",
+          "vin": "EDRXF51SEYC54M94B",
+          "vin_observations": 95
+        },
+        {
+          "asset_candidates": [
+            "K-28"
+          ],
+          "first_observed": "2026-10-21T02:08:00Z",
+          "first_received": "2026-10-21T02:08:05Z",
+          "last_observed": "2026-10-31T22:25:00Z",
+          "raw_envelopes": 1448,
+          "roster_asset_id": "K-28",
+          "roster_installed_at": "2026-10-20",
+          "roster_status": "active",
+          "serial": "T-52059",
+          "vin": "EDRXF51SEYC54M94B",
+          "vin_observations": 60
+        }
+      ],
+      [
+        {
+          "asset_candidates": [
+            "V-168"
+          ],
+          "first_observed": "2026-10-04T04:47:02Z",
+          "first_received": "2026-10-04T04:47:08Z",
+          "last_observed": "2026-10-08T10:42:00Z",
+          "raw_envelopes": 380,
+          "roster_asset_id": "V-168",
+          "roster_installed_at": "2025-03-07",
+          "roster_status": "removed",
+          "serial": "T-55956",
+          "vin": "LBB0DH20X6U5WHU2J",
+          "vin_observations": 27
+        },
+        {
+          "asset_candidates": [
+            "V-168"
+          ],
+          "first_observed": "2026-10-08T23:01:00Z",
+          "first_received": "2026-10-08T23:01:02Z",
+          "last_observed": "2026-10-31T22:21:00Z",
+          "raw_envelopes": 3330,
+          "roster_asset_id": "V-168",
+          "roster_installed_at": "2026-10-08",
+          "roster_status": "active",
+          "serial": "T-53120",
+          "vin": "LBB0DH20X6U5WHU2J",
+          "vin_observations": 129
+        }
+      ],
+      [
+        {
+          "asset_candidates": [
+            "V-222"
+          ],
+          "first_observed": "2026-10-04T09:27:42Z",
+          "first_received": "2026-10-04T09:27:44Z",
+          "last_observed": "2026-10-13T14:49:00Z",
+          "raw_envelopes": 964,
+          "roster_asset_id": "V-222",
+          "roster_installed_at": "2024-07-15",
+          "roster_status": "removed",
+          "serial": "T-51849",
+          "vin": "PZAFHVGJUF6WFBU3L",
+          "vin_observations": 55
+        },
+        {
+          "asset_candidates": [
+            "V-222"
+          ],
+          "first_observed": "2026-10-13T18:49:00Z",
+          "first_received": "2026-10-13T18:49:04Z",
+          "last_observed": "2026-10-31T20:24:00Z",
+          "raw_envelopes": 2032,
+          "roster_asset_id": "V-222",
+          "roster_installed_at": "2026-10-13",
+          "roster_status": "active",
+          "serial": "T-55793",
+          "vin": "PZAFHVGJUF6WFBU3L",
+          "vin_observations": 106
+        }
+      ]
+    ]
+  }
+}
