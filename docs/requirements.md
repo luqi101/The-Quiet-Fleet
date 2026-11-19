@@ -187,3 +187,14 @@ Only the selected persona's rows become grading gates. Shared API and diagnosis 
 | R26, R32, R34 | H08, H13 | Baseline P3 and END triage warnings led to a query-profile fix. The final run had zero warnings and its ten saved checkpoint responses matched the baseline byte for byte. The verifier captured and validated the complete seven-item queue at the exact END instant. Its Form 3 extraction remains P12. |
 
 [Measured report](../reports/release-verification.json) · [Reproduction commands](../README.md#release-verification) · [Focused tracker projection regression](../tests/test_support_triage.py) · [Process and vendor tests](../tests/test_process_lifecycle.py)
+
+## P11 verification record
+
+| Requirements | Acceptance scenarios | Observed check |
+| --- | --- | --- |
+| R02–R06, R27, R28 | A01–A06, H10 | The Python entrypoint serves the optional dashboard and both local assets. The runtime-only offline smoke fetches them under macOS outbound restrictions. The four grading endpoints remain in OpenAPI, and unsupported persona routes retain HTTP 404. |
+| R12, R24–R26, R41 | B06, E19–E21, F01–F07, H11–H12 | Chrome used one explicit receipt cutoff for queue and lookup. It showed empty, loading, malformed timestamp, and missing-device states, displayed both sides of Toronto's DST change, and opened and closed the evidence drawer with focus restoration. |
+| R24–R27, R32, R38 | H01–H08, H10–H12 | The practice replay used the unmodified vendor files and produced the same ten checkpoint responses as P10. The browser matched real replay items and original event IDs. Filters issued zero requests, viewing left the store counts unchanged, and HTML-like evidence appeared as text. |
+| R30, R31, R37, R44, R46 | H10, H16 | README setup, persona, false-alarm trade-off, threshold links, BX proof, demo and assumptions are presented together. The desktop image comes from the locally replayed carrier incident. |
+
+[README and demonstration](../README.md) · [Dashboard](../quiet_fleet/dashboard/index.html) · [HTTP regression](../tests/test_http_foundation.py) · [Project status](../planning/STATUS.md#p11-readme-and-offline-dashboard)

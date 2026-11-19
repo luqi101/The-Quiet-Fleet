@@ -118,6 +118,24 @@ class HTTPFoundationTest(unittest.TestCase):
             triage = client.get("/triage", params={"at": OFFSET_AT})
             self.assertEqual((triage.status_code, triage.json()), (200, {"at": AT, "items": []}))
 
+    def test_dashboard_serves_local_assets_without_changing_api_or_store(self) -> None:
+        with self.client() as client:
+            store = client.app.state.runtime.store
+            before = store.counts()
+            page = client.get("/")
+            self.assertEqual(page.status_code, 200)
+            self.assertIn("connect-src 'self'", page.headers["content-security-policy"])
+            for asset in ("/dashboard-assets/styles.css", "/dashboard-assets/dashboard.js"):
+                with self.subTest(asset=asset):
+                    self.assertIn(asset, page.text)
+                    response = client.get(asset)
+                    self.assertEqual(response.status_code, 200)
+                    self.assertTrue(response.content)
+            self.assertEqual(store.counts(), before)
+            paths = client.get("/openapi.json").json()["paths"]
+            self.assertEqual(set(paths), {"/health", "/ingest", "/devices/{serial}/status", "/triage"})
+            self.assertEqual(client.get("/triage", params={"at": AT}).json(), {"at": AT, "items": []})
+
     def test_unknown_serial_and_unsupported_routes_return_404(self) -> None:
         with self.client() as client:
             for route in ("/devices/T-99999/status", "/job-cover", "/visits", "/docs", "/redoc"):

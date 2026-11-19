@@ -64,17 +64,19 @@ def verify_vendor():
 
 
 def runtime_digest():
-    paths = sorted((ROOT / "quiet_fleet").glob("**/*.py")) + [ROOT / "config/rules.json", ROOT / "requirements.txt"]
+    package = ROOT / "quiet_fleet"
+    paths = sorted(path for path in package.rglob("*") if path.suffix in {".py", ".html", ".css", ".js"})
+    paths += [ROOT / "config/rules.json", ROOT / "requirements.txt"]
     fingerprints = "".join(f"{sha256(path)}  {path.relative_to(ROOT).as_posix()}\n" for path in paths)
     return hashlib.sha256(fingerprints.encode()).hexdigest()
 
 
-def request(method, path, *, body=None, timeout=5):
+def request(method, path, *, body=None, timeout=5, decode_json=True):
     with closing(HTTPConnection(HOST, PORT, timeout=timeout)) as connection:
         headers = {"Content-Type": "application/json"} if body is not None else {}
         connection.request(method, path, body=json.dumps(body) if body is not None else None, headers=headers)
         with connection.getresponse() as response:
-            return response.status, json.load(response)
+            return response.status, json.load(response) if decode_json else response.read()
 
 
 def check_port():
@@ -368,6 +370,9 @@ def run_offline(args, run, result):
             first = status
             for path, expected in (("/openapi.json", 200), ("/docs", 404), ("/redoc", 404)):
                 require(request("GET", path)[0] == expected, f"Unexpected offline response on {path}")
+            for path in ("/", "/dashboard-assets/styles.css", "/dashboard-assets/dashboard.js"):
+                status_code, asset = request("GET", path, decode_json=False)
+                require(status_code == 200 and asset, f"Could not load offline dashboard resource {path}")
             event_id = "verification-power-loss"
             event = {"event_id": event_id, "type": "power_disconnect", "serial": serial,
                      "device_time": at, "received_at": at, "payload": {}}

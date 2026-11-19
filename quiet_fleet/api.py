@@ -12,7 +12,8 @@ from typing import Annotated, NoReturn
 
 from fastapi import Depends, FastAPI, HTTPException, Query, Request
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import ValidationError
 from starlette.concurrency import run_in_threadpool
 
@@ -25,6 +26,11 @@ from .time_utils import parse_iso_instant
 from .triage import SupportView
 
 RULES_PATH = Path(__file__).resolve().parents[1] / "config" / "rules.json"
+DASHBOARD_PATH = Path(__file__).resolve().parent / "dashboard"
+DASHBOARD_CSP = (
+    "default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; "
+    "img-src data:; base-uri 'none'; frame-ancestors 'none'; form-action 'none'"
+)
 logger = logging.getLogger(__name__)
 
 
@@ -109,6 +115,15 @@ def create_app(data_dir: Path | None = None, config_path: Path | None = None) ->
         redoc_url=None,
         responses={"4XX": {"description": "Invalid request or unknown resource"}},
     )
+    application.mount("/dashboard-assets", StaticFiles(directory=DASHBOARD_PATH / "assets"), name="dashboard-assets")
+
+    @application.get("/", response_class=FileResponse, include_in_schema=False)
+    def dashboard() -> FileResponse:
+        return FileResponse(
+            DASHBOARD_PATH / "index.html",
+            media_type="text/html",
+            headers={"Content-Security-Policy": DASHBOARD_CSP},
+        )
 
     @application.exception_handler(RequestValidationError)
     async def validation_error(_: Request, _exc: RequestValidationError) -> JSONResponse:
