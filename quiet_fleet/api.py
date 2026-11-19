@@ -7,6 +7,8 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from datetime import datetime
+from functools import partial
+from math import inf
 from pathlib import Path
 from typing import Annotated, NoReturn
 
@@ -61,6 +63,12 @@ def parse_at(at: Annotated[str, Query(description="An ISO 8601 instant with an e
 
 def reject_non_json_constant(token: str) -> NoReturn:
     raise ValueError(f"{token} is outside the JSON grammar")
+
+
+def parse_json_integer(token: str, *, maximum_digits: int) -> int | float:
+    # Keep syntactically valid JSON decodable. Packet validation rejects the
+    # nonfinite sentinel the same way it rejects exponent overflow (1e309).
+    return int(token) if len(token.removeprefix("-")) <= maximum_digits else inf
 
 
 def accept_batch(events: list[object], runtime: Runtime) -> IngestResponse:
@@ -144,8 +152,12 @@ def create_app(data_dir: Path | None = None, config_path: Path | None = None) ->
         },
     )
     async def ingest(request: Request, runtime: CurrentRuntime) -> IngestResponse:
+        integer_limit = runtime.rules.defensive_limits.json_integer_max_digits.value
         try:
-            payload = json.loads(await request.body(), parse_constant=reject_non_json_constant)
+            payload = json.loads(
+                await request.body(), parse_constant=reject_non_json_constant,
+                parse_int=partial(parse_json_integer, maximum_digits=integer_limit),
+            )
         except (ValueError, RecursionError) as exc:
             raise HTTPException(status_code=400, detail="Request body must be valid JSON.") from exc
         try:

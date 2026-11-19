@@ -159,11 +159,11 @@ class IndividualDiagnosisTest(fixture.ReportingFixture):
     def test_confirmed_downtime_is_local_date_scoped_and_direct_power_wins(self):
         config = json.loads(fixture.RULES.read_text())
         config["operational_assumptions"]["seasonal_downtime_suppression_enabled"]["value"] = True
-        config["site_policy"] = {"downtime": [{
+        config["site_policy"]["downtime"] = [{
             "asset_ids": [fixture.ASSET], "depot": "MSS",
             "start_local": "2026-10-05", "end_local": "2026-10-06",
             "provenance": "Synthetic confirmed operations record",
-        }]}
+        }]
         rules = self.data / "approved-rules.json"
         rules.write_text(json.dumps(config), encoding="utf-8")
         client = self.enterContext(TestClient(create_app(data_dir=self.data, config_path=rules)))

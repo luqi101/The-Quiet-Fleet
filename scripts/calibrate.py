@@ -92,6 +92,10 @@ def build_rules(report):
     }
     wire = {
         "a_legacy_timestamp_scale": entry(1, "seconds per epoch unit", "multiply", "Legacy A numeric observations", "Decode numeric device times as epoch seconds.", "test_timestamp_offsets_and_epoch_units"),
+        "packet_epoch_start_seconds": entry(946_684_800, "Unix seconds (2000-01-01T00:00:00Z)", "timestamp >= value",
+                                           "P03 defensive packet clock policy", "Reject implausibly old clocks and accidental epoch-unit misreads.", "test_packet_epoch_boundaries"),
+        "packet_epoch_end_seconds_exclusive": entry(4_102_444_800, "Unix seconds (2100-01-01T00:00:00Z)", "timestamp < value",
+                                                   "P03 defensive packet clock policy", "Reject out-of-range clocks and numeric milliseconds while retaining a portable instant range.", "test_packet_epoch_boundaries"),
         "bx_epoch_radix": entry(16, "base", "parse in radix", "Three vendor portal anchors", "Hexadecimal Unix epoch seconds.", "test_bx_anchor_and_unknown_bits", sample_size=3),
         "bx_battery_full_scale": entry(4095, "raw units", "100 × raw / value", "Three rounded vendor portal anchors", "12-bit full-scale inference.", "G01–G02", sample_size=3),
         "bx_coordinate_scale": entry(100_000, "raw units per degree", "raw / value", "Three vendor portal anchors", "Decode the two signed coordinate integers.", "G01", sample_size=3),
@@ -205,6 +209,15 @@ def build_rules(report):
                                                      "Timezone-aware input avoids host-local interpretation.", "A09, test_timestamp_offsets_and_epoch_units"),
             "clock_ahead_tolerance": entry(0, "seconds", "observation - receipt > value means clock quality uncertain",
                                            "P00 clock policy and supplied first-receipt distribution", "Keep the receipt for contact and withhold future-dated state.", "B14–B16", (0, 5, 30)),
+            "json_integer_max_digits": entry(640, "decimal digits excluding sign", "digit count <= value", "P13 malformed-batch regression and CPython's minimum integer conversion limit",
+                                             "Keep oversize numbers local to one packet even if decimal conversion uses the strictest supported interpreter limit.", "test_oversized_json_integer_does_not_reject_valid_neighbors", (128, 640)),
+        },
+        "site_policy": {
+            "downtime": [],
+            "weak_signal_max": entry(1, "modem signal level on the supplied 0–5 scale", "signal <= value",
+                                     "Vendor heartbeat scale and P05 conservative engineering policy", "Treat the lowest categories as corroboration with eligible device-specific buffering evidence.", "D30–D31", (0, 1)),
+            "coverage_monitor_limit": entry(5_400, "seconds", "elapsed <= value",
+                                            "P01 observed maximum T delivery lag of 5,396 seconds, rounded to 90 minutes", "Provisional ceiling for coverage attribution on a still-overdue position.", "D30–D31", (3_600, 5_400)),
         },
     }
 
@@ -293,12 +306,13 @@ def render_docs(report, rules):
         "| Parameter | Value | Unit | Basis |",
         "| --- | --- | --- | --- |",
     ])
-    for group in ("calibrated_parameters", "operational_assumptions", "defensive_limits"):
+    for group in ("given_rules", "calibrated_parameters", "wire_format_constants", "operational_assumptions", "defensive_limits", "site_policy"):
         for key, item in rules[group].items():
-            printed.append(f"| `{key}` | {json.dumps(item['value'])} | {item['unit']} | {item['provenance']} |")
+            if key != "downtime":
+                printed.append(f"| `{key}` | {json.dumps(item['value'])} | {item['unit']} | {item['provenance']} |")
     printed.extend([
         "",
-        "Track approval of seasonal downtime, high-priority deadlines and the remaining Form 2 allowance separately. No threshold here proves the hidden scenarios pass. Camera escalation, cold grace, physical battery recovery, and carrier grouping need adversarial tests during implementation.",
+        "Approval of seasonal downtime, the high-priority horizon, and the remaining Form 2 allowance are open. The acceptance suite covers camera escalation, cold grace, battery recovery, and carrier grouping. Hidden scenarios have separate coverage.",
         "",
         "## Reproduce from the checkout root",
         "",

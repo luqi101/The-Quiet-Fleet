@@ -8,7 +8,6 @@ from contextlib import redirect_stdout
 from io import StringIO
 from pathlib import Path
 from types import SimpleNamespace
-from unittest.mock import patch
 
 from scripts import verify
 from test_http_foundation import TRACKER, write_references
@@ -19,14 +18,13 @@ class ProcessLifecycleTest(unittest.TestCase):
         self.root = Path(self.enterContext(tempfile.TemporaryDirectory()))
         self.data = self.root / "data"
         write_references(self.data)
+        with socket.socket() as probe:
+            probe.bind((verify.HOST, 0))
+            port = probe.getsockname()[1]
         self.args = SimpleNamespace(data=self.data, out=self.root / "reports", persona="support",
-                                    startup_timeout=8, exam_timeout=20)
+                                    startup_timeout=8, exam_timeout=20, port=port)
 
     def run_mode(self, mode):
-        try:
-            verify.check_port()
-        except verify.VerificationError as exc:
-            self.skipTest(str(exc))
         with redirect_stdout(StringIO()):
             code, run = verify.verify(mode, self.args)
         summary = json.loads((run / "summary.json").read_text())
@@ -68,7 +66,7 @@ class ProcessLifecycleTest(unittest.TestCase):
             listener.bind((verify.HOST, 0))
             listener.listen()
             port = listener.getsockname()[1]
-            with patch.object(verify, "PORT", port), self.assertRaisesRegex(verify.VerificationError, "Existing listeners"):
-                verify.check_port()
+            with self.assertRaisesRegex(verify.VerificationError, "Existing listeners"):
+                verify.check_port(port)
             with socket.create_connection((verify.HOST, port), timeout=1):
                 self.assertEqual(listener.getsockname()[1], port)

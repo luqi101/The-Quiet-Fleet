@@ -104,6 +104,19 @@
       "unit": "seconds",
       "value": 0
     },
+    "json_integer_max_digits": {
+      "comparator": "digit count <= value",
+      "provenance": "P13 malformed-batch regression and CPython's minimum integer conversion limit",
+      "rationale": "Keep oversize numbers local to one packet even if decimal conversion uses the strictest supported interpreter limit.",
+      "sample_size": null,
+      "sensitivity_candidates": [
+        128,
+        640
+      ],
+      "test": "test_oversized_json_integer_does_not_reject_valid_neighbors",
+      "unit": "decimal digits excluding sign",
+      "value": 640
+    },
     "query_timestamp_requires_offset": {
       "comparator": "explicit UTC offset required",
       "provenance": "Contract UTC and P00 clock policy",
@@ -488,6 +501,35 @@
     }
   },
   "schema_version": 1,
+  "site_policy": {
+    "coverage_monitor_limit": {
+      "comparator": "elapsed <= value",
+      "provenance": "P01 observed maximum T delivery lag of 5,396 seconds, rounded to 90 minutes",
+      "rationale": "Provisional ceiling for coverage attribution on a still-overdue position.",
+      "sample_size": null,
+      "sensitivity_candidates": [
+        3600,
+        5400
+      ],
+      "test": "D30\u2013D31",
+      "unit": "seconds",
+      "value": 5400
+    },
+    "downtime": [],
+    "weak_signal_max": {
+      "comparator": "signal <= value",
+      "provenance": "Vendor heartbeat scale and P05 conservative engineering policy",
+      "rationale": "Treat the lowest categories as corroboration with eligible device-specific buffering evidence.",
+      "sample_size": null,
+      "sensitivity_candidates": [
+        0,
+        1
+      ],
+      "test": "D30\u2013D31",
+      "unit": "modem signal level on the supplied 0\u20135 scale",
+      "value": 1
+    }
+  },
   "wire_format_constants": {
     "a_legacy_timestamp_scale": {
       "comparator": "multiply",
@@ -558,6 +600,26 @@
       "test": "G01\u2013G03",
       "unit": "bit mask",
       "value": 1
+    },
+    "packet_epoch_end_seconds_exclusive": {
+      "comparator": "timestamp < value",
+      "provenance": "P03 defensive packet clock policy",
+      "rationale": "Reject out-of-range clocks and numeric milliseconds while retaining a portable instant range.",
+      "sample_size": null,
+      "sensitivity_candidates": [],
+      "test": "test_packet_epoch_boundaries",
+      "unit": "Unix seconds (2100-01-01T00:00:00Z)",
+      "value": 4102444800
+    },
+    "packet_epoch_start_seconds": {
+      "comparator": "timestamp >= value",
+      "provenance": "P03 defensive packet clock policy",
+      "rationale": "Reject implausibly old clocks and accidental epoch-unit misreads.",
+      "sample_size": null,
+      "sensitivity_candidates": [],
+      "test": "test_packet_epoch_boundaries",
+      "unit": "Unix seconds (2000-01-01T00:00:00Z)",
+      "value": 946684800
     }
   }
 }

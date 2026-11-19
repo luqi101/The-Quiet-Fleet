@@ -73,9 +73,9 @@ def _text(value: object, field: str) -> str:
     return value
 
 
-def _time_us(value: object, field: str, *, allow_epoch_seconds: bool = False) -> int:
+def _time_us(value: object, field: str, rules: WireFormatConstants, *, allow_epoch_seconds: bool = False) -> int:
     try:
-        return parse_packet_time_us(value, allow_epoch_seconds=allow_epoch_seconds)
+        return parse_packet_time_us(value, rules, allow_epoch_seconds=allow_epoch_seconds)
     except ValueError as exc:
         raise InvalidEvent(f"invalid {field}: {exc}") from exc
 
@@ -117,7 +117,7 @@ def normalize_event(
         raise InvalidEvent("event must be an object")
     event_id = _text(raw.get("event_id"), "event_id")
     raw_type = _text(raw.get("type"), "type")
-    received_us = _time_us(raw.get("received_at"), "received_at")
+    received_us = _time_us(raw.get("received_at"), "received_at", wire_rules)
     if raw_type not in _KNOWN_TYPES:
         return None
 
@@ -135,7 +135,7 @@ def normalize_event(
         kind = raw_type
         serial = _text(raw.get("serial"), "serial")
         device_time = raw.get("device_time")
-        observed_us = _time_us(device_time, "device_time", allow_epoch_seconds=kind == "check_in")
+        observed_us = _time_us(device_time, "device_time", wire_rules, allow_epoch_seconds=kind == "check_in")
         raw_device_time_json = _canonical_json(device_time)
         payload = _validate_payload(raw.get("payload"), kind)
 

@@ -18,6 +18,7 @@ import time
 from collections import Counter
 from contextlib import closing, contextmanager
 from datetime import UTC, datetime, timedelta
+from functools import partial
 from http.client import HTTPConnection, HTTPException
 from pathlib import Path
 from urllib.parse import urlencode
@@ -30,7 +31,6 @@ HOST, PORT = "127.0.0.1", 8080
 BATCH_LIMIT = 5_000
 HTTP_LIMIT = 10
 MODES = ("preflight", "practice", "offline")
-BOUND_LOG = f"Uvicorn running on http://{HOST}:{PORT}"
 GUARD_LOG = "Quiet Fleet verification denied external socket, DNS and corpus probes"
 INGEST_LOG = re.compile(
     r"^Ingest batch: accepted=(\d+) inserted=(\d+) retries=(\d+) ignored=(\d+) malformed=(\d+) conflicts=(\d+)$",
@@ -71,30 +71,31 @@ def runtime_digest():
     return hashlib.sha256(fingerprints.encode()).hexdigest()
 
 
-def request(method, path, *, body=None, timeout=5, decode_json=True):
-    with closing(HTTPConnection(HOST, PORT, timeout=timeout)) as connection:
+def request(method, path, *, body=None, timeout=5, decode_json=True, port=PORT):
+    with closing(HTTPConnection(HOST, port, timeout=timeout)) as connection:
         headers = {"Content-Type": "application/json"} if body is not None else {}
         connection.request(method, path, body=json.dumps(body) if body is not None else None, headers=headers)
         with connection.getresponse() as response:
             return response.status, json.load(response) if decode_json else response.read()
 
 
-def check_port():
+def check_port(port=PORT):
     with socket.socket() as probe:
         probe.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         try:
-            probe.bind((HOST, PORT))
+            probe.bind((HOST, port))
         except OSError as exc:
-            raise VerificationError(f"Cannot reserve {HOST}:{PORT}. Existing listeners are left alone. {exc}") from exc
+            raise VerificationError(f"Cannot reserve {HOST}:{port}. Existing listeners are left alone. {exc}") from exc
 
 
-def wait_ready(server, log, deadline):
+def wait_ready(server, log, deadline, port):
+    bound_log = f"Uvicorn running on http://{HOST}:{port}"
     while server.poll() is None and (remaining := deadline - time.monotonic()) > 0:
         # Uvicorn logs this only after this child binds the port. If a separate
         # process wins the bind race, never send it a verification request.
-        if BOUND_LOG in log.read_text():
+        if bound_log in log.read_text():
             try:
-                if request("GET", "/health", timeout=min(1, remaining)) == (200, {"status": "ok"}):
+                if request("GET", "/health", timeout=min(1, remaining), port=port) == (200, {"status": "ok"}):
                     require(server.poll() is None, "The service exited during readiness")
                     return
             except OSError:
@@ -149,9 +150,14 @@ def store_counts(db):
 
 
 @contextmanager
-def service(run, data, startup_timeout, result, *, offline=False, prefix=()):
-    check_port()
+def service(run, data, startup_timeout, result, *, offline=False, prefix=(), port=PORT):
+    check_port(port)
     command = [*prefix, sys.executable, "-B", "-m", "quiet_fleet"]
+    if port != PORT:
+        # The documented entrypoint stays on 8080. On a shared host the
+        # verifier can exercise the same ASGI app on another loopback port.
+        command = [*prefix, sys.executable, "-B", "-m", "uvicorn", "quiet_fleet.api:app",
+                   "--host", HOST, "--port", str(port), "--workers", "1"]
     log = run / "service.log"
     with tempfile.TemporaryDirectory(dir=run, prefix="store-") as directory, log.open("xb") as logfile:
         env = child_environment(run, "install_service_hooks", QF_VERIFY_STORE_DIR=directory, QF_DATA_DIR=str(data))
@@ -162,7 +168,7 @@ def service(run, data, startup_timeout, result, *, offline=False, prefix=()):
         with subprocess.Popen(command, cwd=ROOT, env=env, stdout=logfile, stderr=subprocess.STDOUT) as server:
             result["pid"] = server.pid
             try:
-                wait_ready(server, log, started + startup_timeout)
+                wait_ready(server, log, started + startup_timeout, port)
                 result["startup_seconds"] = round(time.monotonic() - started, 6)
                 if offline:
                     require(GUARD_LOG in log.read_text(), "The service did not verify its Python offline guard")
@@ -247,7 +253,7 @@ def run_exam(mode, args, run, result):
     server_result = result["service"] = {}
     request_log = run / "requests.jsonl"
     exam_log = run / "exam.log"
-    with service(run, args.data, args.startup_timeout, server_result) as db:
+    with service(run, args.data, args.startup_timeout, server_result, port=args.port) as db:
         env = child_environment(
             run, "install_exam_observer", QF_VERIFY_EXAM_SOURCE=str(RUNNER), QF_VERIFY_REQUEST_LOG=str(request_log),
             NO_PROXY="localhost,127.0.0.1", no_proxy="localhost,127.0.0.1",
@@ -255,7 +261,7 @@ def run_exam(mode, args, run, result):
         command = [
             sys.executable, "-B", "-u", str(RUNNER), mode,
             "--data", str(args.data), "--persona", args.persona, "--out", str(run),
-            "--url", f"http://{HOST}:{PORT}", "--batch", str(BATCH_LIMIT),
+            "--url", f"http://{HOST}:{args.port}", "--batch", str(BATCH_LIMIT),
         ]
         result["exam_command"] = command
         started = time.monotonic()
@@ -352,36 +358,37 @@ def run_offline(args, run, result):
     status_path, queue_path = f"/devices/{serial}/status?{query}", f"/triage?{query}"
     reset = (200, {"at": at, "items": []})
     result["services"] = []
+    api = partial(request, port=args.port)
     first = None
     for stage in ("initial", "restarted"):
         child = run / stage
         child.mkdir()
         details = {}
         result["services"].append(details)
-        with service(child, references, args.startup_timeout, details, offline=True, prefix=prefix):
-            code, status = request("GET", status_path)
+        with service(child, references, args.startup_timeout, details, offline=True, prefix=prefix, port=args.port):
+            code, status = api("GET", status_path)
             require(code == 200 and status["asset_id"] == "SMOKE-ASSET"
                     and status["state"] == "unknown" and status["last_heard_at"] is None and not status["evidence"],
                     f"Unexpected initial status on {stage}")
-            require(request("GET", queue_path) == reset, f"Triage was not empty on {stage}")
+            require(api("GET", queue_path) == reset, f"Triage was not empty on {stage}")
             if stage == "restarted":
                 require(status == first, "Restarted process preserved ingest state")
                 continue
             first = status
             for path, expected in (("/openapi.json", 200), ("/docs", 404), ("/redoc", 404)):
-                require(request("GET", path)[0] == expected, f"Unexpected offline response on {path}")
+                require(api("GET", path)[0] == expected, f"Unexpected offline response on {path}")
             for path in ("/", "/dashboard-assets/styles.css", "/dashboard-assets/dashboard.js"):
-                status_code, asset = request("GET", path, decode_json=False)
+                status_code, asset = api("GET", path, decode_json=False)
                 require(status_code == 200 and asset, f"Could not load offline dashboard resource {path}")
             event_id = "verification-power-loss"
             event = {"event_id": event_id, "type": "power_disconnect", "serial": serial,
                      "device_time": at, "received_at": at, "payload": {}}
-            require(request("POST", "/ingest", body={"events": [event]}) == (200, {"accepted": 1}), "Smoke ingest failed")
-            code, observed = request("GET", status_path)
+            require(api("POST", "/ingest", body={"events": [event]}) == (200, {"accepted": 1}), "Smoke ingest failed")
+            code, observed = api("GET", status_path)
             require(code == 200 and observed["state"] == "needs_action" and observed["likely_cause"] == "power_loss"
                     and observed["last_heard_at"] == at and observed["evidence"] == [event_id],
                     "Ingest did not update the renamed device")
-            code, queue = request("GET", queue_path)
+            code, queue = api("GET", queue_path)
             require(code == 200 and len(queue["items"]) == 1, "Offline triage should contain one item")
             item = queue["items"][0]
             require((item["serials"], item["who_acts"], item["evidence"]) == ([serial], "technician", [event_id]),
@@ -397,7 +404,7 @@ def verify(mode, args):
     print(f"{mode} verification logs in {run}", flush=True)
     digest = runtime_digest()
     result = {
-        "mode": mode, "persona": args.persona, "data": str(args.data), "runtime_sha256": digest,
+        "mode": mode, "persona": args.persona, "data": str(args.data), "port": args.port, "runtime_sha256": digest,
         "environment": {"python": platform.python_version(), "os": platform.platform(),
                         "macos": platform.mac_ver()[0] or None, "sqlite": sqlite3.sqlite_version},
         "exit_code": 1,
@@ -421,6 +428,8 @@ def add_arguments(parser):
     parser.add_argument("--persona", choices=("support",), default="support", help="Vendor persona (default: support).")
     parser.add_argument("--out", type=Path, default=ROOT / "reports",
                         help="Report root. Each check creates a fresh run directory (default: checkout reports/).")
+    parser.add_argument("--port", type=listen_port, default=PORT,
+                        help="Verifier loopback port. The normal entrypoint uses 8080.")
     parser.add_argument("--startup-timeout", type=positive_seconds, default=15,
                         help="Readiness deadline in seconds (default: 15).")
     parser.add_argument("--exam-timeout", type=positive_seconds, default=900,
@@ -432,6 +441,13 @@ def positive_seconds(text):
     if value <= 0 or not math.isfinite(value):
         raise argparse.ArgumentTypeError("must be a finite positive number of seconds")
     return value
+
+
+def listen_port(text):
+    port = int(text)
+    if not 1 <= port <= 65535:
+        raise argparse.ArgumentTypeError("must be a TCP port from 1 to 65535")
+    return port
 
 
 def process_exit(code):

@@ -6,6 +6,8 @@ from decimal import Decimal
 from types import MappingProxyType
 from zoneinfo import ZoneInfo
 
+from .config import WireFormatConstants
+
 
 _ISO_INSTANT = re.compile(
     r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}"
@@ -48,18 +50,16 @@ def from_epoch_us(value: int) -> datetime:
     return _EPOCH + timedelta(microseconds=value)
 
 
-_PACKET_START_US = to_epoch_us(datetime(2000, 1, 1, tzinfo=UTC))
-_PACKET_END_US = to_epoch_us(datetime(2100, 1, 1, tzinfo=UTC))
-
-
-def parse_packet_time_us(value: object, *, allow_epoch_seconds: bool = False) -> int:
-    """Accept packet instants in [2000, 2100) UTC at microsecond precision.
+def parse_packet_time_us(value: object, rules: WireFormatConstants, *, allow_epoch_seconds: bool = False) -> int:
+    """Accept packet instants within the configured UTC range at microsecond precision.
 
     Numeric Unix seconds are opt-in. A numeric value must represent an
     exact number of microseconds. The parser never guesses milliseconds.
     """
+    lower = rules.packet_epoch_start_seconds.value
+    upper = rules.packet_epoch_end_seconds_exclusive.value
     if allow_epoch_seconds and type(value) in (int, float):
-        if not _PACKET_START_US // _MICROSECONDS <= value < _PACKET_END_US // _MICROSECONDS:
+        if not lower <= value < upper:
             raise ValueError("numeric packet time is outside the supported epoch-second range")
         numerator, denominator = Decimal(str(value)).as_integer_ratio()
         microseconds, remainder = divmod(numerator * _MICROSECONDS, denominator)
@@ -68,6 +68,6 @@ def parse_packet_time_us(value: object, *, allow_epoch_seconds: bool = False) ->
         return microseconds
 
     microseconds = to_epoch_us(parse_iso_instant(value))
-    if not _PACKET_START_US <= microseconds < _PACKET_END_US:
+    if not lower * _MICROSECONDS <= microseconds < upper * _MICROSECONDS:
         raise ValueError("packet time is outside the supported UTC range")
     return microseconds

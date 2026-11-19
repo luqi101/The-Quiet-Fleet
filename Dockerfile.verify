@@ -1,0 +1,23 @@
+FROM ubuntu:24.04
+
+RUN apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        ca-certificates python3.12 python3.12-venv tzdata \
+    && rm -rf /var/lib/apt/lists/*
+RUN python3.12 -m venv /opt/quiet-fleet
+ENV PATH="/opt/quiet-fleet/bin:$PATH"
+ENV PYTHONDONTWRITEBYTECODE=1
+
+WORKDIR /app
+COPY requirements.txt requirements-dev.txt ./
+RUN python -m pip install --no-cache-dir -r requirements-dev.txt \
+    && python -m pip check
+
+COPY quiet_fleet/ quiet_fleet/
+COPY config/ config/
+COPY scripts/ scripts/
+COPY tests/ tests/
+COPY vendor/quiet-fleet/ vendor/quiet-fleet/
+COPY data/*.csv data/
+
+CMD ["python", "scripts/release_check.py", "--data", "/qf-data", "--persona", "support"]

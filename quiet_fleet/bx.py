@@ -62,7 +62,7 @@ def decode_bx(raw: object, rules: WireFormatConstants) -> BXFrame:
     if not isinstance(clock, str) or _HEX_CLOCK.fullmatch(clock) is None:
         raise InvalidBX("BX t must be hexadecimal Unix seconds")
     try:
-        observed_us = parse_packet_time_us(int(clock, rules.bx_epoch_radix.value), allow_epoch_seconds=True)
+        observed_us = parse_packet_time_us(int(clock, rules.bx_epoch_radix.value), rules, allow_epoch_seconds=True)
     except ValueError as exc:
         raise InvalidBX("BX t is outside the supported epoch-second range") from exc
 

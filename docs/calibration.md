@@ -37,12 +37,29 @@ At a 50% comparison share, the healthy-peer count sweep changes held-out detecti
 
 | Parameter | Value | Unit | Basis |
 | --- | --- | --- | --- |
+| `tracker_position_interval` | 120 | seconds | Candidate brief §1 |
+| `tracker_parked_heartbeat_interval` | 14400 | seconds | Candidate brief §1 |
+| `tracker_parked_overdue` | 16200 | seconds | Candidate brief §1 |
+| `camera_sleep_delay` | 900 | seconds | Candidate brief §1 |
+| `a_checkin_interval` | 86400 | seconds | Candidate brief §1 |
+| `shift_start_local` | "06:00" | depot-local HH:MM | Candidate brief §1 |
+| `ingest_batch_max` | 5000 | events | Vendor contract |
+| `ingest_response_limit` | 10 | seconds | Vendor contract |
 | `tracker_driving_overdue` | 360 | seconds | Development driving cadence and outage sweep |
 | `camera_recording_overdue` | 600 | seconds | Development awake-camera cadence |
 | `normal_receipt_lag` | 8 | seconds | Development first-receipt lag sweep |
 | `a_daily_overdue` | 93600 | seconds | Development A healthy daily intervals |
 | `bx_daily_overdue` | 93600 | seconds | Development BX healthy daily intervals |
 | `bx_checkin_interval` | 86400 | seconds | Development BX healthy daily intervals |
+| `a_legacy_timestamp_scale` | 1 | seconds per epoch unit | Legacy A numeric observations |
+| `packet_epoch_start_seconds` | 946684800 | Unix seconds (2000-01-01T00:00:00Z) | P03 defensive packet clock policy |
+| `packet_epoch_end_seconds_exclusive` | 4102444800 | Unix seconds (2100-01-01T00:00:00Z) | P03 defensive packet clock policy |
+| `bx_epoch_radix` | 16 | base | Three vendor portal anchors |
+| `bx_battery_full_scale` | 4095 | raw units | Three rounded vendor portal anchors |
+| `bx_coordinate_scale` | 100000 | raw units per degree | Three vendor portal anchors |
+| `bx_moving_mask` | 1 | bit mask | Vendor portal anchors and frame combinations |
+| `bx_battery_low_mask` | 2 | bit mask | Vendor portal anchors and frame combinations |
+| `bx_gps_fix_mask` | 8 | bit mask | Vendor portal anchors and frame combinations |
 | `camera_wake_grace` | 60 | seconds | Development first-recording timings |
 | `camera_reboot_response_grace` | 600 | seconds | Awake reboot response sweep and camera cadence |
 | `camera_failed_reboots_before_visit` | 2 | distinct failed awake attempts | Support history and remote-first policy |
@@ -65,8 +82,11 @@ At a 50% comparison share, the healthy-peer count sweep changes held-out detecti
 | `outage_minimum_healthy_comparison_share` | 0.5 | ratio | Development outage anchor and background snapshot grid |
 | `query_timestamp_requires_offset` | true | boolean | Contract UTC and P00 clock policy |
 | `clock_ahead_tolerance` | 0 | seconds | P00 clock policy and supplied first-receipt distribution |
+| `json_integer_max_digits` | 640 | decimal digits excluding sign | P13 malformed-batch regression and CPython's minimum integer conversion limit |
+| `weak_signal_max` | 1 | modem signal level on the supplied 0–5 scale | Vendor heartbeat scale and P05 conservative engineering policy |
+| `coverage_monitor_limit` | 5400 | seconds | P01 observed maximum T delivery lag of 5,396 seconds, rounded to 90 minutes |
 
-Track approval of seasonal downtime, high-priority deadlines and the remaining Form 2 allowance separately. No threshold here proves the hidden scenarios pass. Camera escalation, cold grace, physical battery recovery, and carrier grouping need adversarial tests during implementation.
+Approval of seasonal downtime, the high-priority horizon, and the remaining Form 2 allowance are open. The acceptance suite covers camera escalation, cold grace, battery recovery, and carrier grouping. Hidden scenarios have separate coverage.
 
 ## Reproduce from the checkout root
 

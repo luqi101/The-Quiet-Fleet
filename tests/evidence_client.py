@@ -29,7 +29,9 @@ class AuditedClient(TestClient):
             return response
         path = response.request.url.path
         if method.upper() == "POST" and path == "/ingest":
-            self._remember_receipts(json.loads(response.request.content)["events"])
+            # This ledger checks string IDs and receipts only. A packet's
+            # numeric magnitude cannot prevent reading its neighbors' IDs.
+            self._remember_receipts(json.loads(response.request.content, parse_int=str)["events"])
         if method.upper() == "GET" and (path == "/triage" or path.endswith("/status")):
             self._audit_response(path, response.request.url.params["at"], response.json())
         return response

@@ -1,6 +1,7 @@
 import builtins
 import csv
 import io
+import json
 import math
 import os
 import sqlite3
@@ -202,6 +203,47 @@ class HTTPFoundationTest(unittest.TestCase):
                     self.assertEqual(response.status_code, 200, response.text)
                     self.assertEqual(response.json(), {"accepted": accepted})
                     self.assertIs(type(response.json()["accepted"]), int)
+
+    def test_oversized_json_integer_does_not_reject_valid_neighbors(self) -> None:
+        def envelope(event_id, kind, payload):
+            return {"event_id": event_id, "type": kind, "serial": TRACKER,
+                    "device_time": AT, "received_at": AT, "payload": payload}
+
+        parked = envelope("audit-parked", "ignition_off", {})
+        invalid = envelope("audit-out-of-range", "position", {
+            "lat": 43.6, "lng": -79.6, "speed_kmh": "RAW_INTEGER", "ignition": True,
+        })
+        disconnected = envelope("audit-disconnected", "power_disconnect", {})
+        body = json.dumps({"events": [parked, invalid, disconnected]}).replace('"RAW_INTEGER"', "9" * 4301)
+        with self.client() as client:
+            response = client.post("/ingest", content=body, headers={"content-type": "application/json"})
+            self.assertEqual((response.status_code, response.json()), (200, {"accepted": 2}))
+            status = client.get(f"/devices/{TRACKER}/status", params={"at": AT}).json()
+            self.assertEqual(status["likely_cause"], "power_loss")
+            self.assertIn("audit-disconnected", status["evidence"])
+            self.assertNotIn("audit-out-of-range", status["evidence"])
+
+    def test_packet_epoch_boundaries(self) -> None:
+        def envelope(event_id, receipt, observation):
+            return {"event_id": event_id, "type": "ignition_off", "serial": TRACKER,
+                    "device_time": observation, "received_at": receipt, "payload": {}}
+
+        first = "2000-01-01T00:00:00Z"
+        last = "2099-12-31T23:59:59.999999Z"
+        events = [
+            envelope("audit-tooold", first, "1999-12-31T23:59:59.999999Z"),
+            envelope("audit-first", first, first),
+            envelope("audit-last", last, last),
+            envelope("audit-too-new", "2100-01-01T00:00:00Z", last),
+            envelope("audit-clock-too-new", last, "2100-01-01T00:00:00Z"),
+        ]
+        with self.client() as client:
+            response = client.post("/ingest", json={"events": events})
+            self.assertEqual((response.status_code, response.json()), (200, {"accepted": 2}))
+            for at, evidence in ((first, "audit-first"), (last, "audit-last")):
+                status = client.get(f"/devices/{TRACKER}/status", params={"at": at}).json()
+                self.assertEqual(status["last_heard_at"], at)
+                self.assertIn(evidence, status["evidence"])
 
     def test_missing_or_invalid_configuration_prevents_startup(self) -> None:
         for contents in (None, "{", "{}"):

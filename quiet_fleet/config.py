@@ -1,5 +1,6 @@
 """Validate the versioned local policy register before serving requests."""
 
+import sys
 from datetime import date
 from pathlib import Path
 from typing import Annotated, Generic, Literal, Self, TypeVar
@@ -16,6 +17,7 @@ Percentage = Annotated[float, Field(ge=0, le=100)]
 FiniteNumber = Annotated[float, Field(allow_inf_nan=False)]
 LocalTime = Annotated[str, StringConstraints(pattern=r"^(?:[01][0-9]|2[0-3]):[0-5][0-9]$")]
 SignalLevel = Annotated[int, Field(ge=0, le=5)]
+PacketIntegerDigits = Annotated[int, Field(gt=0, le=sys.int_info.str_digits_check_threshold)]
 T = TypeVar("T")
 
 
@@ -59,7 +61,9 @@ class CalibratedParameters(ConfigModel):
 
 
 class WireFormatConstants(ConfigModel):
-    a_legacy_timestamp_scale: Rule[PositiveInt]
+    a_legacy_timestamp_scale: Rule[Literal[1]]
+    packet_epoch_start_seconds: Rule[NonnegativeInt]
+    packet_epoch_end_seconds_exclusive: Rule[PositiveInt]
     bx_epoch_radix: Rule[Literal[16]]
     bx_battery_full_scale: Rule[PositiveInt]
     bx_coordinate_scale: Rule[PositiveInt]
@@ -68,7 +72,9 @@ class WireFormatConstants(ConfigModel):
     bx_gps_fix_mask: Rule[PositiveInt]
 
     @model_validator(mode="after")
-    def validate_bx_masks(self) -> Self:
+    def validate_wire_format(self) -> Self:
+        if self.packet_epoch_start_seconds.value >= self.packet_epoch_end_seconds_exclusive.value:
+            raise ValueError("packet clock range must have a positive duration")
         masks = (self.bx_moving_mask.value, self.bx_battery_low_mask.value, self.bx_gps_fix_mask.value)
         if len(set(masks)) != len(masks) or any(mask & (mask - 1) for mask in masks):
             raise ValueError("BX masks must be distinct single bits")
@@ -110,6 +116,7 @@ class OperationalAssumptions(ConfigModel):
 class DefensiveLimits(ConfigModel):
     clock_ahead_tolerance: Rule[NonnegativeInt]
     query_timestamp_requires_offset: Rule[bool]
+    json_integer_max_digits: Rule[PacketIntegerDigits]
 
     @model_validator(mode="after")
     def validate_timestamp_policy(self) -> Self:
@@ -137,26 +144,8 @@ class ApprovedDowntime(ConfigModel):
 
 class SitePolicy(ConfigModel):
     downtime: tuple[ApprovedDowntime, ...] = ()
-    weak_signal_max: Rule[SignalLevel] = Field(default_factory=lambda: Rule[SignalLevel](
-        value=1,
-        unit="modem signal level on the supplied 0–5 scale",
-        comparator="signal <= value",
-        provenance="Vendor heartbeat scale and P05 conservative engineering policy",
-        rationale="Treat the lowest categories as corroboration only, alongside eligible device-specific buffering evidence.",
-        sample_size=None,
-        sensitivity_candidates=[0, 1],
-        test="P05 coverage history and backfill fixtures",
-    ))
-    coverage_monitor_limit: Rule[PositiveInt] = Field(default_factory=lambda: Rule[PositiveInt](
-        value=5_400,
-        unit="seconds",
-        comparator="elapsed <= value",
-        provenance="P01 observed maximum T delivery lag of 5,396 seconds, rounded to 90 minutes",
-        rationale="A provisional ceiling for coverage attribution on a still-overdue position.",
-        sample_size=None,
-        sensitivity_candidates=[3_600, 5_400],
-        test="P05 coverage history and backfill fixtures",
-    ))
+    weak_signal_max: Rule[SignalLevel]
+    coverage_monitor_limit: Rule[PositiveInt]
 
 
 class RulesConfig(ConfigModel):
@@ -166,7 +155,7 @@ class RulesConfig(ConfigModel):
     wire_format_constants: WireFormatConstants
     operational_assumptions: OperationalAssumptions
     defensive_limits: DefensiveLimits
-    site_policy: SitePolicy = Field(default_factory=SitePolicy)
+    site_policy: SitePolicy
 
     @model_validator(mode="after")
     def validate_cadence_thresholds(self) -> Self:

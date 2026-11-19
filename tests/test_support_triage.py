@@ -399,10 +399,10 @@ class SupportTriageTest(unittest.TestCase):
             self.job(serial, 97_200, 101_000)
         config = json.loads(RULES.read_text())
         config["operational_assumptions"]["seasonal_downtime_suppression_enabled"]["value"] = True
-        config["site_policy"] = {"downtime": [{
+        config["site_policy"]["downtime"] = [{
             "asset_ids": [self.assets[downtime][0]], "depot": "MSS",
             "start_local": "2026-10-31", "end_local": "2026-11-03", "provenance": "Synthetic authorization",
-        }]}
+        }]
         path = self.data.parent / "rules.json"
         path.write_text(json.dumps(config))
         client = self.client(config=path)
