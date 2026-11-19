@@ -18,7 +18,7 @@ This is a checklist for tests to implement and execute, not a report of tests al
 | A10 | Invalid JSON request body | Returns 400 without crashing the process |
 | A11 | Invalid envelope | Missing/non-list `events`, scalar/null body, and >5,000 items return 400 |
 | A12 | Empty batch | Returns 200 with documented zero accepted count |
-| A13 | Mixed malformed batch | Good events before/after bad elements are processed; entire batch returns 200 |
+| A13 | Mixed malformed batch | Good events on both sides of bad elements are processed, including when a JSON integer exceeds the packet conversion limit. The batch returns 200. |
 | A14 | Unknown event type | Accepted/ignored by documented policy; no effect on health or state |
 | A15 | Unsupported persona path | Does not return fake success; only chosen persona autodetects |
 | A16 | Concurrent ingest/query | Response comes from a coherent snapshot; no database/thread errors or partial batch state |
@@ -50,6 +50,7 @@ This is a checklist for tests to implement and execute, not a report of tests al
 | B21 | Equivalent batch partitions/permutations | Same final eligible message set yields equivalent decisions and deterministic evidence policy |
 | B22 | CSV future case/plan rows | Do not reveal future current-episode diagnosis, recovery, pause, or resume |
 | B23 | Recovery and adverse evidence share an observation instant | Power, camera, battery and account holds retain their opening and causal evidence regardless of event-ID ordering. A strictly later valid recovery closes the issue. |
+| B24 | Packet epoch range boundaries | ISO receipt and observation times accept the configured first instant and last microsecond and reject values beyond those bounds. |
 
 ## C. Normal device behavior
 

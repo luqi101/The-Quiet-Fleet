@@ -89,7 +89,7 @@ The candidate brief and contract govern the service. The practice scenario and u
 - Validate the raw envelope independently and resolve its exact unit through the loaded BX roster. Decoded fields and unknown bits participate in semantic identity. The first receipt's original ID and hexadecimal clock remain provenance. Project contact, check-in freshness, and valid GPS position separately.
 - Use the calibrated 26-hour allowance, the BX low flag, and a strictly later clear report at 20% or above for recovery. The extra nominal daily cycle and scheduled-work requirement govern prolonged silence. Stock and pre-installation data provide contact without an in-service fault, and eligible observation time establishes the install boundary. [Mapping and verification](bx-decoding.md)
 
-## P09 · Evidence for closing an issue or escalating a reboot
+## P09 Evidence for closing an issue or escalating a reboot
 
 - Simultaneous adverse and recovery observations retain the existing opening for power, camera storage and A/BX battery faults. A strictly later credible recovery can close the issue. For contradictory plan events at the same effective instant, an ended or paused plan stays inactive until a later activation. This separates effective-time order from arbitrary receipt and event-ID ties. [Acceptance B23](../planning/03_ACCEPTANCE_TEST_MATRIX.md#b-identity-receipts-observation-time-and-evidence)
 - A remote reboot check requires timely same-asset ignition confirmation available when the command was received. Continuity uses the existing 360-second driving tolerance throughout the 600-second grace. A power interruption, ignition-off, expired confirmation, plan interruption or another command inside the response window makes a check inconclusive. Repeated timely ignition-on reports can corroborate ongoing activity. A backfilled interruption changes the assessment only once its receipt becomes eligible. Two complete failed checks still route to a technician. [Awake-trial tests](../tests/test_adversarial.py)
@@ -103,6 +103,12 @@ The candidate brief and contract govern the service. The practice scenario and u
 - Capture actual top three actions from the persona response at `2026-10-31T23:59:00Z`. Finish source traceability, measured thresholds, checked AI disclosure, changes from real Form 1 where known, the 300-word maximum product note, and a candidate-led live change rehearsal. Review the submission checkout, unmodified vendor hashes and staged content for telemetry before any authorized publication.
 
 The P10 profile found repeated full tracker projections in triage. The queue evaluates paired devices together and each receipt-cutoff reader reuses at most one full tracker projection. SQLite uses a 16,000 KiB page cache based on side-by-side read measurements. The response order still comes from operational priority, deadline, and the documented tie-breakers. The release verifier observes the original runner's HTTP results and reconciles them with service counters without editing runner files. [Measured release run](../reports/release-verification.json)
+
+## P13 Packet and release boundaries
+
+JSON numeric conversion rejects oversize decimal integers at the individual event boundary. Syntactically invalid JSON still returns 400. The existing inclusive 2000 and exclusive 2100 packet clock bounds apply equally to ordinary receipts, device clocks, legacy A seconds, and decoded BX seconds. The register now also exposes the existing weak-signal limit of 1 and 90-minute coverage ceiling. [Ingestion rules](ingestion.md) · [Threshold register](../config/rules.json)
+
+Coverage corroboration uses the driving cadence plus routine receipt lag for buffering and the configured driving deadline for recent transport. Fast-device uncertainty requires the configured number of reporting windows. Prolonged A and BX silence use the daily allowance plus one nominal interval. Effective tracker selection reuses the parked allowance to prefer recent VIN claimants over stale alternatives. Status confidence is a fixed evidence-strength display without a routing cutoff or a fitted probability model. [Coverage logic](../quiet_fleet/environment_faults.py) · [Diagnosis](../quiet_fleet/diagnosis.py) · [Assignment context](../quiet_fleet/asset_context.py)
 
 ## Open operational questions
 

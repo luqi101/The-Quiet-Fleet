@@ -1,6 +1,6 @@
 # Quiet Fleet requirement traceability
 
-This matrix preserves R01–R37 from the planning kit and adds explicit source requirements. The phase records cover independent behavioral verification and the official replay on macOS. Ubuntu offline execution remains a release gate.
+This matrix preserves R01–R37 from the planning kit and adds explicit source requirements. The final release audit records the outcome for every requirement. Ubuntu offline execution remains a release gate. [Final release audit](../reports/release-readiness.md)
 
 The candidate brief in `inputs/candidate-brief.pdf` and the API contract govern requirements. The exam runner and practice scenario define the supplied executable checks. The planning kit supplies the lettered acceptance IDs and additional adversarial cases. [API contract](../vendor/quiet-fleet/docs/CONTRACT.md), [practice expectations](../vendor/quiet-fleet/exam/PRACTICE.md), [acceptance matrix](../planning/03_ACCEPTANCE_TEST_MATRIX.md)
 
@@ -30,7 +30,7 @@ Support, prioritizing fewer false alarms, and one grouped customer alert for a m
 | R10 | Deduplicate exact event IDs and semantic retries with new IDs | `normalize.py`, `store.py` | B01–B05. Retry a batch, reorder keys, change retry IDs and receipt times, and verify unchanged domain facts. Separate actual readings at different observation times and preserve the first valid record on conflicted ID. |
 | R11 | Reconstruct facts independent of ingestion order | `store.py`, `projection.py` | B08–B12, B21. Vary arrival ordering and batch boundaries over equivalent accepted facts. Verify backfill can add retrospective knowledge without replacing newer observations. |
 | R12 | At query time, apply the inclusive platform receipt cutoff and the ingested-so-far constraint | `store.py`, `projection.py`, persona evaluator | B06–B08, B20. Add a receipt exactly at `at` and one just after. Compare prior status, association, incident and action results under repeated queries. |
-| R13 | Normalize and preserve device observation time independently of receipt | `time_utils.py`, `normalize.py`, `projection.py` | B09–B17. Test buffered observations, legacy numeric Unix seconds, malformed and future times, and platform-only events. Backfill may show a receipt while the old reading remains stale. |
+| R13 | Normalize and preserve device observation time independently of receipt | `time_utils.py`, `normalize.py`, `projection.py` | B09–B17, B24. Test buffered observations, legacy numeric Unix seconds, packet epoch boundaries, malformed and future times, and platform-only events. Backfill may show a receipt while the old reading remains stale. |
 | R21 | Reconstruct historical asset assignments with VIN, roster and dated transition evidence | `projection.py` | D15–D19. Preserve a removed unit before the observed swap, recognize a matching VIN from stock, and retain ambiguity when two serials remain credible. |
 | R26 | Return original evidence event IDs available by `at` and meaningful reasons | `projection.py`, diagnosis and persona response builders | B07, B18, B19, E21, H05–H06. Resolve every output ID to an eligible receipt, include the key fault evidence, and return an explained empty evidence list when no event exists. |
 | R39 | Supply every required status field, including asset association and `last_heard_at` | `projection.py`, `models.py` | A07, A08, B02, B13, B17, B19. Verify no-contact nulls for known devices and that commands, plan changes, and later retry receipts cannot advance the latest first receipt of a distinct device observation. |
@@ -72,11 +72,11 @@ Only the selected persona's rows become grading gates. Shared API and diagnosis 
 | --- | --- | --- | --- |
 | R32 | Run the unmodified preflight and practice against separate fresh processes | `scripts/release_check.py` | H01–H09. Capture the official results and review warnings. Independently enforce strict errors, replay idempotence, per-batch latency, checkpoint query latency, and memory. |
 | R33 | Keep a truthful AI record and meaningful local commits | `docs/ai-usage.md`, planning status, Git history | H14–H16. Check actual authorship, corrections or independent validations, original form text where available, and no fabricated results or times. |
-| R34 | Capture the persona's actual top actions at `2026-10-31T23:59:00Z` | `scripts/capture_end_state.py`, Form 3 worksheet | H13. Compare the draft to the saved real endpoint response at the exact cutoff. Record an actual shortage of items if applicable. |
-| R35 | Form 3 product note stays at or below 300 words | Form 3 worksheet | H14. Count words and review the proposed first version, user, value to customers, and 60-day measure. |
+| R34 | Capture the persona's actual top actions at `2026-10-31T23:59:00Z` | `scripts/verify.py`, `reports/end-state-top-three.json`, Form 3 draft | H13. Compare the draft to the saved real endpoint response at the exact cutoff. Record an actual shortage of items if applicable. |
+| R35 | Form 3 product note stays at or below 300 words | `docs/form3-draft.md` | H14. Count words and review the proposed first version, user, value to customers, and 60-day measure. |
 | R36 | Keep development commits local until the submission stage | Git workflow and release checklist | H15, H16. Inspect the exact remote, tested commit, and allowlisted contents. Require separate user direction for publication and form submission. |
-| R37 | Candidate can demo a fresh checkpoint and make a small live code change | Live-call notes and focused tests | Rehearse one configurable behavior change, its focused test, and the brief's demo and discussion timings. |
-| R45 | Form 3 records the repository and AI log, actual tests, thresholds, trade-off, BX disposition, top actions, Form 1 changes and AI verification | Form 3 worksheet and supporting docs | H13–H15. Verify every answer against actual source, replay outputs, user-confirmed intent, and recorded checks. Review release source identity and the setup-only post-submission exception. |
+| R37 | Candidate can demo a fresh checkpoint and make a small live code change | `docs/live-call.md` and focused tests | Rehearse one configurable behavior change, its focused test, and the brief's demo and discussion timings. |
+| R45 | Form 3 records the repository and AI log, actual tests, thresholds, trade-off, BX disposition, top actions, Form 1 changes and AI verification | `docs/form3-draft.md` and supporting docs | H13–H15. Verify every answer against actual source, replay outputs, user-confirmed intent, and recorded checks. Review release source identity and the setup-only post-submission exception. |
 | R46 | Use only provided data and general public knowledge, and track the ops allowance accurately | Calibration provenance, decisions, ops notes | Review provenance, verify no runtime external API or AI calls, and compare any attributed ops fact and question count with actual records. |
 
 ## P01 verification record
@@ -198,3 +198,15 @@ Only the selected persona's rows become grading gates. Shared API and diagnosis 
 | R30, R31, R37, R44, R46 | H10, H16 | README setup, persona, false-alarm trade-off, threshold links, BX proof, demo and assumptions are presented together. The desktop image comes from the locally replayed carrier incident. |
 
 [README and demonstration](../README.md) · [Dashboard](../quiet_fleet/dashboard/index.html) · [HTTP regression](../tests/test_http_foundation.py) · [Project status](../planning/STATUS.md#p11-readme-and-offline-dashboard)
+
+## P13 final verification record
+
+| Requirements | Acceptance scenarios | Observed check |
+| --- | --- | --- |
+| R07–R09, R13, R28, R29 | A10–A14, B14–B16, B24 | `test_oversized_json_integer_does_not_reject_valid_neighbors` first reproduced HTTP 400. The fix isolated the value and preserved the disconnect evidence. `test_packet_epoch_boundaries` checks both UTC endpoints of the packet range. All 96 tests passed in a separate fresh development venv. |
+| R02–R06, R27, R38 | A01–A07, H01, H10–H12, H16 | Separate macOS processes started from renamed, six-CSV references under OS and Python guards. The existing 8080 listener stayed intact. Chrome under native egress restrictions verified the live dashboard from the release candidate after replaying 172,358 envelopes. All page requests stayed on loopback and used GET. |
+| R07, R23–R26, R32, R34 | H02–H08, H13 | Original preflight 10/10 and practice 14/14 passed against separate empty stores, both with zero warnings. The maximum ingest request was 2.918 s, peak RSS was 82.512 MiB, and all 405 practice evidence references were eligible. The END response contained seven items. |
+| R29–R31, R33–R37, R44–R46 | G01–G14, H13–H16 | The 48-entry threshold register and calibration reproduced from the complete pack. The Form 3 draft matches the END output and actual Form 1. The 192-word note proposes pilot metrics. A disposable configuration reproduced a camera boundary change. Candidate review and the live call remain personal steps. |
+| R01–R02 | H09 | Ubuntu 24.04 and the exact entrypoint in an isolated Linux network remain unexecuted. The Docker commands in the release report are the remaining gate. |
+
+[Release audit and per-requirement status](../reports/release-readiness.md) · [END excerpt](../reports/end-state-top-three.json) · [Submission materials](form3-draft.md)

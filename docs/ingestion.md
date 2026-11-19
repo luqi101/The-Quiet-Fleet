@@ -26,6 +26,8 @@ The service opens one SQLite connection in a new temporary directory for each wo
 
 An invalid batch object, malformed JSON, or more than 5,000 elements returns HTTP 400. Within a valid array, each known item is validated independently. The integer `accepted` includes valid known items, exact and semantic retries, and unused kinds with a valid event ID, kind and receipt. It excludes malformed items and conflicting ID reuses. Unexpected failures surface, and a failed store transaction rolls back.
 
+Decimal integers in the outer JSON have a 640-digit limit excluding the sign. An oversize integer or numeric exponent overflow invalidates the known event containing it. A token outside the JSON grammar, such as bare `NaN`, invalidates the request. [Threshold register](../config/rules.json)
+
 Device status uses these facts to evaluate normal reporting, expected quiet, and individual faults. Triage uses the same diagnosis and evidence cutoffs as device status. [Support queue policy](decisions.md#p07-support-queue) · [BX decoding](bx-decoding.md) · [Project status](../planning/STATUS.md)
 
 ## Preliminary full-corpus HTTP benchmark

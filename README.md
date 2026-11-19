@@ -2,7 +2,14 @@
 
 ## Install and start
 
-From the checkout root, use Python 3.12.
+On a fresh Ubuntu 24.04 machine, install Python 3.12 and its virtual environment support.
+
+```bash
+sudo apt-get update
+sudo apt-get install -y python3.12 python3.12-venv
+```
+
+From the checkout root, install the pinned runtime and start the service.
 
 ```bash
 python3.12 -m venv .venv
@@ -11,7 +18,7 @@ python -m pip install -r requirements.txt
 python -m quiet_fleet
 ```
 
-The service listens on [localhost:8080](http://localhost:8080) with one worker and a fresh, empty telemetry store on every start. It loads six reference CSVs from `./data`. To use another directory, start with `QF_DATA_DIR=/absolute/path/to/reference-data python -m quiet_fleet`. The six files are `assets.csv`, `devices.csv`, `schedule.csv`, `weather.csv`, `plan_changes.csv`, and `support_cases.csv`.
+The service listens on [localhost:8080](http://localhost:8080) with one worker and a fresh, empty telemetry store on every start. It loads six reference CSVs from `./data`. To use another directory, start with `QF_DATA_DIR="/absolute/path/to/reference-data" python -m quiet_fleet`. The six files are `assets.csv`, `devices.csv`, `schedule.csv`, `weather.csv`, `plan_changes.csv`, and `support_cases.csv`.
 
 ## Who it helps
 
@@ -106,7 +113,7 @@ The two-hour preparation window and BX battery recovery threshold are provisiona
 
 ## Release verification
 
-From the checkout root with the pinned runtime installed and port 8080 free, run both vendor checks on separate empty stores, then run the offline restart check.
+From the checkout root with the pinned runtime installed and port 8080 free, run both vendor checks on separate empty stores, then run the offline restart check. The vendor checks need `data/telemetry/*.jsonl` from the original local pack. The service and offline smoke check start from six CSVs alone.
 
 ```bash
 python scripts/release_check.py --data "$PWD/data" --persona support
@@ -123,16 +130,17 @@ python scripts/verify.py offline --data "$PWD/data"
 | `--data DIR` | Six reference CSVs. The vendor checks also use the original `telemetry/*.jsonl` under this directory. |
 | `--persona support` | Selects the support practice checks. This is the default. |
 | `--out DIR` | Report root, defaulting to `reports/`. Every check creates a fresh run directory. |
+| `--port PORT` | Loopback port for the verifier. Defaults to 8080 and the documented entrypoint. A different port runs the same application with one Uvicorn worker. |
 | `--startup-timeout SECONDS` | Readiness deadline, defaulting to 15 seconds. |
 | `--exam-timeout SECONDS` | Vendor invocation deadline, defaulting to 900 seconds. |
 
-The verifier records exit codes, logs, request timings and checkpoint responses. An ingest request reaching 10 seconds fails the check. In the P10 macOS performance run, preflight passed 10/10 and practice passed 14/14, both with zero warnings. The 640,419-envelope replay took 251 seconds, the slowest ingest request took 2.57 seconds, and peak service RSS was 82.6 MiB. Ubuntu 24.04 verification remains a separate release gate. [Measured release run](reports/release-verification.json)
+The verifier records exit codes, logs, request timings and checkpoint responses. An ingest request reaching 10 seconds fails the check. The final macOS audit passed preflight, practice, and the offline restart. The Ubuntu 24.04 run with `--network none` remains open. [Final checks, measurements, and Ubuntu commands](reports/release-readiness.md)
 
 ```bash
 python -m pip install -r requirements-dev.txt
 python -m unittest discover -s tests -v
 ```
 
-The dashboard build passed all 94 tests on Python 3.12.2. [Latest verification](planning/STATUS.md#p11-readme-and-offline-dashboard)
+The final suite passed 96 tests on Python 3.12.2. [Latest verification](reports/release-readiness.md)
 
-[Requirements and verification](docs/requirements.md) · [Project status](planning/STATUS.md) · [AI usage](docs/ai-usage.md)
+[Requirements and verification](docs/requirements.md) · [Project status](planning/STATUS.md) · [AI usage](docs/ai-usage.md) · [Submission draft](docs/form3-draft.md)

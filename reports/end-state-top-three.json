@@ -1,0 +1,82 @@
+{
+  "at": "2026-10-31T23:59:00Z",
+  "item_count": 7,
+  "response_sha256": "96e4c17a8e68bbf80858d56ab246c36af6fd2953a9718e98bb94432706af5514",
+  "runtime_sha256": "f92b7c285c69eb7de9e461e230600d2336fbdbecf8e22e5ca4a2650f1379fa24",
+  "items": [
+    {
+      "item_id": "device-1ac9b9ab9b75333f252a9d86",
+      "kind": "device",
+      "serials": [
+        "C-2488"
+      ],
+      "asset_ids": [
+        "V-145"
+      ],
+      "likely_cause": "camera_fault",
+      "who_acts": "technician",
+      "next_action": "Ask a technician to inspect the camera storage and verify recording after repair.",
+      "priority": "medium",
+      "reasons": [
+        "The camera reported a storage error at 2026-10-29T14:18:00Z. Recording recovery remains unverified. Recording stayed unavailable through 2 complete awake reboot checks.",
+        "Asset V-145 is scheduled for service call work in MSS at 2026-11-02 07:35:00-05:00. Verify service before the job starts."
+      ],
+      "evidence": [
+        "e22219392",
+        "e94249560",
+        "e33440845",
+        "e30971236",
+        "e22928620",
+        "e92291173",
+        "e83025353",
+        "e89298493",
+        "e63077521"
+      ]
+    },
+    {
+      "item_id": "device-18f0dab0c347907663aacf29",
+      "kind": "device",
+      "serials": [
+        "T-55967"
+      ],
+      "asset_ids": [
+        "V-127"
+      ],
+      "likely_cause": "power_loss",
+      "who_acts": "technician",
+      "next_action": "Ask a technician to inspect the tracker harness and restore external power.",
+      "priority": "medium",
+      "reasons": [
+        "The tracker reported an external-power disconnect at 2026-10-31T20:40:00Z. External power restoration remains unverified. It reported low backup-battery voltage at 2026-10-31T20:54:00Z. Device messages have continued since the disconnect.",
+        "Asset V-127 is scheduled for repair work in MSS at 2026-11-02 07:43:00-05:00. Verify service before the job starts."
+      ],
+      "evidence": [
+        "e23013066",
+        "e68093482",
+        "e13190877",
+        "e23574631"
+      ]
+    },
+    {
+      "item_id": "device-953a8c716721c5c2bec12959",
+      "kind": "device",
+      "serials": [
+        "T-58830"
+      ],
+      "asset_ids": [
+        "V-214"
+      ],
+      "likely_cause": "device_swapped",
+      "who_acts": "support",
+      "next_action": "Ask support to verify the installed serial against the reported VIN and reconcile the inventory record.",
+      "priority": "medium",
+      "reasons": [
+        "The reported VIN matches asset V-214, while inventory shows this serial as unassigned or in stock. The latest supporting observation is from 2026-10-31T20:23:00Z.",
+        "Asset V-214 is scheduled for service call work in REG at 2026-11-02 08:10:00-06:00. Verify service before the job starts."
+      ],
+      "evidence": [
+        "e30035718"
+      ]
+    }
+  ]
+}
