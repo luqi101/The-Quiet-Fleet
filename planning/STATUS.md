@@ -109,6 +109,12 @@ The materials folder had no Git metadata. The candidate selected a new child che
 - Native macOS egress isolation and Python socket, DNS and file guards passed the renamed six-CSV smoke test and restart. Chrome under OS outbound restrictions exercised the actual release dashboard with original replay data. The audit used alternate loopback ports to preserve the existing 8080 listener. [Release audit](../reports/release-readiness.md)
 - Confirmed seasonal downtime scope, the actual urgency horizon, and the number of Form 2 submissions remain unknown. Seasonal suppression stays disabled and the two-hour urgency horizon stays provisional. [Operations assumptions](../docs/decisions.md#open-operational-questions)
 
-## Next phase
+## P14 Ubuntu release verification
 
-**Finish the Ubuntu 24.04 release gate.** Run the fresh install, full suite, official exams and offline smoke inside the supplied image with `--network none` and the default port 8080. Record the results against the audited runtime digest. Publication remains pending. [Exact Ubuntu commands](../reports/release-readiness.md#remaining-release-gate)
+- Fresh Ubuntu 24.04.5 runtime and test installs passed `pip check` in separate virtual environments. With Python 3.12.3 inside a loopback-only Linux network namespace, all 96 tests passed. An external socket received `ENETUNREACH`.
+- On the documented port 8080, original preflight passed 10/10 and practice 14/14 on separate empty processes, with zero warnings. The offline smoke and empty restart passed. Peak practice RSS was 85.230 MiB and the largest ingest request took 0.879 s. All ten checkpoint outputs matched macOS byte for byte.
+- The public release keeps the private Form 3 draft and rehearsal material in the candidate's local checkout. The release carries the same tested runtime digest, the verified END excerpt, and the original vendor files. [Release verification](../reports/release-readiness.md)
+
+## Next step
+
+The candidate reviews and personally submits Form 3 using the verified release evidence.

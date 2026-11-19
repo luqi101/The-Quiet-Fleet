@@ -134,13 +134,13 @@ python scripts/verify.py offline --data "$PWD/data"
 | `--startup-timeout SECONDS` | Readiness deadline, defaulting to 15 seconds. |
 | `--exam-timeout SECONDS` | Vendor invocation deadline, defaulting to 900 seconds. |
 
-The verifier records exit codes, logs, request timings and checkpoint responses. An ingest request reaching 10 seconds fails the check. The final macOS audit passed preflight, practice, and the offline restart. The Ubuntu 24.04 run with `--network none` remains open. [Final checks, measurements, and Ubuntu commands](reports/release-readiness.md)
+The verifier records exit codes, logs, request timings and checkpoint responses. An ingest request reaching 10 seconds fails the check. The original preflight and practice passed on macOS and on Ubuntu 24.04.5 in a loopback-only Linux network namespace. The Ubuntu replay accepted 640,419 envelopes with a maximum ingest request of 0.879 seconds. [Final checks, measurements, and Ubuntu commands](reports/release-readiness.md)
 
 ```bash
 python -m pip install -r requirements-dev.txt
 python -m unittest discover -s tests -v
 ```
 
-The final suite passed 96 tests on Python 3.12.2. [Latest verification](reports/release-readiness.md)
+The final suite passed 96 tests on Ubuntu with Python 3.12.3 and on macOS with Python 3.12.2. [Latest verification](reports/release-readiness.md)
 
 [Requirements and verification](docs/requirements.md) · [Project status](planning/STATUS.md) · [AI usage](docs/ai-usage.md) · [END checkpoint evidence](reports/end-state-top-three.json)

@@ -1,8 +1,30 @@
 # The Quiet Fleet release audit
 
-**Not ready for submission.** The candidate passed the full behavioral suite, both official checks, and a native offline smoke test on macOS. The Ubuntu 24.04 run with OS-level network isolation is still open. Run the [Ubuntu verification](#remaining-release-gate) on this candidate before publication.
+**Release verification passed.** The audited runtime passed the full suite, both official checks, and offline restart on Ubuntu 24.04.5 with Linux network isolation. All ten Ubuntu checkpoint responses matched the earlier macOS run.
 
-## Source and environment
+## Ubuntu release gate
+
+The tested public source was `b36af02865c31f6050e183025b99efa85750fc37`. It matched the macOS runtime digest below. The subsequent release record changes documentation only.
+
+A fresh [Ubuntu Base 24.04.5 amd64](https://cdimage.ubuntu.com/ubuntu-base/releases/24.04/release/) root filesystem ran in a local Linux VM. The VM used an x86-64 Linux 6.18.60 kernel. Ubuntu supplied CPython 3.12.3, SQLite 3.45.1, and glibc 2.39. The official base archive matched SHA-256 `e77b6f10c2590cef872b33ee9f635a0e3fd1f57fb074c0e52b5c7f56147a0c86`.
+
+The runtime and test requirements installed into separate fresh virtual environments. After installation, `unshare --net` created a new Linux network namespace and `ip link set dev lo up` enabled loopback. The namespace had only loopback, no external route, and an external TCP probe returned `ENETUNREACH`. The source and data mounts were read-only. The suite and release commands ran unprivileged. The verifier used its default port 8080 and started the documented `python -m quiet_fleet` entrypoint for both official checks and both offline smoke phases.
+
+| Ubuntu check | Result |
+| --- | --- |
+| Fresh installs and `pip check` | Both pinned environments passed |
+| Full suite | 96 passed in 11.068 s, zero failures, errors, or skips |
+| Original vendor preflight and practice | 10/10 and 14/14, exit 0 for both, zero warnings, all nine vendor hashes matched before and after |
+| Offline smoke and process lifecycle | Exit 0. Health, ingest, status, triage, local assets and empty restart passed using renamed six-file references. All four owned service processes started empty and shut down with exit 0. |
+| Replay size and elapsed time | 640,419 accepted of 640,419, across 132 requests with 127 full batches. Vendor wall time 128.512 s. |
+| Ingest HTTP p50 / p95 / p99 / maximum | 0.705 / 0.809 / 0.873 / 0.879 s. Zero requests reached 10 s. |
+| Practice readiness / peak service RSS | 0.737 s / 85.230 MiB |
+| Slowest status / triage | 6.641 / 9.620 s |
+| Evidence and identity | 405 eligible evidence references. Ten byte-identical checkpoint outputs compared with macOS, including the END digest. 632,810 logical messages and 7,609 retries. |
+
+The commands inside the isolated Ubuntu environment were `python -B -m unittest discover -s tests -v` in the test venv and `python -B scripts/release_check.py --data /qf-data --persona support --out /tmp/qf-run` in the runtime venv. Runtime SQLite storage was in guest tmpfs, so these timings describe that environment. The Ubuntu logs and full checkpoint outputs are retained locally. The [Docker recipe](#reproduce-the-ubuntu-gate) provides an equivalent loopback-only setup.
+
+## macOS source and environment
 
 | Item | Verified identity |
 | --- | --- |
@@ -19,7 +41,7 @@ The runtime digest covers the Python package, dashboard assets, rules, and runti
 
 | Consequence | Finding and disposition |
 | --- | --- |
-| Release blocker | No Ubuntu host, Linux VM or container runtime was available in this macOS workspace. The Ubuntu image and isolated commands are supplied below. Record the results on that target, including the documented `python -m quiet_fleet` entrypoint on port 8080. |
+| Release gate, completed | The earlier macOS run left Ubuntu open. The new Linux VM run completed Ubuntu installation, default startup on 8080, official replay and offline verification under OS-level network isolation. |
 | Behavioral defect, fixed | A syntactically valid batch containing a 4,301-digit integer returned 400 and discarded both valid neighbors. The regression reproduced that before the fix. Packet validation now rejects the oversize value locally. The HTTP test verifies both accepted neighbors and the real disconnect evidence. |
 | Release and reproducibility defects, fixed | The packet date range and two coverage cutoffs had code defaults outside the public register. All three are now explicit with the original values and tests. The register includes the 640-digit defensive integer limit. The verifier now supports a dedicated loopback port and the lifecycle tests exercise startup even if 8080 is occupied. |
 | Documentation gaps, fixed | Added the fresh Ubuntu venv prerequisite, corrected broken Markdown anchors, and prepared the candidate's local Form 3 draft from real END results. The product note is 192 words. The candidate keeps the draft and rehearsal notes locally. |
@@ -77,7 +99,7 @@ The store held 632,810 logical messages, 635,066 original IDs and 640,419 distin
 
 | Requirements | Status and verification |
 | --- | --- |
-| R01–R02 | Python 3.12.2 and offline native loopback passed on macOS. Fresh Ubuntu installation and the exact default entrypoint under Linux network isolation remain open. |
+| R01–R02 | Passed on Ubuntu 24.04.5 with Python 3.12.3 in an isolated Linux network namespace on the documented port 8080. Python 3.12.2 and native offline loopback also passed on macOS. |
 | R03–R06 | Passed. Six-file default and alternate loads, renamed IDs, startup read guard, exact health and empty restart. |
 | R07–R09, R28 | Passed. Real full-size timing, coherent batch commits, mixed-element isolation including oversize integers, valid unknown kinds, strict JSON 400s and serial and unsupported-route 404s. |
 | R10–R13 | Passed. Independent observation order, inclusive receipt cutoffs, future aliases and unrelated future receipts, conflict handling, stale backfill, numeric A clocks, and equivalent replays across new IDs, names, dates, arrival orders and batch partitions. |
@@ -87,8 +109,8 @@ The store held 632,810 logical messages, 635,066 original IDs and 640,419 distin
 | R24–R27, R39 | Passed. Status and queue share diagnosis, ownership follows cause, priorities use half-open jobs and local deadlines, each serial appears once, and responses use allowed enums, finite confidence and original IDs visible at the cutoff. |
 | R29–R30 | Passed. Validated register covers 48 entries. The reproducible chronological calibration and the selected-case limitations are published. |
 | R31 | Passed. All three exact portal anchors and 308 unique stream frames were checked. Synthetic HTTP covers flags, no-fix, late and malformed frames, battery recovery and retry idempotence. |
-| R32 | Passed on macOS. Both unmodified official commands ran from empty stores with verified vendor hashes and measured timings. |
-| R33, R36, R38 | Passed locally. AI role and corrections are documented, source vendor files are intact, the six reference CSVs are tracked, and the commit remains local. |
+| R32 | Passed on Ubuntu and macOS. Both unmodified official commands ran from empty stores with verified vendor hashes and measured timings. |
+| R33, R36, R38 | Passed. AI role and corrections are documented, vendor sources are intact, and the six reference CSVs are tracked. No remote history existed before the authorized release. |
 | R34–R35, R45 | Draft and evidence verified. The top three use the official END output at `2026-10-31T23:59:00Z`. The 192-word note proposes pilot measures. Candidate review and eventual submission are separate. |
 | R37 | Prepared. The local drill and focused grace-change example are reproducible. The candidate's live demo and code change are assessed on the call. |
 | R40 | Passed. Ingested plans supply timing. Case outcomes never determine runtime causes. Static schedule and depot-local weather use their documented context. |
@@ -104,7 +126,7 @@ The code review traced the receipt condition through SQLite snapshots, projectio
 - The available Form 2 allowance could not be established from the local record.
 - The three rounded portal anchors constrain the inferred BX scale. The 20% A and BX recovery cutoffs and the selected-case reboot policy carry documented uncertainty. The official practice suite covers its published scenarios. Hidden-exam performance remains unknown. [Open operating policy](../docs/decisions.md#open-operational-questions) · [Calibration](../docs/calibration.md)
 
-## Remaining release gate
+## Reproduce the Ubuntu gate
 
 On a Docker-capable host, use this checkout with the original local telemetry under `data/telemetry/`. The image installs dependencies at build time. The container then runs the unit suite and the three release modes at the documented loopback port with external networking disabled. Telemetry is mounted read-only for the original exam tool.
 
@@ -123,4 +145,4 @@ docker run --rm --network none \
   ' > reports/release/ubuntu24/validation.log 2>&1
 ```
 
-Record Ubuntu and Python versions, the command's exit status, per-mode results and performance from `reports/release/ubuntu24/`. Match the runtime digest to the audited candidate before marking the gate passed. [Verification image](../Dockerfile.verify) · [Image context allowlist](../Dockerfile.verify.dockerignore)
+Record Ubuntu and Python versions, the command's exit status, per-mode results and performance from `reports/release/ubuntu24/`. Match the runtime digest to the audited candidate. The observed release measurements above came from the Linux namespace run. [Verification image](../Dockerfile.verify) · [Image context allowlist](../Dockerfile.verify.dockerignore)

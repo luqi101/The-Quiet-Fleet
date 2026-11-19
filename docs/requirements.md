@@ -1,6 +1,6 @@
 # Quiet Fleet requirement traceability
 
-This matrix preserves R01–R37 from the planning kit and adds explicit source requirements. The final release audit records the outcome for every requirement. Ubuntu offline execution remains a release gate. [Final release audit](../reports/release-readiness.md)
+This matrix preserves R01–R37 from the planning kit and adds explicit source requirements. The final release audit records the outcome for every requirement, including Ubuntu offline execution. [Final release audit](../reports/release-readiness.md)
 
 The candidate brief in `inputs/candidate-brief.pdf` and the API contract govern requirements. The exam runner and practice scenario define the supplied executable checks. The planning kit supplies the lettered acceptance IDs and additional adversarial cases. [API contract](../vendor/quiet-fleet/docs/CONTRACT.md), [practice expectations](../vendor/quiet-fleet/exam/PRACTICE.md), [acceptance matrix](../planning/03_ACCEPTANCE_TEST_MATRIX.md)
 
@@ -175,7 +175,7 @@ Only the selected persona's rows become grading gates. Shared API and diagnosis 
 | R21, R23–R27, R41 | B18, C15, D15, E01–E02, E05, E12–E13, E15–E20, F01–F07 | The relocated fleet fixture changes event, serial and asset IDs, depot, carrier, and calendar date at equivalent local Sunday hours. The tracker marked removed in final inventory still belongs to the historical operating cohort. Status, triage and original evidence roles match. The shared synthetic HTTP auditor verifies exact fields, UTC, finite confidence, allowed enums, serial partition and original committed evidence by `at`. Existing exact shift and DST boundary fixtures remain in the suite. |
 | R22, R30, R31, R38, R40 | D28–D29, D32, G01–G14, H01 | The landscaping gap stays uncertain with no approved downtime. A negative closure appears as −900 seconds in the offline audit and is excluded from duration labels. A targeted replay of the 313 BX envelopes found 308 distinct readings and one technician battery item at the final checkpoint. All nine vendor hashes matched. |
 
-[Adversarial scenarios](../tests/test_adversarial.py) · [HTTP evidence auditor](../tests/evidence_client.py) · [Process test](../tests/test_process_lifecycle.py) · [Offline data tests](../tests/test_offline_analysis.py) · [Remaining gates](../planning/STATUS.md#next-phase)
+[Adversarial scenarios](../tests/test_adversarial.py) · [HTTP evidence auditor](../tests/evidence_client.py) · [Process test](../tests/test_process_lifecycle.py) · [Offline data tests](../tests/test_offline_analysis.py) · [Release status](../planning/STATUS.md)
 
 ## P10 verification record
 
@@ -210,3 +210,7 @@ Only the selected persona's rows become grading gates. Shared API and diagnosis 
 | R01–R02 | H09 | Ubuntu 24.04 and the exact entrypoint in an isolated Linux network remain unexecuted. The Docker commands in the release report are the remaining gate. |
 
 [Release audit and per-requirement status](../reports/release-readiness.md) · [END excerpt](../reports/end-state-top-three.json)
+
+## P14 Ubuntu verification record
+
+H09 passed on fresh Ubuntu 24.04.5 with Python 3.12.3. A Linux network namespace had only loopback. The default release entrypoint on port 8080 passed fresh startup, unmodified preflight and practice, and offline restart. All 96 tests and both dependency checks passed. The runtime digest, vendor source hashes, and ten checkpoint outputs matched the reviewed release. [Ubuntu verification](../reports/release-readiness.md#ubuntu-release-gate)
