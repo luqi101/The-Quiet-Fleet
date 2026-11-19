@@ -22,7 +22,7 @@ The runtime digest covers the Python package, dashboard assets, rules, and runti
 | Release blocker | No Ubuntu host, Linux VM or container runtime was available in this macOS workspace. The Ubuntu image and isolated commands are supplied below. Record the results on that target, including the documented `python -m quiet_fleet` entrypoint on port 8080. |
 | Behavioral defect, fixed | A syntactically valid batch containing a 4,301-digit integer returned 400 and discarded both valid neighbors. The regression reproduced that before the fix. Packet validation now rejects the oversize value locally. The HTTP test verifies both accepted neighbors and the real disconnect evidence. |
 | Release and reproducibility defects, fixed | The packet date range and two coverage cutoffs had code defaults outside the public register. All three are now explicit with the original values and tests. The register includes the 640-digit defensive integer limit. The verifier now supports a dedicated loopback port and the lifecycle tests exercise startup even if 8080 is occupied. |
-| Documentation gaps, fixed | Added the fresh Ubuntu venv prerequisite, corrected broken Markdown anchors, and created the nine-answer Form 3 draft from real END results. The product note is 192 words. A disposable 600-to-660-second rehearsal confirmed the new camera response boundary while the release config kept 600 seconds. [Form 3 draft](../docs/form3-draft.md) · [Live-call notes](../docs/live-call.md) |
+| Documentation gaps, fixed | Added the fresh Ubuntu venv prerequisite, corrected broken Markdown anchors, and prepared the candidate's local Form 3 draft from real END results. The product note is 192 words. The candidate keeps the draft and rehearsal notes locally. |
 
 ## Commands and observed results
 
@@ -95,7 +95,7 @@ The store held 632,810 logical messages, 635,066 original IDs and 640,419 distin
 | R42–R43 | Outside the chosen support persona. Both alternative routes return 404. |
 | R44, R46 | Trade-off and provided-data provenance verified. Ops replies and Form 2 usage were unavailable in the checkout. |
 
-The code review traced the receipt condition through SQLite snapshots, projections, historical incident probes, and the revision-and-cutoff cache. It also checked process startup, the shared support evaluator, the single-owner partition and the frontend's same-origin API use. The runtime has no practice-specific identifier branches or per-device support-case lookup. Public-tree and reachable-blob checks found no telemetry corpus, venv, runtime databases, secret patterns, or personal paths. The largest reachable blob is the 707,616-byte reference schedule. The Form 3 planning worksheet remains historical. [Detailed requirement matrix](../docs/requirements.md) · [Acceptance scenarios](../planning/03_ACCEPTANCE_TEST_MATRIX.md)
+The code review traced the receipt condition through SQLite snapshots, projections, historical incident probes, and the revision-and-cutoff cache. It also checked process startup, the shared support evaluator, the single-owner partition and the frontend's same-origin API use. The runtime has no practice-specific identifier branches or per-device support-case lookup. Public-tree and reachable-blob checks found no telemetry corpus, venv, runtime databases, secret patterns, or personal paths. The largest reachable blob is the 707,616-byte reference schedule. [Detailed requirement matrix](../docs/requirements.md) · [Acceptance scenarios](../planning/03_ACCEPTANCE_TEST_MATRIX.md)
 
 ## Unresolved business facts
 

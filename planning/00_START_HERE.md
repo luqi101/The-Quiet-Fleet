@@ -22,7 +22,6 @@ Download this kit and keep all of its files together. Create `planning/` inside 
 | `01_IMPLEMENTATION_PLAN.md` | Architecture, data findings, rules, calibration, and requirements |
 | `02_CODEX_PROMPTS.md` | Copy-ready prompts, P00 through P14 |
 | `03_ACCEPTANCE_TEST_MATRIX.md` | Required behavioral and release checks |
-| `04_FORM3_AND_LIVE_CALL.md` | Submission worksheet and demo preparation |
 | `AGENTS.template.md` | Concise persistent instructions, copied to root `AGENTS.md` by P00 |
 | `data_findings.json` | Measured pack findings, useful for independent reproduction |
 
@@ -124,8 +123,6 @@ docs/decisions.md
 docs/data-quality.md
 docs/bx-decoding.md
 docs/ai-usage.md
-docs/form3-draft.md
-docs/live-call.md
 reports/
 data/assets.csv
 data/devices.csv

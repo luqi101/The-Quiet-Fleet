@@ -143,4 +143,4 @@ python -m unittest discover -s tests -v
 
 The final suite passed 96 tests on Python 3.12.2. [Latest verification](reports/release-readiness.md)
 
-[Requirements and verification](docs/requirements.md) · [Project status](planning/STATUS.md) · [AI usage](docs/ai-usage.md) · [Submission draft](docs/form3-draft.md)
+[Requirements and verification](docs/requirements.md) · [Project status](planning/STATUS.md) · [AI usage](docs/ai-usage.md) · [END checkpoint evidence](reports/end-state-top-three.json)

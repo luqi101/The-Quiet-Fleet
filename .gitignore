@@ -3,6 +3,11 @@
 /.local/
 /data/telemetry/
 
+# Private submission drafts and rehearsal notes
+/docs/form3-draft.md
+/docs/live-call.md
+/planning/04_FORM3_AND_LIVE_CALL.md
+
 # Python environment and caches
 /.venv/
 __pycache__/

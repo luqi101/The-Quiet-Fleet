@@ -100,7 +100,7 @@ The materials folder had no Git metadata. The candidate selected a new child che
 ## P12 Submission evidence
 
 - The final P13 practice run supplied the actual END response at `2026-10-31T23:59:00Z`. Seven items were returned. The first three with their original evidence IDs are preserved in the compact report. [END excerpt](../reports/end-state-top-three.json)
-- The nine-answer Form 3 draft discloses the optional UI change from Form 1 and the AI role. The product note is 192 words. The live-call guide includes a verified isolated 600-to-660-second camera response rehearsal. [Form 3 draft](../docs/form3-draft.md) · [Live-call notes](../docs/live-call.md)
+- The local Form 3 draft discloses the optional UI change from Form 1 and the AI role. The product note is 192 words. The candidate keeps the draft and rehearsal notes locally.
 
 ## P13 Final source audit
 
